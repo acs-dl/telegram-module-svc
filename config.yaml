@@ -1,0 +1,42 @@
+log:
+  level: debug
+  disable_sentry: true
+
+db:
+  url: "postgres://telegram:telegram@localhost:5433/telegram?sslmode=disable"
+
+cache:
+  default_expiration: 35m #time for default duration of each cache item (f.e. 10m5s)
+  cleanup_interval: 5m #interval with which garbage collector will work (f.e. 10m5s)
+
+amqp:
+  topic: "telegram"
+  publisher: "amqp://guest:guest@localhost:5672/" #telegram_publisher
+  subscriber: "amqp://guest:guest@localhost:5672/" #telegram_receiver
+
+telegram:
+  appID: 15842525
+  appHash: "bbaf56dbfc0be20c6c2ed6dfa38ade8d"
+  phoneNumber: "+380685379725"
+  host: "149.154.167.40:443"
+
+listener:
+  addr: :9000
+
+jwt:
+  secret: SuPeR SeCrEt PhRaSe
+  refresh_life: 6h
+  access_life: 10m5s
+
+registrator:
+  outer_url: "http://localhost:8000/integrations/orchestrator/modules" #configure MODULE outer endpoint
+  inner_url: "http://localhost:9000/integrations/telegram" #configure MODULE inner endpoint
+  endpoint: "telegram" #configure MODULE endpoint
+  topic: "telegram" #configure MODULE topic
+
+cop:
+  disabled: true
+  endpoint: "http://..."
+  upstream: "http://..."
+  service_name: core
+  service_port: 80
