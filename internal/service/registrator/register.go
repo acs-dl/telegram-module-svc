@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"gitlab.com/distributed_lab/acs/gitlab-module/resources"
+	"gitlab.com/distributed_lab/acs/telegram-module/resources"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 	"net/http"
 )
