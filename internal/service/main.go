@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/service/registrator"
 	"sync"
 

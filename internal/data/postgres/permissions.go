@@ -8,6 +8,7 @@ import (
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 	"gitlab.com/distributed_lab/kit/pgdb"
 	"gitlab.com/distributed_lab/logan/v3/errors"
+	"strings"
 )
 
 const permissionsTableName = "permissions"
@@ -17,7 +18,14 @@ type PermissionsQ struct {
 	sql sq.SelectBuilder
 }
 
-var permissionsColumns = []string{"permissions.request_id", "permissions.user_id", "permissions.name", "permissions.username", "permissions.gitlab_id", "permissions.type", "permissions.link", "permissions.access_level"}
+var permissionsColumns = []string{
+	permissionsTableName + ".request_id",
+	permissionsTableName + ".telegram_id",
+	permissionsTableName + ".link",
+	permissionsTableName + ".access_level",
+	permissionsTableName + ".created_at",
+	permissionsTableName + ".updated_at",
+}
 
 func NewPermissionsQ(db *pgdb.DB) data.Permissions {
 	return &PermissionsQ{
@@ -40,30 +48,9 @@ func (q *PermissionsQ) Create(permission data.Permission) error {
 
 func (q *PermissionsQ) Update(permission data.Permission) error {
 	query := sq.Update(permissionsTableName).
-		Set("username", permission.Username).
-		Set("name", permission.Name).
 		Set("access_level", permission.AccessLevel).
 		Where(
-			sq.Eq{"gitlab_id": permission.GitlabId, "link": permission.Link})
-
-	return q.db.Exec(query)
-}
-
-func (q *PermissionsQ) UpdateUserId(permission data.Permission) error {
-	query := sq.Update(permissionsTableName).
-		Set("user_id", permission.UserId).
-		Where(sq.Eq{"gitlab_id": permission.GitlabId})
-
-	return q.db.Exec(query)
-}
-
-func (q *PermissionsQ) UpdateParentLevel(permission data.Permission) error {
-	query := sq.Update(permissionsTableName).
-		Set("parent_level", permission.ParentLevel).
-		Where(sq.Eq{
-			"gitlab_id": permission.GitlabId,
-			"link":      permission.Link,
-		})
+			sq.Eq{"telegram_id": permission.TelegramId, "link": permission.Link})
 
 	return q.db.Exec(query)
 }
@@ -77,12 +64,10 @@ func (q *PermissionsQ) Select() ([]data.Permission, error) {
 }
 
 func (q *PermissionsQ) Upsert(permission data.Permission) error {
-	updUsername := fmt.Sprintf("username = '%s'", permission.Username)
-	updName := fmt.Sprintf("name = '%s'", permission.Name)
-	updLevel := fmt.Sprintf("access_level = %d", permission.AccessLevel)
+	updLevel := fmt.Sprintf("access_level = %s", permission.AccessLevel)
 
 	query := sq.Insert(permissionsTableName).SetMap(structs.Map(permission)).
-		Suffix(fmt.Sprintf("ON CONFLICT (gitlab_id, link) DO UPDATE SET %s, %s, %s", updUsername, updName, updLevel))
+		Suffix(fmt.Sprintf("ON CONFLICT (telegram_id, link) DO UPDATE SET %s", updLevel))
 
 	return q.db.Exec(query)
 }
@@ -98,9 +83,9 @@ func (q *PermissionsQ) Get() (*data.Permission, error) {
 	return &result, err
 }
 
-func (q *PermissionsQ) Delete(gitlabId int64, typeTo, link string) error {
+func (q *PermissionsQ) Delete(telegramId int64, link string) error {
 	query := sq.Delete(permissionsTableName).Where(
-		sq.Eq{"gitlab_id": gitlabId, "type": typeTo, "link": link})
+		sq.Eq{"telegram_id": telegramId, "link": link})
 
 	result, err := q.db.ExecWithResult(query)
 	if err != nil {
@@ -109,30 +94,14 @@ func (q *PermissionsQ) Delete(gitlabId int64, typeTo, link string) error {
 
 	affectedRows, _ := result.RowsAffected()
 	if affectedRows == 0 {
-		return errors.New("no permission with such data")
+		return errors.Errorf("no permission with such data `%d` `%s`", telegramId, link)
 	}
 
 	return nil
 }
 
-func (q *PermissionsQ) FilterByUserIds(ids ...int64) data.Permissions {
-	stmt := sq.Eq{permissionsTableName + ".user_id": ids}
-
-	q.sql = q.sql.Where(stmt)
-
-	return q
-}
-
-func (q *PermissionsQ) FilterByGitlabIds(gitlabIds ...int64) data.Permissions {
-	stmt := sq.Eq{permissionsTableName + ".gitlab_id": gitlabIds}
-
-	q.sql = q.sql.Where(stmt)
-
-	return q
-}
-
-func (q *PermissionsQ) FilterByUsernames(usernames ...string) data.Permissions {
-	stmt := sq.Eq{permissionsTableName + ".username": usernames}
+func (q *PermissionsQ) FilterByTelegramIds(telegramIds ...int64) data.Permissions {
+	stmt := sq.Eq{permissionsTableName + ".telegram_id": telegramIds}
 
 	q.sql = q.sql.Where(stmt)
 
@@ -143,6 +112,57 @@ func (q *PermissionsQ) FilterByLinks(links ...string) data.Permissions {
 	stmt := sq.Eq{permissionsTableName + ".link": links}
 
 	q.sql = q.sql.Where(stmt)
+
+	return q
+}
+
+func (q *PermissionsQ) SearchBy(search string) data.Permissions {
+	search = strings.Replace(search, " ", "%", -1)
+	search = fmt.Sprint("%", search, "%")
+
+	q.sql = q.sql.Where(sq.ILike{permissionsTableName + ".link": search})
+
+	return q
+}
+
+func (q *PermissionsQ) Count() data.Permissions {
+	q.sql = sq.Select("COUNT (*)").From(permissionsTableName)
+
+	return q
+}
+
+func (q *PermissionsQ) GetTotalCount() (int64, error) {
+	var count int64
+	err := q.db.Get(&count, q.sql)
+
+	return count, err
+}
+
+func (q *PermissionsQ) ResetFilters() data.Permissions {
+	q.sql = selectedResponsesTable
+
+	return q
+}
+
+func (q *PermissionsQ) Page(pageParams pgdb.OffsetPageParams) data.Permissions {
+	q.sql = pageParams.ApplyTo(q.sql, "link")
+
+	return q
+}
+
+func (q *PermissionsQ) WithUsers() data.Permissions {
+	q.sql = sq.Select().Columns(permissionsColumns...).Columns(usersColumns...).
+		From(permissionsTableName).
+		LeftJoin(fmt.Sprint(usersTableName, " ON ", usersTableName, ".telegram_id = ", usersTableName, ".telegram_id")).
+		Where(sq.NotEq{permissionsTableName + ".request_id": nil})
+
+	return q
+}
+
+func (q *PermissionsQ) CountWithUsers() data.Permissions {
+	q.sql = sq.Select("COUNT(*)").From(permissionsTableName).
+		LeftJoin(fmt.Sprint(usersTableName, " ON ", usersTableName, ".telegram_id = ", usersTableName, ".telegram_id")).
+		Where(sq.NotEq{permissionsTableName + ".request_id": nil})
 
 	return q
 }
