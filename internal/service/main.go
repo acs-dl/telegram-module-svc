@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"gitlab.com/distributed_lab/acs/telegram-module/internal/service/registrator"
 	"sync"
 
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/config"
@@ -11,6 +12,11 @@ import (
 var availableServices = map[string]types.Runner{}
 
 func Run(cfg config.Config) {
+	// module registration before starting all services
+	regCfg := cfg.Registrator()
+	if err := registrator.RegisterModule(data.ModuleName, regCfg.Endpoint, regCfg.InnerUrl, regCfg.OuterUrl); err != nil {
+		panic(err)
+	}
 
 	logger := cfg.Log().WithField("service", "main")
 	ctx := context.Background()

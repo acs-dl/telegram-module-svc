@@ -18,7 +18,7 @@ type CacheData struct {
 }
 
 func (c *config) Cache() *CacheData {
-	return c.gitlab.Do(func() interface{} {
+	return c.cache.Do(func() interface{} {
 		var cfg CacheCfg
 		err := figure.
 			Out(&cfg).

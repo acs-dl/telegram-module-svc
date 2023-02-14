@@ -18,7 +18,7 @@ type Config interface {
 	// connectors
 
 	// other config values
-	Gitlab() *GitLabCfg
+	Telegram() *TelegramCfg
 	Amqp() *AmqpData
 	Cache() *CacheData
 	JwtParams() *JwtCfg
@@ -38,7 +38,7 @@ type config struct {
 	// connectors
 
 	// other config values
-	gitlab      comfig.Once
+	telegram    comfig.Once
 	amqp        comfig.Once
 	cache       comfig.Once
 	registrator comfig.Once
