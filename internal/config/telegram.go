@@ -7,8 +7,8 @@ import (
 )
 
 type TelegramCfg struct {
-	AppId       int64  `figure:"appId"`
-	AppHash     string `figure:"appHash"`
+	ApiId       int64  `figure:"apiId"`
+	ApiHash     string `figure:"apiHash"`
 	PhoneNumber string `figure:"phoneNumber"`
 	Host        string `figure:"host"`
 }

@@ -1,0 +1,25 @@
+allOf:
+  - $ref: '#/components/schemas/ModuleKey'
+  - type: object
+    required:
+      - attributes
+    properties:
+      attributes:
+        type: object
+        required:
+          - name
+          - endpoint
+          - link
+        properties:
+          name:
+            type: string
+            description: Module name
+            example: "github"
+          link:
+            type: string
+            description: Module url
+            example: "https://traefik/gitlab"
+          endpoint:
+            type: string
+            description: Module endpoint for sender and others
+            example: "gitlab"

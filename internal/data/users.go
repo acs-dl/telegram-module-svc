@@ -37,4 +37,6 @@ type User struct {
 	TelegramId int64     `json:"telegram_id" db:"telegram_id" structs:"telegram_id"`
 	AccessHash int64     `json:"access_hash" db:"access_hash" structs:"access_hash"`
 	CreatedAt  time.Time `json:"created_at" db:"created_at" structs:"created_at"`
+	// fields to create permission
+	AccessLevel string `json:"-" db:"-" structs:"-"`
 }

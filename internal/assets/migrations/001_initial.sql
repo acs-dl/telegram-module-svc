@@ -1,6 +1,6 @@
 -- +migrate Up
 
-CREATE TYPE telegram_access_levels_enum AS ENUM ('owner', 'admin', 'member');
+CREATE TYPE telegram_access_levels_enum AS ENUM ('owner', 'admin', 'member', 'self', 'left', 'banned');
 
 CREATE TABLE IF NOT EXISTS responses (
     id UUID PRIMARY KEY,
@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS links (
 );
 INSERT INTO links (link) VALUES ('HELP TG API');
 INSERT INTO links (link) VALUES ('Подпивковичи');
-INSERT INTO links (link) VALUES ('VMDM²NA vs. ACS');
+-- INSERT INTO links (link) VALUES ('VMDM²NA vs. ACS');
 
 CREATE INDEX IF NOT EXISTS links_link_idx ON links(link);
 

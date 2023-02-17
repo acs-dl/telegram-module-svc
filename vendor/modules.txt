@@ -29,6 +29,9 @@ github.com/certifi/gocertifi
 # github.com/fatih/structs v1.1.0
 ## explicit
 github.com/fatih/structs
+# github.com/fatih/structtag v1.2.0
+## explicit; go 1.12
+github.com/fatih/structtag
 # github.com/fsnotify/fsnotify v1.4.9
 ## explicit; go 1.13
 github.com/fsnotify/fsnotify
@@ -76,6 +79,9 @@ github.com/hashicorp/hcl/json/token
 ## explicit
 github.com/jmoiron/sqlx
 github.com/jmoiron/sqlx/reflectx
+# github.com/k0kubun/pp v3.0.1+incompatible
+## explicit
+github.com/k0kubun/pp
 # github.com/lann/builder v0.0.0-20180802200727-47ae307949d0
 ## explicit
 github.com/lann/builder
@@ -93,6 +99,12 @@ github.com/lithammer/shortuuid/v3
 # github.com/magiconair/properties v1.8.5
 ## explicit; go 1.13
 github.com/magiconair/properties
+# github.com/mattn/go-colorable v0.1.13
+## explicit; go 1.15
+github.com/mattn/go-colorable
+# github.com/mattn/go-isatty v0.0.17
+## explicit; go 1.15
+github.com/mattn/go-isatty
 # github.com/mitchellh/mapstructure v1.4.1
 ## explicit; go 1.14
 github.com/mitchellh/mapstructure
@@ -134,6 +146,24 @@ github.com/spf13/viper
 # github.com/subosito/gotenv v1.2.0
 ## explicit
 github.com/subosito/gotenv
+# github.com/xelaj/errs v0.0.0-20200831133608-d1c11863e019
+## explicit
+github.com/xelaj/errs
+# github.com/xelaj/go-dry v0.0.0-20201104165138-61a25872c05a
+## explicit; go 1.13
+github.com/xelaj/go-dry
+# github.com/xelaj/mtproto v1.0.0
+## explicit; go 1.13
+github.com/xelaj/mtproto
+github.com/xelaj/mtproto/internal/aes_ige
+github.com/xelaj/mtproto/internal/encoding/tl
+github.com/xelaj/mtproto/internal/keys
+github.com/xelaj/mtproto/internal/mtproto/messages
+github.com/xelaj/mtproto/internal/mtproto/objects
+github.com/xelaj/mtproto/internal/utils
+github.com/xelaj/mtproto/telegram
+github.com/xelaj/mtproto/telegram/internal/calls
+github.com/xelaj/mtproto/telegram/internal/srp
 # gitlab.com/distributed_lab/ape v1.7.1
 ## explicit; go 1.14
 gitlab.com/distributed_lab/ape
@@ -164,8 +194,13 @@ gitlab.com/distributed_lab/lorem
 # gitlab.com/distributed_lab/running v0.0.0-20200706131153-4af0e83eb96c
 ## explicit
 gitlab.com/distributed_lab/running
+# golang.org/x/crypto v0.5.0
+## explicit; go 1.17
+golang.org/x/crypto/pbkdf2
+golang.org/x/crypto/sha3
 # golang.org/x/sys v0.4.0
 ## explicit; go 1.17
+golang.org/x/sys/cpu
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
 golang.org/x/sys/windows
