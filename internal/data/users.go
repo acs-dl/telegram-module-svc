@@ -14,7 +14,7 @@ type Users interface {
 	Select() ([]User, error)
 	Get() (*User, error)
 
-	FilterByIds(ids ...*int64) Users
+	FilterById(id *int64) Users
 	FilterByTelegramIds(telegramIds ...int64) Users
 	FilterByUsernames(usernames ...string) Users
 	FilterByPhones(phones ...string) Users

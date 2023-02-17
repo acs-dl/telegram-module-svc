@@ -1,0 +1,28 @@
+allOf:
+  - $ref: "#/components/schemas/UserKey"
+  - type: object
+    required:
+      - attributes
+    properties:
+      attributes:
+        type: object
+        required:
+          - username
+          - module
+        properties:
+          user_id:
+            type: int64
+            description: user id from identity module, if user is not verified - null
+            example: "666"
+          created_at:
+            type: time.Time
+            description: timestamp without timezone when user was created
+            example: "2023-01-26 08:45:54"
+          username:
+            type: string
+            description: username from telegram
+            example: "mhrynenko"
+          module:
+            type: string
+            description: module name
+            example: "telegram"

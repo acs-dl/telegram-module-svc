@@ -1,0 +1,13 @@
+type: object
+required:
+  - action
+  - username
+properties:
+  action:
+    type: string
+    description: action that must be handled in module, must be "delete_user"
+    example: "delete_user"
+  username:
+    type: string
+    description: user's username from gitlab
+    example: "slandymani"

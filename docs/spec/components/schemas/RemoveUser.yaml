@@ -1,0 +1,19 @@
+type: object
+description: action to remove user from repository or group in gitlab
+required:
+  - action
+  - link
+  - username
+properties:
+  action:
+    type: string
+    description: action that must be handled in module, must be "remove_user"
+    example: "remove_user"
+  link:
+    type: string
+    description: link where module has to add user
+    example: "distributed_lab/acs"
+  username:
+    type: string
+    description: user's username from gitlab
+    example: "slandymani"

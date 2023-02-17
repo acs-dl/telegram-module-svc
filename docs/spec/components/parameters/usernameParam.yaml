@@ -1,0 +1,7 @@
+in: query
+name: 'filter[username]'
+schema:
+  type: string
+  description: >-
+    Filter by username from telegram
+  example: "slandymani"

@@ -1,0 +1,45 @@
+allOf:
+  - $ref: "#/components/schemas/UserPermissionKey"
+  - type: object
+    required:
+      - attributes
+    properties:
+      attributes:
+        type: object
+        required:
+          - username
+          - phone
+          - module_id
+          - link
+          - access_level
+          - level
+        properties:
+          username:
+            type: string
+            description: username from telegram
+            example: "velykodnyi"
+          module_id:
+            type: int64
+            description: user id from module
+            example: 8421495
+          user_id:
+            type: int64
+            description: user id from identity
+            example: 666
+          level:
+            type: int64
+            description: link level in tree
+            example: 2
+          phone:
+            type: string
+            description: phone from telegram
+            example: "380..."
+          link:
+            type: string
+            description: chat title
+            example: "WE vs. ACS"
+          access_level:
+            type: object
+            description: level of success for chat
+            $ref: "#/components/schemas/AccessLevel"
+

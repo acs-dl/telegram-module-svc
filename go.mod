@@ -27,6 +27,7 @@ require (
 	github.com/getsentry/raven-go v0.2.0 // indirect
 	github.com/getsentry/sentry-go v0.7.0 // indirect
 	github.com/go-gorp/gorp/v3 v3.0.5 // indirect
+	github.com/go-ozzo/ozzo-validation v3.6.0+incompatible // indirect
 	github.com/go-ozzo/ozzo-validation/v4 v4.2.1 // indirect
 	github.com/google/jsonapi v0.0.0-20200226002910-c8283f632fb7 // indirect
 	github.com/google/uuid v1.3.0 // indirect
@@ -58,6 +59,7 @@ require (
 	github.com/xelaj/mtproto v1.0.0 // indirect
 	gitlab.com/distributed_lab/lorem v0.2.0 // indirect
 	gitlab.com/distributed_lab/running v0.0.0-20200706131153-4af0e83eb96c // indirect
+	gitlab.com/distributed_lab/urlval v3.0.0+incompatible // indirect
 	golang.org/x/crypto v0.5.0 // indirect
 	golang.org/x/sys v0.4.0 // indirect
 	golang.org/x/text v0.6.0 // indirect

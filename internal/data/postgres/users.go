@@ -104,11 +104,8 @@ func (q *UsersQ) Select() ([]data.User, error) {
 	return result, err
 }
 
-func (q *UsersQ) FilterByIds(ids ...*int64) data.Users {
-	stmt := sq.Eq{usersTableName + ".id": nil}
-	if ids != nil {
-		stmt = sq.Eq{usersTableName + ".id": ids}
-	}
+func (q *UsersQ) FilterById(id *int64) data.Users {
+	stmt := sq.Eq{usersTableName + ".id": id}
 
 	q.sql = q.sql.Where(stmt)
 

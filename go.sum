@@ -159,6 +159,8 @@ github.com/go-logfmt/logfmt v0.3.0/go.mod h1:Qt1PoO58o5twSAckw1HlFXLmHsOX5/0LbT9
 github.com/go-logfmt/logfmt v0.4.0/go.mod h1:3RMwSq7FuexP4Kalkev3ejPJsZTpXXBr9+V4qmtdjCk=
 github.com/go-logfmt/logfmt v0.5.0/go.mod h1:wCYkCAKZfumFQihp8CzCvQ3paCTfi41vtzG1KdI/P7A=
 github.com/go-martini/martini v0.0.0-20170121215854-22fa46961aab/go.mod h1:/P9AEU963A2AYjv4d1V5eVL1CQbEJq6aCNHDDjibzu8=
+github.com/go-ozzo/ozzo-validation v3.6.0+incompatible h1:msy24VGS42fKO9K1vLz82/GeYW1cILu7Nuuj1N3BBkE=
+github.com/go-ozzo/ozzo-validation v3.6.0+incompatible/go.mod h1:gsEKFIVnabGBt6mXmxK0MoFy+cZoTJY6mu5Ll3LVLBU=
 github.com/go-ozzo/ozzo-validation/v4 v4.2.1 h1:XALUNshPYumA7UShB7iM3ZVlqIBn0jfwjqAMIoyE1N0=
 github.com/go-ozzo/ozzo-validation/v4 v4.2.1/go.mod h1:2NKgrcHl3z6cJs+3Oo940FPRiTzuqKbvfrL2RxCj6Ew=
 github.com/go-sql-driver/mysql v1.4.0/go.mod h1:zAC/RDZ24gD3HViQzih4MyKcchzm+sOG5ZlKdlhCg5w=
@@ -563,6 +565,8 @@ gitlab.com/distributed_lab/lorem v0.2.0 h1:Rc7Ef3eGSpei8EtWcV6fzPW3O/QEF2zgZR4+h
 gitlab.com/distributed_lab/lorem v0.2.0/go.mod h1:wkzrGoB1L/yUBu56SfoJ/vNiPqiHZcg75AnBkWNcjhQ=
 gitlab.com/distributed_lab/running v0.0.0-20200706131153-4af0e83eb96c h1:cpIjV8C//7sLVvMcBaFGopI8sMcCw8Za7T0HIf52esU=
 gitlab.com/distributed_lab/running v0.0.0-20200706131153-4af0e83eb96c/go.mod h1:4TnADX84dQjQMRHKIMPCVL0L97rD/Jxv0xDbrN6aKzk=
+gitlab.com/distributed_lab/urlval v3.0.0+incompatible h1:OWU3CcZU+z0BVooufOSQFO9biDfsjM3e7YYauC278HU=
+gitlab.com/distributed_lab/urlval v3.0.0+incompatible/go.mod h1:cKnUlnZCHUuke/l95YLvW5JoGC2yn53HVgF9rt1WiIg=
 go.etcd.io/bbolt v1.3.2/go.mod h1:IbVyRI1SCnLcuJnV2u8VeU0CEYM7e686BmAb1XKL+uU=
 go.etcd.io/etcd/api/v3 v3.5.0/go.mod h1:cbVKeC6lCfl7j/8jBhAK6aIYO9XOjdptoxU/nLQcPvs=
 go.etcd.io/etcd/client/pkg/v3 v3.5.0/go.mod h1:IJHfcCEKxYu1Os13ZdwCwIUTUVGYTSAM3YSwc9/Ac1g=

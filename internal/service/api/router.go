@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/go-chi/chi"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
+	"gitlab.com/distributed_lab/acs/telegram-module/internal/data/postgres"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/service/api/handlers"
 	"gitlab.com/distributed_lab/ape"
 )
@@ -13,6 +14,8 @@ func (r *apiRouter) apiRouter() chi.Router {
 
 	logger := r.cfg.Log().WithField("service", fmt.Sprintf("%s-api", data.ModuleName))
 
+	//secret := r.cfg.JwtParams().Secret
+
 	router.Use(
 		ape.RecoverMiddleware(logger),
 		ape.LoganMiddleware(logger),
@@ -21,15 +24,37 @@ func (r *apiRouter) apiRouter() chi.Router {
 			handlers.CtxLog(logger),
 
 			// storage
+			handlers.CtxPermissionsQ(postgres.NewPermissionsQ(r.cfg.DB())),
+			handlers.CtxUsersQ(postgres.NewUsersQ(r.cfg.DB())),
+			handlers.CtxLinksQ(postgres.NewLinksQ(r.cfg.DB())),
 
 			// connectors
 
 			// other configs
+			handlers.CtxParams(r.cfg.Telegram()),
 		),
 	)
 
 	router.Route("/integrations/telegram", func(r chi.Router) {
+		r.Get("/get_input", handlers.GetInputs)
+		r.Get("/get_available_roles", handlers.GetRoles)
 
+		r.Get("/role", handlers.GetRole)      // comes from orchestrator
+		r.Get("/roles", handlers.GetRolesMap) // comes from orchestrator
+
+		r.Route("/links", func(r chi.Router) {
+			r.Post("/", handlers.AddLink)
+			r.Delete("/", handlers.RemoveLink)
+		})
+
+		r.Get("/permissions", handlers.GetPermissions)
+
+		r.Route("/users", func(r chi.Router) {
+			r.Get("/{id}", handlers.GetUserById) // comes from orchestrator
+
+			r.Get("/", handlers.GetUsers)
+			r.Get("/unverified", handlers.GetUnverifiedUsers)
+		})
 	})
 
 	return router
