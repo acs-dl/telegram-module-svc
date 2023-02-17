@@ -4,6 +4,7 @@ import (
 	pkgErrors "github.com/pkg/errors"
 	"github.com/xelaj/mtproto"
 	"github.com/xelaj/mtproto/telegram"
+	"gitlab.com/distributed_lab/acs/telegram-module/internal/config"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/distributed_lab/logan/v3/errors"
@@ -23,7 +24,7 @@ type tg struct {
 	log    *logan.Entry
 }
 
-func NewTg(apiId int64, apiHash, phoneNumber, host string, log *logan.Entry) TelegramClient {
+func NewTg(cfg *config.TelegramCfg, log *logan.Entry) TelegramClient {
 	currentDir, err := filepath.Abs("telegram-module")
 	if err != nil {
 		log.WithError(err).Errorf("failed to get `telegram-module` path")
@@ -34,10 +35,10 @@ func NewTg(apiId int64, apiHash, phoneNumber, host string, log *logan.Entry) Tel
 
 	client, err := telegram.NewClient(telegram.ClientConfig{
 		SessionFile:    sessionFile,
-		ServerHost:     host,
+		ServerHost:     cfg.Host,
 		PublicKeysFile: publicKeys,
-		AppID:          int(apiId),
-		AppHash:        apiHash,
+		AppID:          int(cfg.ApiId),
+		AppHash:        cfg.ApiHash,
 	})
 	if err != nil {
 		log.WithError(err).Errorf("failed to create client")
@@ -60,7 +61,7 @@ func NewTg(apiId int64, apiHash, phoneNumber, host string, log *logan.Entry) Tel
 	}
 
 	setCode, err := client.AuthSendCode(
-		phoneNumber, int32(apiId), apiHash, &telegram.CodeSettings{},
+		cfg.PhoneNumber, int32(cfg.ApiId), cfg.ApiHash, &telegram.CodeSettings{},
 	)
 
 	if err != nil {
@@ -89,7 +90,7 @@ func NewTg(apiId int64, apiHash, phoneNumber, host string, log *logan.Entry) Tel
 	code := enter("Auth code")
 
 	_, err = client.AuthSignIn(
-		phoneNumber,
+		cfg.PhoneNumber,
 		setCode.PhoneCodeHash,
 		code,
 	)
