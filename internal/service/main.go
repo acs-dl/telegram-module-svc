@@ -7,6 +7,7 @@ import (
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/sender"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/service/api"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/service/registrator"
+	"gitlab.com/distributed_lab/acs/telegram-module/internal/worker"
 	"sync"
 
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/config"
@@ -17,7 +18,7 @@ var availableServices = map[string]types.Runner{
 	"api":      api.Run,
 	"sender":   sender.Run,
 	"receiver": receiver.Run,
-	//"worker":   worker.Run,
+	"worker":   worker.Run,
 }
 
 func Run(cfg config.Config) {

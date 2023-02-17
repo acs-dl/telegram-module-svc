@@ -6,7 +6,6 @@ import (
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data/postgres"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/processor"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/tg"
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 	"gitlab.com/distributed_lab/running"
@@ -20,22 +19,16 @@ type Worker interface {
 }
 
 type worker struct {
-	logger *logan.Entry
-	//processor      processor.Processor
-	telegramClient tg.TelegramClient
-	linksQ         data.Links
-	usersQ         data.Users
-	permissionsQ   data.Permissions
+	logger    *logan.Entry
+	processor processor.Processor
+	linksQ    data.Links
 }
 
 func NewWorker(cfg config.Config) Worker {
 	return &worker{
-		logger: cfg.Log().WithField("runner", serviceName),
-		//processor:      processor.NewProcessor(cfg),
-		telegramClient: tg.NewTg(cfg.Telegram(), cfg.Log()),
-		linksQ:         postgres.NewLinksQ(cfg.DB()),
-		usersQ:         postgres.NewUsersQ(cfg.DB()),
-		permissionsQ:   postgres.NewPermissionsQ(cfg.DB()),
+		logger:    cfg.Log().WithField("runner", serviceName),
+		processor: processor.NewProcessor(cfg),
+		linksQ:    postgres.NewLinksQ(cfg.DB()),
 	}
 }
 

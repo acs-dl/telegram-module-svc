@@ -14,6 +14,9 @@ import (
 
 type TelegramClient interface {
 	GetUsersFromApi(title string) ([]data.User, error)
+	GetUserFromApi(username, phone *string) (*data.User, error)
+	GetChatUserFromApi(username, phone *string, title string) (*data.User, error)
+
 	AddUserInChatFromApi(username, phone *string, title string) error
 	UpdateUserInChatFromApi(username, phone *string, title string) error
 	DeleteFromChatFromApi(username, phone *string, title string) error
