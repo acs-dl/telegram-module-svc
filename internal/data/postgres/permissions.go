@@ -166,3 +166,15 @@ func (q *PermissionsQ) CountWithUsers() data.Permissions {
 
 	return q
 }
+
+func (q *PermissionsQ) FilterByUserIds(userIds ...int64) data.Permissions {
+	stmt := sq.Eq{usersTableName + ".user_id": userIds}
+
+	if len(userIds) == 0 {
+		stmt = sq.Eq{usersTableName + ".user_id": nil}
+	}
+
+	q.sql = q.sql.Where(stmt)
+
+	return q
+}

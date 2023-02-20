@@ -27,6 +27,7 @@ type Permissions interface {
 	SearchBy(search string) Permissions
 
 	WithUsers() Permissions
+	FilterByUserIds(userIds ...int64) Permissions
 
 	Count() Permissions
 	CountWithUsers() Permissions
