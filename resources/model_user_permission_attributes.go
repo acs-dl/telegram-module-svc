@@ -13,9 +13,9 @@ type UserPermissionAttributes struct {
 	// user id from module
 	ModuleId int64 `json:"module_id"`
 	// phone from telegram
-	Phone string `json:"phone"`
+	Phone *string `json:"phone,omitempty"`
 	// user id from identity
 	UserId *int64 `json:"user_id,omitempty"`
 	// username from telegram
-	Username string `json:"username"`
+	Username *string `json:"username,omitempty"`
 }

@@ -8,6 +8,7 @@ import (
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/distributed_lab/logan/v3/errors"
+	"os"
 	"path/filepath"
 	"time"
 )
@@ -29,7 +30,12 @@ type tg struct {
 }
 
 func NewTg(cfg *config.TelegramCfg, log *logan.Entry) TelegramClient {
-	currentDir, err := filepath.Abs("telegram-module")
+	currentDir, err := os.Getwd()
+	if err != nil {
+		log.WithError(err).Errorf("failed to get current directory path")
+		panic(errors.Wrap(err, "failed to get current directory path"))
+	}
+
 	if err != nil {
 		log.WithError(err).Errorf("failed to get `telegram-module` path")
 		panic(errors.Wrap(err, "failed to get `telegram-module` path"))

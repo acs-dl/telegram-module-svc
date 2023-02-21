@@ -18,7 +18,7 @@ func GetPermissions(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if request.UserId != nil && request.Link == nil {
-		permissions, err := PermissionsQ(r).WithUsers().FilterByUserIds(*request.UserId).FilterByLinks(*request.Link).Page(request.OffsetPageParams).Select()
+		permissions, err := PermissionsQ(r).WithUsers().FilterByUserIds(*request.UserId).Page(request.OffsetPageParams).Select()
 		if err != nil {
 			Log(r).WithError(err).Error("failed to get permissions")
 			ape.RenderErr(w, problems.InternalError())
@@ -27,7 +27,7 @@ func GetPermissions(w http.ResponseWriter, r *http.Request) {
 
 		PermissionsQ(r).ResetFilters()
 
-		totalCount, err := PermissionsQ(r).CountWithUsers().FilterByUserIds(*request.UserId).FilterByLinks(*request.Link).Page(request.OffsetPageParams).GetTotalCount()
+		totalCount, err := PermissionsQ(r).CountWithUsers().FilterByUserIds(*request.UserId).GetTotalCount()
 		if err != nil {
 			Log(r).WithError(err).Error("failed to get permissions total count")
 			ape.RenderErr(w, problems.InternalError())

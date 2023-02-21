@@ -9,6 +9,9 @@ import (
 	"net/http"
 )
 
+// TODO: think about roles
+// when we add user ALWAYS member
+// update can be up to admin or back yo member (only for owner <- it's a problem)
 func GetRoles(w http.ResponseWriter, r *http.Request) {
 	request, err := requests.NewGetRolesRequest(r)
 	if err != nil {

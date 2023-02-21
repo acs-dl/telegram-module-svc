@@ -59,15 +59,16 @@ func (q *PermissionsQ) Select() ([]data.Permission, error) {
 	var result []data.Permission
 
 	err := q.db.Select(&result, q.sql)
-
+	fmt.Println(q.sql.MustSql())
 	return result, err
 }
 
 func (q *PermissionsQ) Upsert(permission data.Permission) error {
-	updLevel := fmt.Sprintf("access_level = %s", permission.AccessLevel)
+	updateStmt, args := sq.Update(" ").
+		Set("access_level", permission.AccessLevel).MustSql()
 
 	query := sq.Insert(permissionsTableName).SetMap(structs.Map(permission)).
-		Suffix(fmt.Sprintf("ON CONFLICT (telegram_id, link) DO UPDATE SET %s", updLevel))
+		Suffix("ON CONFLICT (telegram_id, link) DO "+updateStmt, args...)
 
 	return q.db.Exec(query)
 }
@@ -151,27 +152,49 @@ func (q *PermissionsQ) Page(pageParams pgdb.OffsetPageParams) data.Permissions {
 }
 
 func (q *PermissionsQ) WithUsers() data.Permissions {
-	q.sql = sq.Select().Columns(permissionsColumns...).Columns(usersColumns...).
+	q.sql = sq.Select().Columns(removeDuplicateColumn(append(permissionsColumns, usersColumns...))...).
 		From(permissionsTableName).
-		LeftJoin(fmt.Sprint(usersTableName, " ON ", usersTableName, ".telegram_id = ", usersTableName, ".telegram_id")).
-		Where(sq.NotEq{permissionsTableName + ".request_id": nil})
+		LeftJoin(fmt.Sprint(usersTableName, " ON ", usersTableName, ".telegram_id = ", permissionsTableName, ".telegram_id")).
+		Where(sq.NotEq{permissionsTableName + ".request_id": nil}).
+		GroupBy(removeDuplicateColumn(append(permissionsColumns, usersColumns...))...)
 
 	return q
 }
 
 func (q *PermissionsQ) CountWithUsers() data.Permissions {
 	q.sql = sq.Select("COUNT(*)").From(permissionsTableName).
-		LeftJoin(fmt.Sprint(usersTableName, " ON ", usersTableName, ".telegram_id = ", usersTableName, ".telegram_id")).
+		LeftJoin(fmt.Sprint(usersTableName, " ON ", usersTableName, ".telegram_id = ", permissionsTableName, ".telegram_id")).
 		Where(sq.NotEq{permissionsTableName + ".request_id": nil})
 
 	return q
 }
 
+func removeDuplicateColumn(arr []string) []string {
+	allKeys := make(map[string]bool)
+	var list []string
+
+	for i := range arr {
+		splittedColumName := strings.Split(arr[i], ".")
+		if len(splittedColumName) != 2 {
+			continue
+		}
+
+		columnName := splittedColumName[1] // [0] is table name
+
+		if _, value := allKeys[columnName]; !value {
+			allKeys[columnName] = true
+			list = append(list, arr[i])
+		}
+	}
+
+	return list
+}
+
 func (q *PermissionsQ) FilterByUserIds(userIds ...int64) data.Permissions {
-	stmt := sq.Eq{usersTableName + ".user_id": userIds}
+	stmt := sq.Eq{usersTableName + ".id": userIds}
 
 	if len(userIds) == 0 {
-		stmt = sq.Eq{usersTableName + ".user_id": nil}
+		stmt = sq.Eq{usersTableName + ".id": nil}
 	}
 
 	q.sql = q.sql.Where(stmt)

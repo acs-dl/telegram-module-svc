@@ -7,15 +7,17 @@ import (
 )
 
 func (p *processor) validateUpdateUser(msg data.ModulePayload) error {
+	phoneValidationCase := validation.When(msg.Username == nil, validation.Required.Error("phone is required if username is not set"))
+	usernameValidationCase := validation.When(msg.Phone == nil, validation.Required.Error("username is required if phone is not set"))
+
 	return validation.Errors{
 		"link":         validation.Validate(msg.Link, validation.Required),
-		"username":     validation.Validate(msg.Username, validation.Required),
-		"phone":        validation.Validate(msg.Phone, validation.Required),
+		"username":     validation.Validate(msg.Username, usernameValidationCase),
+		"phone":        validation.Validate(msg.Phone, phoneValidationCase),
 		"access_level": validation.Validate(msg.AccessLevel, validation.Required),
 	}.Filter()
 }
 
-// TODO: think about proper update
 func (p *processor) handleUpdateUserAction(msg data.ModulePayload) error {
 	p.log.Infof("start handle message action with id `%s`", msg.RequestId)
 
@@ -25,7 +27,7 @@ func (p *processor) handleUpdateUserAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to validate fields")
 	}
 
-	user, err := p.telegramClient.GetChatUserFromApi(&msg.Username, &msg.Phone, msg.Link)
+	user, err := p.telegramClient.GetChatUserFromApi(msg.Username, msg.Phone, msg.Link)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to get user from API for message action with id `%s`", msg.RequestId)
 		return errors.Wrap(err, "some error while getting user from api")
@@ -45,7 +47,7 @@ func (p *processor) handleUpdateUserAction(msg data.ModulePayload) error {
 		return errors.Errorf("no such user in module")
 	}
 
-	err = p.telegramClient.UpdateUserInChatFromApi(&msg.Username, &msg.Phone, msg.Link)
+	err = p.telegramClient.UpdateUserInChatFromApi(msg.Username, msg.Phone, msg.Link)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to update user from API for message action with id `%s`", msg.RequestId)
 		return errors.Wrap(err, "failed to update user from api")

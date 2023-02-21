@@ -9,6 +9,9 @@ const (
 	Owner  = "owner"
 	Admin  = "admin"
 	Member = "member"
+	Left   = "left"
+	Self   = "self"
+	Banned = "banned"
 )
 
 type Permissions interface {

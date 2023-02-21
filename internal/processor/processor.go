@@ -68,7 +68,7 @@ func (p *processor) HandleNewMessage(msg data.ModulePayload) error {
 
 	requestHandler := handleActions[msg.Action]
 	if err = requestHandler(p, msg); err != nil {
-		p.log.WithError(err).Error("failed to handle message with id `%s`", msg.RequestId)
+		p.log.WithError(err).Errorf("failed to handle message with id `%s`", msg.RequestId)
 		return err
 	}
 

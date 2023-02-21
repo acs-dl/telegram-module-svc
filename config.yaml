@@ -15,9 +15,9 @@ amqp:
   subscriber: "amqp://guest:guest@localhost:5672/" #telegram_receiver
 
 telegram:
-  apiId: 15842525
-  apiHash: "bbaf56dbfc0be20c6c2ed6dfa38ade8d"
-  phoneNumber: "+380685379725"
+  api_id: 15842525
+  api_hash: "bbaf56dbfc0be20c6c2ed6dfa38ade8d"
+  phone_number: "+380685379725"
   host: "149.154.167.40:443"
 
 listener:

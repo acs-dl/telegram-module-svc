@@ -2,7 +2,6 @@ type: object
 required:
   - action
   - link
-  - username
   - user_id
   - access_level
 properties:
@@ -26,3 +25,7 @@ properties:
     type: int
     description: user's id from identity
     example: 123
+  phone:
+    type: string
+    description: phone from telegram
+    example: "380..."

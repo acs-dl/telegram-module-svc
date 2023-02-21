@@ -7,8 +7,6 @@ allOf:
       attributes:
         type: object
         required:
-          - username
-          - phone
           - module_id
           - link
           - access_level

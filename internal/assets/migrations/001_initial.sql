@@ -12,12 +12,12 @@ CREATE TABLE IF NOT EXISTS responses (
 
 CREATE TABLE IF NOT EXISTS users (
     id BIGINT UNIQUE,
-    username TEXT NOT NULL UNIQUE,
+    username TEXT UNIQUE,
     telegram_id BIGINT PRIMARY KEY,
     access_hash BIGINT NOT NULL,
     first_name TEXT NOT NULL,
     last_name TEXT NOT NULL,
-    phone TEXT NOT NULL UNIQUE,
+    phone TEXT UNIQUE,
     created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -29,8 +29,7 @@ CREATE TABLE IF NOT EXISTS links (
     UNIQUE(link)
 );
 INSERT INTO links (link) VALUES ('HELP TG API');
-INSERT INTO links (link) VALUES ('Подпивковичи');
--- INSERT INTO links (link) VALUES ('VMDM²NA vs. ACS');
+INSERT INTO links (link) VALUES ('WE vs. ACS');
 
 CREATE INDEX IF NOT EXISTS links_link_idx ON links(link);
 
@@ -47,7 +46,7 @@ CREATE TABLE IF NOT EXISTS permissions (
     FOREIGN KEY(link) REFERENCES links(link) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE INDEX IF NOT EXISTS permissions_idx ON permissions(user_id, telegram_id, link);
+CREATE INDEX IF NOT EXISTS permissions_idx ON permissions(telegram_id, link);
 
 -- +migrate Down
 

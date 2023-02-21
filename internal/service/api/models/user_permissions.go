@@ -15,7 +15,7 @@ func NewUserPermissionModel(permission data.Permission, counter int) resources.U
 		Attributes: resources.UserPermissionAttributes{
 			Username: permission.Username,
 			Phone:    permission.Phone,
-			ModuleId: permission.TelegramId,
+			ModuleId: permission.User.TelegramId,
 			UserId:   permission.Id,
 			Level:    1,
 			Link:     permission.Link,

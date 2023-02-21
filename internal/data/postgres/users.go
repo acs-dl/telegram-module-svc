@@ -7,6 +7,7 @@ import (
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 	"strings"
+	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"gitlab.com/distributed_lab/kit/pgdb"
@@ -22,14 +23,14 @@ type UsersQ struct {
 var selectedUsersTable = sq.Select("*").From(usersTableName)
 
 var usersColumns = []string{
-	permissionsTableName + ".id",
-	permissionsTableName + ".username",
-	permissionsTableName + ".phone",
-	permissionsTableName + ".telegram_id",
-	permissionsTableName + ".access_hash",
-	permissionsTableName + ".first_name",
-	permissionsTableName + ".last_name",
-	permissionsTableName + ".created_at",
+	usersTableName + ".id",
+	usersTableName + ".username",
+	usersTableName + ".phone",
+	usersTableName + ".telegram_id",
+	usersTableName + ".access_hash",
+	usersTableName + ".first_name",
+	usersTableName + ".last_name",
+	usersTableName + ".created_at",
 }
 
 func NewUsersQ(db *pgdb.DB) data.Users {
@@ -44,13 +45,25 @@ func (q *UsersQ) New() data.Users {
 }
 
 func (q *UsersQ) Upsert(user data.User) error {
+	if user.Phone != nil && *user.Phone == "" {
+		user.Phone = nil
+	}
+	if user.Username != nil && *user.Username == "" {
+		user.Username = nil
+	}
+
 	clauses := structs.Map(user)
 
-	stmt := "ON CONFLICT (telegram_id) DO UPDATE SET created_at = CURRENT_TIMESTAMP"
+	updateQuery := sq.Update(" ").
+		Set("created_at", time.Now())
+
 	if user.Id != nil {
-		stmt = fmt.Sprintf("ON CONFLICT (gitlab_id) DO UPDATE SET created_at = CURRENT_TIMESTAMP, id = %d", *user.Id)
+		updateQuery = updateQuery.Set("id", *user.Id)
 	}
-	query := sq.Insert(usersTableName).SetMap(clauses).Suffix(stmt)
+
+	updateStmt, args := updateQuery.MustSql()
+
+	query := sq.Insert(usersTableName).SetMap(clauses).Suffix("ON CONFLICT (telegram_id) DO "+updateStmt, args...)
 
 	return q.db.Exec(query)
 }

@@ -10,6 +10,8 @@ type RemoveUser struct {
 	Action string `json:"action"`
 	// link where module has to add user
 	Link string `json:"link"`
-	// user's username from gitlab
-	Username string `json:"username"`
+	// phone from telegram
+	Phone *string `json:"phone,omitempty"`
+	// user's username from telegram
+	Username *string `json:"username,omitempty"`
 }

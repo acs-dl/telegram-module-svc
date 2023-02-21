@@ -30,8 +30,8 @@ type Users interface {
 
 type User struct {
 	Id         *int64    `json:"-" db:"id" structs:"id,omitempty"`
-	Username   string    `json:"username" db:"username" structs:"username"`
-	Phone      string    `json:"phone" db:"phone" structs:"phone"`
+	Username   *string   `json:"username" db:"username" structs:"username,omitempty"`
+	Phone      *string   `json:"phone" db:"phone" structs:"phone,omitempty"`
 	FirstName  string    `json:"first_name" db:"first_name" structs:"first_name"`
 	LastName   string    `json:"last_name" db:"last_name" structs:"last_name"`
 	TelegramId int64     `json:"telegram_id" db:"telegram_id" structs:"telegram_id"`

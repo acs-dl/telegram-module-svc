@@ -39,15 +39,9 @@ func (t *tg) addUserFlow(username, phone *string, title string) error {
 		return err
 	}
 
-	var inputUser *telegram.InputUserObj
-	if username != nil {
-		inputUser, err = t.getUserByUsername(*username)
-	}
-	if phone != nil {
-		inputUser, err = t.getUserByPhone(*phone)
-	}
+	inputUser, err := t.getInputUser(username, phone)
 	if err != nil {
-		t.log.WithError(err).Errorf("failed to get user")
+		t.log.WithError(err).Errorf("failed to get input user")
 		return err
 	}
 

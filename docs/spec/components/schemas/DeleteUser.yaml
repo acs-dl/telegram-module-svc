@@ -1,7 +1,6 @@
 type: object
 required:
   - action
-  - username
 properties:
   action:
     type: string
@@ -9,5 +8,9 @@ properties:
     example: "delete_user"
   username:
     type: string
-    description: user's username from gitlab
+    description: user's username from telegram
     example: "slandymani"
+  phone:
+    type: string
+    description: phone from telegram
+    example: "380..."

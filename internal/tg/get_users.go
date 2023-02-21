@@ -113,8 +113,8 @@ func (t *tg) getAllUsersFromChat(chatId int32) ([]data.User, error) {
 	for i := range fullChat.Users {
 		tgUser := fullChat.Users[i].(*telegram.UserObj)
 		users = append(users, data.User{
-			Username:    tgUser.Username,
-			Phone:       tgUser.Phone,
+			Username:    &tgUser.Username,
+			Phone:       &tgUser.Phone,
 			FirstName:   tgUser.FirstName,
 			LastName:    tgUser.LastName,
 			TelegramId:  int64(tgUser.ID),
@@ -183,8 +183,8 @@ func (t *tg) getAllUsersFromChannel(id int32, hashID *int64) ([]data.User, error
 		for i := range participantsObject.Users {
 			tgUser := participantsObject.Users[i].(*telegram.UserObj)
 			dbUsers = append(dbUsers, data.User{
-				Username:    tgUser.Username,
-				Phone:       tgUser.Phone,
+				Username:    &tgUser.Username,
+				Phone:       &tgUser.Phone,
 				FirstName:   tgUser.FirstName,
 				LastName:    tgUser.LastName,
 				TelegramId:  int64(tgUser.ID),

@@ -68,8 +68,8 @@ func (t *tg) searchUsersByPhone(phone string, amount int64) ([]data.User, error)
 	for i, user := range imported.Users {
 		tgUser := user.(*telegram.UserObj)
 		users = append(users, data.User{
-			Username:   tgUser.Username,
-			Phone:      tgUser.Phone,
+			Username:   &tgUser.Username,
+			Phone:      &tgUser.Phone,
 			FirstName:  tgUser.FirstName,
 			LastName:   tgUser.LastName,
 			TelegramId: int64(tgUser.ID),
@@ -96,8 +96,8 @@ func (t *tg) searchUsersByUsername(username string, amount int64) ([]data.User, 
 	for _, user := range search.Users {
 		tgUser := user.(*telegram.UserObj)
 		users = append(users, data.User{
-			Username:   tgUser.Username,
-			Phone:      tgUser.Phone,
+			Username:   &tgUser.Username,
+			Phone:      &tgUser.Phone,
 			FirstName:  tgUser.FirstName,
 			LastName:   tgUser.LastName,
 			TelegramId: int64(tgUser.ID),
