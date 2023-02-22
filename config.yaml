@@ -29,10 +29,11 @@ jwt:
   access_life: 10m5s
 
 registrator:
-  outer_url: "http://localhost:8000/integrations/orchestrator/modules" #configure MODULE outer endpoint
-  inner_url: "http://localhost:9000/integrations/telegram" #configure MODULE inner endpoint
-  endpoint: "telegram" #configure MODULE endpoint
-  topic: "telegram" #configure MODULE topic
+  outer_url: "http://localhost:8000/integrations/orchestrator/modules" #endpoint to register MODULE
+  inner_url: "http://localhost:9000/integrations/telegram" #endpoint to MODULE itself
+  topic: "telegram" #MODULE topic
+  title: "Telegram" #MODULE title
+  prefix: "+"
 
 cop:
   disabled: true

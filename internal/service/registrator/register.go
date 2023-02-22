@@ -4,27 +4,30 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"gitlab.com/distributed_lab/acs/telegram-module/internal/config"
 	"gitlab.com/distributed_lab/acs/telegram-module/resources"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 	"net/http"
 )
 
-func RegisterModule(name, endpoint, innerEndpoint, outerEndpoint string) error {
+func RegisterModule(name string, cfg config.RegistratorConfig) error {
 	request := struct {
 		Data resources.Module `json:"data"`
 	}{
 		Data: resources.Module{
 			Attributes: resources.ModuleAttributes{
-				Name:     name,
-				Endpoint: endpoint,
-				Link:     innerEndpoint,
+				Name:   name,
+				Topic:  cfg.Topic,
+				Link:   cfg.InnerUrl,
+				Title:  cfg.Title,
+				Prefix: cfg.Prefix,
 			},
 		},
 	}
 
 	jsonBody, _ := json.Marshal(request)
 
-	req, err := http.NewRequest(http.MethodPost, outerEndpoint, bytes.NewReader(jsonBody))
+	req, err := http.NewRequest(http.MethodPost, cfg.OuterUrl, bytes.NewReader(jsonBody))
 	if err != nil {
 		return errors.Wrap(err, "couldn't create request")
 	}

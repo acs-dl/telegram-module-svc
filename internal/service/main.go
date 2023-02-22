@@ -24,7 +24,7 @@ var availableServices = map[string]types.Runner{
 func Run(cfg config.Config) {
 	// module registration before starting all services
 	regCfg := cfg.Registrator()
-	if err := registrator.RegisterModule(data.ModuleName, regCfg.Endpoint, regCfg.InnerUrl, regCfg.OuterUrl); err != nil {
+	if err := registrator.RegisterModule(data.ModuleName, regCfg); err != nil {
 		panic(err)
 	}
 
