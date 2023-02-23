@@ -71,6 +71,14 @@ func (p *processor) handleRemoveUserAction(msg data.ModulePayload) error {
 				p.log.WithError(err).Errorf("failed to delete user by telegram id `%d` for message action with id `%s`", user.TelegramId, msg.RequestId)
 				return errors.Wrap(err, "failed to delete user")
 			}
+
+			if dbUser.Id == nil {
+				err = p.sendDeleteUser(msg.RequestId, *dbUser)
+				if err != nil {
+					p.log.WithError(err).Errorf("failed to publish delete user for message action with id `%s`", msg.RequestId)
+					return errors.Wrap(err, "failed to publish delete user")
+				}
+			}
 		}
 
 		return nil

@@ -14,6 +14,7 @@ type Users interface {
 	Select() ([]User, error)
 	Get() (*User, error)
 
+	FilterByTime(time time.Time) Users
 	FilterById(id *int64) Users
 	FilterByTelegramIds(telegramIds ...int64) Users
 	FilterByUsernames(usernames ...string) Users
@@ -37,6 +38,17 @@ type User struct {
 	TelegramId int64     `json:"telegram_id" db:"telegram_id" structs:"telegram_id"`
 	AccessHash int64     `json:"access_hash" db:"access_hash" structs:"access_hash"`
 	CreatedAt  time.Time `json:"created_at" db:"created_at" structs:"created_at"`
+	Module     string    `json:"module" db:"-" structs:"-"`
 	// fields to create permission
 	AccessLevel string `json:"-" db:"-" structs:"-"`
+}
+
+type UnverifiedUser struct {
+	CreatedAt time.Time `json:"created_at"`
+	Module    string    `json:"module"`
+	ModuleId  int64     `json:"module_id"`
+	Email     *string   `json:"email,omitempty"`
+	Name      *string   `json:"name,omitempty"`
+	Phone     *string   `json:"phone,omitempty"`
+	Username  *string   `json:"username,omitempty"`
 }

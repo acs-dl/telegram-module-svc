@@ -83,3 +83,13 @@ func (s *Sender) buildResponse(response data.Response) *message.Message {
 		Payload:  marshaled,
 	}
 }
+
+func (s *Sender) SendMessageToCustomChannel(topic string, msg *message.Message) error {
+	err := (*s.publisher).Publish(topic, msg)
+	if err != nil {
+		s.log.WithError(err).Errorf("failed to send msg `%s to `%s`", msg.UUID, topic)
+		return errors.Wrap(err, "failed to send msg: "+msg.UUID)
+	}
+
+	return nil
+}

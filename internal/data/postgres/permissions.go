@@ -59,7 +59,7 @@ func (q *PermissionsQ) Select() ([]data.Permission, error) {
 	var result []data.Permission
 
 	err := q.db.Select(&result, q.sql)
-	fmt.Println(q.sql.MustSql())
+
 	return result, err
 }
 

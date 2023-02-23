@@ -55,7 +55,7 @@ func (q *UsersQ) Upsert(user data.User) error {
 	clauses := structs.Map(user)
 
 	updateQuery := sq.Update(" ").
-		Set("created_at", time.Now())
+		Set("created_at", user.CreatedAt)
 
 	if user.Id != nil {
 		updateQuery = updateQuery.Set("id", *user.Id)
@@ -117,6 +117,12 @@ func (q *UsersQ) Select() ([]data.User, error) {
 	return result, err
 }
 
+func (q *UsersQ) FilterByTime(time time.Time) data.Users {
+	q.sql = q.sql.Where(sq.Gt{usersTableName + ".created_at": time})
+
+	return q
+}
+
 func (q *UsersQ) FilterById(id *int64) data.Users {
 	stmt := sq.Eq{usersTableName + ".id": id}
 
@@ -171,7 +177,7 @@ func (q *UsersQ) GetTotalCount() (int64, error) {
 }
 
 func (q *UsersQ) ResetFilters() data.Users {
-	q.sql = selectedResponsesTable
+	q.sql = selectedUsersTable
 
 	return q
 }
