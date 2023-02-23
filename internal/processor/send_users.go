@@ -21,16 +21,8 @@ func (p *processor) sendUsers(uuid string, borderTime time.Time) error {
 		if users[i].Id != nil {
 			continue
 		}
-		name := fmt.Sprintf("%s %s", users[i].FirstName, users[i].LastName)
-		unverifiedUsers = append(unverifiedUsers, data.UnverifiedUser{
-			CreatedAt: users[i].CreatedAt,
-			Module:    data.ModuleName,
-			ModuleId:  users[i].TelegramId,
-			Email:     nil,
-			Name:      &name,
-			Phone:     users[i].Phone,
-			Username:  users[i].Username,
-		})
+
+		unverifiedUsers = append(unverifiedUsers, createUnverifiedUserFromModuleUser(users[i]))
 	}
 
 	err = p.sender.SendMessageToCustomChannel("unverified-svc", p.buildUnverifiedUserListMessage(uuid, data.UnverifiedPayload{
@@ -48,16 +40,8 @@ func (p *processor) sendUsers(uuid string, borderTime time.Time) error {
 
 func (p *processor) sendDeleteUser(uuid string, user data.User) error {
 	unverifiedUsers := make([]data.UnverifiedUser, 0)
-	name := fmt.Sprintf("%s %s", user.FirstName, user.LastName)
-	unverifiedUsers = append(unverifiedUsers, data.UnverifiedUser{
-		CreatedAt: user.CreatedAt,
-		Module:    data.ModuleName,
-		ModuleId:  user.TelegramId,
-		Email:     nil,
-		Name:      &name,
-		Phone:     user.Phone,
-		Username:  user.Username,
-	})
+
+	unverifiedUsers = append(unverifiedUsers, createUnverifiedUserFromModuleUser(user))
 
 	err := p.sender.SendMessageToCustomChannel("unverified-svc", p.buildUnverifiedUserListMessage(uuid, data.UnverifiedPayload{
 		Action: DeleteUsersAction,
@@ -82,5 +66,18 @@ func (p *processor) buildUnverifiedUserListMessage(uuid string, unverifiedPayloa
 		UUID:     uuid,
 		Metadata: nil,
 		Payload:  marshaled,
+	}
+}
+
+func createUnverifiedUserFromModuleUser(user data.User) data.UnverifiedUser {
+	name := fmt.Sprintf("%s %s", user.FirstName, user.LastName)
+	return data.UnverifiedUser{
+		CreatedAt: user.CreatedAt,
+		Module:    data.ModuleName,
+		ModuleId:  user.TelegramId,
+		Email:     nil,
+		Name:      &name,
+		Phone:     user.Phone,
+		Username:  user.Username,
 	}
 }
