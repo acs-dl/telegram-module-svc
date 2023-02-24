@@ -54,14 +54,13 @@ func (q *UsersQ) Upsert(user data.User) error {
 
 	clauses := structs.Map(user)
 
-	updateQuery := sq.Update(" ").
-		Set("created_at", user.CreatedAt)
+	updateStmt := "NOTHING"
+	var args []interface{}
 
 	if user.Id != nil {
-		updateQuery = updateQuery.Set("id", *user.Id)
+		updateQuery := sq.Update(" ").Set("id", *user.Id)
+		updateStmt, args = updateQuery.MustSql()
 	}
-
-	updateStmt, args := updateQuery.MustSql()
 
 	query := sq.Insert(usersTableName).SetMap(clauses).Suffix("ON CONFLICT (telegram_id) DO "+updateStmt, args...)
 

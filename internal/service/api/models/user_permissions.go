@@ -17,8 +17,8 @@ func NewUserPermissionModel(permission data.Permission, counter int) resources.U
 			Phone:    permission.Phone,
 			ModuleId: permission.User.TelegramId,
 			UserId:   permission.Id,
-			Level:    1,
 			Link:     permission.Link,
+			Path:     permission.Link,
 			AccessLevel: resources.AccessLevel{
 				Name:  data.Roles[permission.AccessLevel],
 				Value: permission.AccessLevel,
