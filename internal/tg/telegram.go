@@ -36,10 +36,6 @@ func NewTg(cfg *config.TelegramCfg, log *logan.Entry) TelegramClient {
 		panic(errors.Wrap(err, "failed to get current directory path"))
 	}
 
-	if err != nil {
-		log.WithError(err).Errorf("failed to get `telegram-module` path")
-		panic(errors.Wrap(err, "failed to get `telegram-module` path"))
-	}
 	sessionFile := filepath.Join(currentDir, "session.json")
 	publicKeys := filepath.Join(currentDir, "tg_public_keys.pem")
 

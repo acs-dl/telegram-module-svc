@@ -46,7 +46,7 @@ type User struct {
 type UnverifiedUser struct {
 	CreatedAt time.Time `json:"created_at"`
 	Module    string    `json:"module"`
-	ModuleId  int64     `json:"module_id"`
+	ModuleId  string    `json:"module_id"`
 	Email     *string   `json:"email,omitempty"`
 	Name      *string   `json:"name,omitempty"`
 	Phone     *string   `json:"phone,omitempty"`

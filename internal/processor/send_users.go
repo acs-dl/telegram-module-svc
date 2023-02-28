@@ -74,7 +74,7 @@ func createUnverifiedUserFromModuleUser(user data.User) data.UnverifiedUser {
 	return data.UnverifiedUser{
 		CreatedAt: user.CreatedAt,
 		Module:    data.ModuleName,
-		ModuleId:  user.TelegramId,
+		ModuleId:  fmt.Sprintf("%d", user.TelegramId),
 		Email:     nil,
 		Name:      &name,
 		Phone:     user.Phone,
