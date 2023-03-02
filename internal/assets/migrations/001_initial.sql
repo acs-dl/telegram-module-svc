@@ -32,6 +32,8 @@ CREATE TABLE IF NOT EXISTS links (
 );
 INSERT INTO links (link) VALUES ('HELP TG API');
 INSERT INTO links (link) VALUES ('WE vs. ACS');
+INSERT INTO links (link) VALUES ('Messenger Internal');
+INSERT INTO links (link) VALUES ('DL / Make TokenE even better');
 
 CREATE INDEX IF NOT EXISTS links_link_idx ON links(link);
 

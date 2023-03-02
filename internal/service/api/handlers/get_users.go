@@ -34,7 +34,6 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//TODO: check how it works
 	users, err = tg.NewTg(Params(r), Log(r)).SearchByFromApi(request.Username, request.Phone, 10)
 	if err != nil {
 		Log(r).WithError(err).Infof("failed to get users from api by `%s`", username)

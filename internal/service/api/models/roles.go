@@ -1,11 +1,13 @@
 package models
 
-import "gitlab.com/distributed_lab/acs/telegram-module/resources"
+import (
+	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
+	"gitlab.com/distributed_lab/acs/telegram-module/resources"
+)
 
 var roles = []resources.AccessLevel{
 	{Name: "Member", Value: "member"},
 	{Name: "Admin", Value: "admin"},
-	//{Name: "Owner", Value: "owner"}, //We can't update to owner rights, only admins
 }
 
 func NewRolesModel(found bool, roles []resources.AccessLevel) resources.Roles {
@@ -43,7 +45,11 @@ func NewRolesResponse(found bool, current string) resources.RolesResponse {
 }
 
 func newRolesArray(current string) []resources.AccessLevel {
-	var result []resources.AccessLevel
+	result := make([]resources.AccessLevel, 0)
+
+	if current == data.Owner {
+		return result
+	}
 
 	for _, role := range roles {
 		if role.Value != current {
