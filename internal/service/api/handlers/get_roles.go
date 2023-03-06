@@ -38,22 +38,18 @@ func GetRoles(w http.ResponseWriter, r *http.Request) {
 		Log(r).WithError(err).Infof("failed to get user with `%s` username and `%s` phone", username, phone)
 		ape.RenderErr(w, problems.InternalError())
 	}
-	if user == nil {
-		Log(r).WithError(err).Infof("no user was found with `%s` username and `%s` phone", username, phone)
-		ape.Render(w, models.NewRolesResponse(false, ""))
-		return
-	}
+	if user != nil {
+		permission, err := PermissionsQ(r).FilterByTelegramIds(user.TelegramId).FilterByLinks(*request.Link).Get()
+		if err != nil {
+			Log(r).WithError(err).Infof("failed to get permission from `%s` to `%s`/`%s`", *request.Link, username, phone)
+			ape.RenderErr(w, problems.BadRequest(err)...)
+			return
+		}
 
-	permission, err := PermissionsQ(r).FilterByTelegramIds(user.TelegramId).FilterByLinks(*request.Link).Get()
-	if err != nil {
-		Log(r).WithError(err).Infof("failed to get permission from `%s` to `%s`/`%s`", *request.Link, username, phone)
-		ape.RenderErr(w, problems.BadRequest(err)...)
-		return
-	}
-
-	if permission != nil {
-		ape.Render(w, models.NewRolesResponse(true, permission.AccessLevel))
-		return
+		if permission != nil {
+			ape.Render(w, models.NewRolesResponse(true, permission.AccessLevel))
+			return
+		}
 	}
 
 	chatUser, err := tg.NewTg(Params(r), Log(r)).GetChatUserFromApi(request.Username, request.Phone, *request.Link)
