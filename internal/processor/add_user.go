@@ -83,6 +83,12 @@ func (p *processor) handleAddUserAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to publish users")
 	}
 
+	p.resetFilters()
 	p.log.Infof("finish handle message action with id `%s`", msg.RequestId)
 	return nil
+}
+
+func (p *processor) resetFilters() {
+	p.usersQ.ResetFilters()
+	p.permissionsQ.ResetFilters()
 }

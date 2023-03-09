@@ -34,6 +34,7 @@ func (p *processor) sendUsers(uuid string, borderTime time.Time) error {
 		return errors.Wrap(err, "failed to publish users to `unverified-svc`")
 	}
 
+	p.resetFilters()
 	p.log.Infof("successfully published users to `unverified-svc`")
 	return nil
 }
@@ -52,6 +53,7 @@ func (p *processor) sendDeleteUser(uuid string, user data.User) error {
 		return errors.Wrap(err, "failed to publish users to `unverified-svc`")
 	}
 
+	p.resetFilters()
 	p.log.Infof("successfully published users to `unverified-svc`")
 	return nil
 }
