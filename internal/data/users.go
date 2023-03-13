@@ -46,6 +46,7 @@ type User struct {
 type UnverifiedUser struct {
 	CreatedAt time.Time `json:"created_at"`
 	Module    string    `json:"module"`
+	Submodule string    `json:"submodule"`
 	ModuleId  string    `json:"module_id"`
 	Email     *string   `json:"email,omitempty"`
 	Name      *string   `json:"name,omitempty"`

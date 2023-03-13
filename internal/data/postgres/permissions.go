@@ -9,6 +9,7 @@ import (
 	"gitlab.com/distributed_lab/kit/pgdb"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 	"strings"
+	"time"
 )
 
 const permissionsTableName = "permissions"
@@ -65,6 +66,7 @@ func (q *PermissionsQ) Select() ([]data.Permission, error) {
 
 func (q *PermissionsQ) Upsert(permission data.Permission) error {
 	updateStmt, args := sq.Update(" ").
+		Set("updated_at", time.Now()).
 		Set("access_level", permission.AccessLevel).MustSql()
 
 	query := sq.Insert(permissionsTableName).SetMap(structs.Map(permission)).
@@ -132,6 +134,12 @@ func (q *PermissionsQ) Count() data.Permissions {
 	return q
 }
 
+func (q *PermissionsQ) FilterByTime(time time.Time) data.Permissions {
+	q.sql = q.sql.Where(sq.Gt{permissionsTableName + ".updated_at": time})
+
+	return q
+}
+
 func (q *PermissionsQ) GetTotalCount() (int64, error) {
 	var count int64
 	err := q.db.Get(&count, q.sql)
@@ -140,7 +148,7 @@ func (q *PermissionsQ) GetTotalCount() (int64, error) {
 }
 
 func (q *PermissionsQ) ResetFilters() data.Permissions {
-	q.sql = selectedResponsesTable
+	q.sql = sq.Select(permissionsColumns...).From(permissionsTableName)
 
 	return q
 }
