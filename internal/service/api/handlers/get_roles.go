@@ -31,6 +31,9 @@ func GetRoles(w http.ResponseWriter, r *http.Request) {
 	phone := ""
 	if request.Phone != nil {
 		phone = *request.Phone
+		if phone[0:1] == "+" {
+			phone = phone[1:]
+		}
 	}
 
 	user, err := UsersQ(r).FilterByUsername(username).FilterByPhone(phone).Get()
