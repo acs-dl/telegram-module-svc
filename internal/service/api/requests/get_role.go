@@ -1,8 +1,9 @@
 package requests
 
 import (
-	"gitlab.com/distributed_lab/urlval"
 	"net/http"
+
+	"gitlab.com/distributed_lab/urlval"
 )
 
 type GetRoleRequest struct {

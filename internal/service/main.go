@@ -2,13 +2,14 @@ package service
 
 import (
 	"context"
+	"sync"
+
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/receiver"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/sender"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/service/api"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/service/registrator"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/worker"
-	"sync"
 
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/config"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/service/types"

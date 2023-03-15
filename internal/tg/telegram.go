@@ -1,6 +1,10 @@
 package tg
 
 import (
+	"os"
+	"path/filepath"
+	"time"
+
 	pkgErrors "github.com/pkg/errors"
 	"github.com/xelaj/mtproto"
 	"github.com/xelaj/mtproto/telegram"
@@ -8,9 +12,6 @@ import (
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/distributed_lab/logan/v3/errors"
-	"os"
-	"path/filepath"
-	"time"
 )
 
 type TelegramClient interface {

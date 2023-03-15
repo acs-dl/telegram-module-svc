@@ -3,13 +3,15 @@ package postgres
 import (
 	"database/sql"
 	"fmt"
+	"strings"
+	"time"
+
 	sq "github.com/Masterminds/squirrel"
 	"github.com/fatih/structs"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
+	"gitlab.com/distributed_lab/acs/telegram-module/internal/helpers"
 	"gitlab.com/distributed_lab/kit/pgdb"
 	"gitlab.com/distributed_lab/logan/v3/errors"
-	"strings"
-	"time"
 )
 
 const permissionsTableName = "permissions"
@@ -47,7 +49,7 @@ func (q *PermissionsQ) Create(permission data.Permission) error {
 	return q.db.Exec(query)
 }
 
-func (q *PermissionsQ) Update(permission data.Permission) error {
+func (q *PermissionsQ) UpdateAccessLevel(permission data.Permission) error {
 	query := sq.Update(permissionsTableName).
 		Set("access_level", permission.AccessLevel).
 		Where(
@@ -87,17 +89,21 @@ func (q *PermissionsQ) Get() (*data.Permission, error) {
 }
 
 func (q *PermissionsQ) Delete(telegramId int64, link string) error {
-	query := sq.Delete(permissionsTableName).Where(
-		sq.Eq{"telegram_id": telegramId, "link": link})
+	var deleted []data.Response
 
-	result, err := q.db.ExecWithResult(query)
+	query := sq.Delete(permissionsTableName).
+		Where(sq.Eq{
+			"telegram_id": telegramId,
+			"link":        link,
+		}).
+		Suffix("RETURNING *")
+
+	err := q.db.Select(&deleted, query)
 	if err != nil {
 		return err
 	}
-
-	affectedRows, _ := result.RowsAffected()
-	if affectedRows == 0 {
-		return errors.Errorf("no permission with such data `%d` `%s`", telegramId, link)
+	if len(deleted) == 0 {
+		return errors.Errorf("no rows with `%d` telegram id", telegramId)
 	}
 
 	return nil
@@ -147,12 +153,6 @@ func (q *PermissionsQ) GetTotalCount() (int64, error) {
 	return count, err
 }
 
-func (q *PermissionsQ) ResetFilters() data.Permissions {
-	q.sql = sq.Select(permissionsColumns...).From(permissionsTableName)
-
-	return q
-}
-
 func (q *PermissionsQ) Page(pageParams pgdb.OffsetPageParams) data.Permissions {
 	q.sql = pageParams.ApplyTo(q.sql, "link")
 
@@ -160,11 +160,11 @@ func (q *PermissionsQ) Page(pageParams pgdb.OffsetPageParams) data.Permissions {
 }
 
 func (q *PermissionsQ) WithUsers() data.Permissions {
-	q.sql = sq.Select().Columns(removeDuplicateColumn(append(permissionsColumns, usersColumns...))...).
+	q.sql = sq.Select().Columns(helpers.RemoveDuplicateColumn(append(permissionsColumns, usersColumns...))...).
 		From(permissionsTableName).
 		LeftJoin(fmt.Sprint(usersTableName, " ON ", usersTableName, ".telegram_id = ", permissionsTableName, ".telegram_id")).
 		Where(sq.NotEq{permissionsTableName + ".request_id": nil}).
-		GroupBy(removeDuplicateColumn(append(permissionsColumns, usersColumns...))...)
+		GroupBy(helpers.RemoveDuplicateColumn(append(permissionsColumns, usersColumns...))...)
 
 	return q
 }
@@ -175,27 +175,6 @@ func (q *PermissionsQ) CountWithUsers() data.Permissions {
 		Where(sq.NotEq{permissionsTableName + ".request_id": nil})
 
 	return q
-}
-
-func removeDuplicateColumn(arr []string) []string {
-	allKeys := make(map[string]bool)
-	var list []string
-
-	for i := range arr {
-		splittedColumName := strings.Split(arr[i], ".")
-		if len(splittedColumName) != 2 {
-			continue
-		}
-
-		columnName := splittedColumName[1] // [0] is table name
-
-		if _, value := allKeys[columnName]; !value {
-			allKeys[columnName] = true
-			list = append(list, arr[i])
-		}
-	}
-
-	return list
 }
 
 func (q *PermissionsQ) FilterByUserIds(userIds ...int64) data.Permissions {

@@ -9,14 +9,13 @@ import (
 // using ape package (https://gitlab.com/distributed_lab/ape).
 // Mostly useful when have a need to render multiple errors:
 //
-// 	errs := errBadRequest{}
-//  for cond {
-// 		if cond {
-//			errs["k"] = errors.New("something wrong with field 'k'")
+//		errs := errBadRequest{}
+//	 for cond {
+//			if cond {
+//				errs["k"] = errors.New("something wrong with field 'k'")
+//			}
 //		}
-//	}
-// 	return errs.Filter()
-//
+//		return errs.Filter()
 type errBadRequest map[string]error
 
 // Error returns a concatenated errors in string format.

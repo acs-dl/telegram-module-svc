@@ -1,11 +1,12 @@
 package processor
 
 import (
+	"strconv"
+	"time"
+
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 	"gitlab.com/distributed_lab/logan/v3/errors"
-	"strconv"
-	"time"
 )
 
 func (p *processor) validateAddUser(msg data.ModulePayload) error {
@@ -89,6 +90,6 @@ func (p *processor) handleAddUserAction(msg data.ModulePayload) error {
 }
 
 func (p *processor) resetFilters() {
-	p.usersQ.ResetFilters()
-	p.permissionsQ.ResetFilters()
+	p.usersQ = p.usersQ.New()
+	p.permissionsQ = p.permissionsQ.New()
 }

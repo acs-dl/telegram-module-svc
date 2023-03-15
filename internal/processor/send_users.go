@@ -3,6 +3,7 @@ package processor
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/ThreeDotsLabs/watermill/message"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 	"gitlab.com/distributed_lab/logan/v3/errors"

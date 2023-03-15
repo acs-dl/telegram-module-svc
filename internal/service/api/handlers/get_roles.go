@@ -1,13 +1,14 @@
 package handlers
 
 import (
+	"net/http"
+
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/service/api/models"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/service/api/requests"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/tg"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
-	"net/http"
 )
 
 func GetRoles(w http.ResponseWriter, r *http.Request) {

@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+
 	auth "gitlab.com/distributed_lab/acs/auth/middlewares"
 
 	"github.com/go-chi/chi"

@@ -1,10 +1,11 @@
 package processor
 
 import (
+	"time"
+
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 	"gitlab.com/distributed_lab/logan/v3/errors"
-	"time"
 )
 
 func (p *processor) validateGetUsers(msg data.ModulePayload) error {
