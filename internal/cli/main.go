@@ -38,7 +38,6 @@ func Run(args []string) bool {
 		syscall.SIGTERM,
 		syscall.SIGQUIT)
 
-	signal.Notify(signalChannel, os.Interrupt)
 	go func() {
 		sig := <-signalChannel
 		log.Infof("service was interrupted by signal `%s`", sig.String())
