@@ -7,5 +7,5 @@ import (
 )
 
 func Run(ctx context.Context, cfg config.Config) {
-	NewReceiver(cfg).Run(ctx)
+	NewReceiver(cfg, ctx).Run(ctx)
 }

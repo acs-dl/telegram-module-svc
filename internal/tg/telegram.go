@@ -104,6 +104,16 @@ func NewTg(cfg *config.TelegramCfg, log *logan.Entry) TelegramClient {
 		code,
 	)
 	if err == nil {
+		isCreated, err := checkIfActiveSessionCreated(client, log)
+		if err != nil {
+			log.WithError(err).Errorf("failed to check if active session created")
+			panic(errors.Wrap(err, "failed to check if active session created"))
+		}
+		if !isCreated {
+			log.Errorf("active session wasn't created")
+			panic(errors.Errorf("active session wasn't created"))
+		}
+
 		log.Infof("Success! You've signed in!")
 		return &tg{
 			client: client,
@@ -141,8 +151,35 @@ func NewTg(cfg *config.TelegramCfg, log *logan.Entry) TelegramClient {
 	}
 
 	log.Infof("Success! You've signed in!")
+
+	isCreated, err := checkIfActiveSessionCreated(client, log)
+	if err != nil {
+		log.WithError(err).Errorf("failed to check if active session created")
+		panic(errors.Wrap(err, "failed to check if active session created"))
+	}
+	if !isCreated {
+		log.Errorf("active session wasn't created")
+		panic(errors.Errorf("active session wasn't created"))
+	}
+
 	return &tg{
 		client: client,
 		log:    log,
 	}
+}
+
+func checkIfActiveSessionCreated(client *telegram.Client, log *logan.Entry) (bool, error) {
+	for i := 0; i < 5; i++ {
+		isRegistered, err := IsSessionRegistered(client)
+		if err != nil {
+			return false, err
+		}
+		if isRegistered {
+			return isRegistered, nil
+		}
+		log.Warnf("active session wasn't created, wait a minute")
+		time.Sleep(time.Minute)
+	}
+
+	return false, nil
 }

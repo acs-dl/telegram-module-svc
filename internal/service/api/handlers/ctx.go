@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/config"
+	"gitlab.com/distributed_lab/acs/telegram-module/internal/tg"
 	"gitlab.com/distributed_lab/logan/v3"
 
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
@@ -18,7 +19,7 @@ const (
 	usersCtxKey
 	linksCtxKey
 	paramsCtxKey
-	subsCtxKey
+	tgCtxKey
 )
 
 func CtxLog(entry *logan.Entry) func(context.Context) context.Context {
@@ -69,4 +70,13 @@ func CtxLinksQ(entry data.Links) func(context.Context) context.Context {
 	return func(ctx context.Context) context.Context {
 		return context.WithValue(ctx, linksCtxKey, entry)
 	}
+}
+
+func TelegramClient(ctx context.Context) tg.TelegramClient {
+	return ctx.Value(tgCtxKey).(tg.TelegramClient)
+}
+
+func CtxTelegramClient(entry tg.TelegramClient, ctx context.Context) context.Context {
+	return context.WithValue(ctx, tgCtxKey, entry)
+
 }

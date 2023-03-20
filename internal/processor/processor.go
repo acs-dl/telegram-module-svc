@@ -1,6 +1,7 @@
 package processor
 
 import (
+	"context"
 	"fmt"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
@@ -9,6 +10,7 @@ import (
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data/manager"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data/postgres"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/sender"
+	"gitlab.com/distributed_lab/acs/telegram-module/internal/service/api/handlers"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/tg"
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/distributed_lab/logan/v3/errors"
@@ -51,10 +53,10 @@ var handleActions = map[string]func(proc *processor, msg data.ModulePayload) err
 	DeleteUserAction: (*processor).handleDeleteUserAction,
 }
 
-func NewProcessor(cfg config.Config) Processor {
+func NewProcessor(cfg config.Config, ctx context.Context) Processor {
 	return &processor{
 		log:            cfg.Log().WithField("service", serviceName),
-		telegramClient: tg.NewTg(cfg.Telegram(), cfg.Log()),
+		telegramClient: handlers.TelegramClient(ctx),
 		permissionsQ:   postgres.NewPermissionsQ(cfg.DB()),
 		usersQ:         postgres.NewUsersQ(cfg.DB()),
 		managerQ:       manager.NewManager(cfg.DB()),

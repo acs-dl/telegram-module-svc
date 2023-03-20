@@ -27,12 +27,12 @@ type Receiver struct {
 	responseQ  data.Responses
 }
 
-func NewReceiver(cfg config.Config) *Receiver {
+func NewReceiver(cfg config.Config, ctx context.Context) *Receiver {
 	return &Receiver{
 		subscriber: cfg.Amqp().Subscriber,
 		topic:      cfg.Amqp().Topic,
 		log:        logan.New().WithField("service", serviceName),
-		processor:  processor.NewProcessor(cfg),
+		processor:  processor.NewProcessor(cfg, ctx),
 		responseQ:  postgres.NewResponsesQ(cfg.DB()),
 	}
 }
