@@ -574,9 +574,7 @@ func URLQueryEscaper(args ...interface{}) string {
 }
 
 // evalArgs formats the list of arguments into a string. It is therefore equivalent to
-//
 //	fmt.Sprint(args...)
-//
 // except that each argument is indirected (if a pointer), as required,
 // using the same rules as the default string evaluation during template
 // execution.

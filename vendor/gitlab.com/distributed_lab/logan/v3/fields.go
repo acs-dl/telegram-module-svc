@@ -16,9 +16,9 @@ func Field(key string, value interface{}) F {
 
 // Add tries to extract fields from `value`, if `value` implements fields.Provider interface:
 //
-//	type Provider interface {
-//		GetLoganFields() map[string]interface{}
-//	}
+//		type Provider interface {
+//			GetLoganFields() map[string]interface{}
+//		}
 //
 // And adds these fields using AddFields.
 // If `value` does not implement Provider - a single key-value pair is added.

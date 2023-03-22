@@ -2,11 +2,10 @@ package ape
 
 import (
 	"errors"
-	"net/http"
-
 	"github.com/go-chi/chi"
 	"gitlab.com/distributed_lab/ape/problems"
 	"gitlab.com/distributed_lab/logan/v3"
+	"net/http"
 )
 
 // DefaultMiddlewares provide sane defaults that should just work

@@ -13,7 +13,7 @@ import (
 	"gitlab.com/distributed_lab/logan/v3/errors"
 )
 
-// todo add base pointer types
+//todo add base pointer types
 var (
 	// BaseHooks set of default hooks for common types
 	BaseHooks = Hooks{

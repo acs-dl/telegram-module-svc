@@ -7,7 +7,7 @@ import (
 	"gitlab.com/distributed_lab/logan/v3/errors"
 )
 
-// ValidateLazyDep - goes trough all methods of the dep and tries to call them. Returns error if one of the method calls
+//ValidateLazyDep - goes trough all methods of the dep and tries to call them. Returns error if one of the method calls
 // panicked or if methods accepts any arguments.
 func ValidateLazyDep(dep interface{}) error {
 	value := reflect.ValueOf(dep)

@@ -2,13 +2,12 @@ package running
 
 import (
 	"context"
-	"net/http"
-	"sync"
-	"time"
-
 	"gitlab.com/distributed_lab/figure"
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/distributed_lab/logan/v3/errors"
+	"net/http"
+	"sync"
+	"time"
 
 	"gitlab.com/distributed_lab/kit/kv"
 )

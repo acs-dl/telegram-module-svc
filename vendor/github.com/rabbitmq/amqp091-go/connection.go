@@ -235,6 +235,7 @@ func DialConfig(url string, config Config) (*Connection, error) {
 Open accepts an already established connection, or other io.ReadWriteCloser as
 a transport.  Use this method if you have established a TLS connection or wish
 to use your own custom transport.
+
 */
 func Open(conn io.ReadWriteCloser, config Config) (*Connection, error) {
 	c := &Connection{
@@ -284,6 +285,7 @@ graceful close, no error will be sent.
 
 To reconnect after a transport or protocol error, register a listener here and
 re-run your setup process.
+
 */
 func (c *Connection) NotifyClose(receiver chan *Error) chan *Error {
 	c.m.Lock()
@@ -307,6 +309,7 @@ become free again.
 
 This optional extension is supported by the server when the
 "connection.blocked" server capability key is true.
+
 */
 func (c *Connection) NotifyBlocked(receiver chan Blocking) chan Blocking {
 	c.m.Lock()
@@ -667,6 +670,7 @@ func (c *Connection) closeChannel(ch *Channel, e *Error) {
 Channel opens a unique, concurrent server channel to process the bulk of AMQP
 messages.  Any error from methods on this receiver will render the receiver
 invalid and a new Channel should be opened.
+
 */
 func (c *Connection) Channel() (*Channel, error) {
 	return c.openChannel()
@@ -704,19 +708,16 @@ func (c *Connection) call(req message, res ...message) error {
 	// unreachable
 }
 
-// Connection          = open-Connection *use-Connection close-Connection
-// open-Connection     = C:protocol-header
-//
-//	S:START C:START-OK
-//	*challenge
-//	S:TUNE C:TUNE-OK
-//	C:OPEN S:OPEN-OK
-//
-// challenge           = S:SECURE C:SECURE-OK
-// use-Connection      = *channel
-// close-Connection    = C:CLOSE S:CLOSE-OK
-//
-//	/ S:CLOSE C:CLOSE-OK
+//    Connection          = open-Connection *use-Connection close-Connection
+//    open-Connection     = C:protocol-header
+//                          S:START C:START-OK
+//                          *challenge
+//                          S:TUNE C:TUNE-OK
+//                          C:OPEN S:OPEN-OK
+//    challenge           = S:SECURE C:SECURE-OK
+//    use-Connection      = *channel
+//    close-Connection    = C:CLOSE S:CLOSE-OK
+//                        / S:CLOSE C:CLOSE-OK
 func (c *Connection) open(config Config) error {
 	if err := c.send(&protocolHeader{}); err != nil {
 		return err

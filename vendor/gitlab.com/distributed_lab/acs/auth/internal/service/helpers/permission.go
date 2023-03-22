@@ -2,7 +2,6 @@ package helpers
 
 import (
 	"fmt"
-
 	"gitlab.com/distributed_lab/acs/auth/internal/data"
 )
 

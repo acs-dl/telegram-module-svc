@@ -35,3 +35,4 @@ func (t *incrementalTimer) next() <-chan time.Time {
 
 	return result
 }
+

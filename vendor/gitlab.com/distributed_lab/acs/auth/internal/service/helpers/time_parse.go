@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-func ParseToUnix(timeStr string) int64 {
+func ParseDurationStringToUnix(timeStr string) int64 {
 	duration, _ := time.ParseDuration(timeStr)
 	return time.Now().Add(duration).Unix()
 }

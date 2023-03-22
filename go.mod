@@ -58,7 +58,7 @@ require (
 	github.com/xelaj/errs v0.0.0-20200831133608-d1c11863e019 // indirect
 	github.com/xelaj/go-dry v0.0.0-20201104165138-61a25872c05a // indirect
 	github.com/xelaj/mtproto v1.0.0 // indirect
-	gitlab.com/distributed_lab/acs/auth v0.0.0-20230208105816-fd7463e9c9f1 // indirect
+	gitlab.com/distributed_lab/acs/auth v0.0.0-20230309115252-2c1f9e1d211a // indirect
 	gitlab.com/distributed_lab/lorem v0.2.0 // indirect
 	gitlab.com/distributed_lab/running v0.0.0-20200706131153-4af0e83eb96c // indirect
 	gitlab.com/distributed_lab/urlval v3.0.0+incompatible // indirect

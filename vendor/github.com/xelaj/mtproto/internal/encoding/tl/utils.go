@@ -30,7 +30,7 @@ func haveFlag(v any) bool {
 	return false
 }
 
-// ! слайстрикс
+//! слайстрикс
 func sliceToInterfaceSlice(in any) []any {
 	if in == nil {
 		return nil

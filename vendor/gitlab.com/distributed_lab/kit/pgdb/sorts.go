@@ -31,12 +31,10 @@ func (s Sort) order() string {
 
 // ApplyTo applies sorts to a prepared sql statement. Takes a map of <query-param>:<column> names (without minuses).
 // Like:
-//
-//		 map[string]string{}{
-//			"created_at": "books.created_at",
-//			"author.name": "authors.name",
-//	  }
-//
+// 	 map[string]string{}{
+// 		"created_at": "books.created_at",
+// 		"author.name": "authors.name",
+//   }
 // Panics if sort parameter in a slice isn't provided in "columns" map.
 func (sorts Sorts) ApplyTo(stmt squirrel.SelectBuilder, columns map[string]string) squirrel.SelectBuilder {
 	for _, sort := range sorts {

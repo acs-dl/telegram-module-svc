@@ -1,10 +1,9 @@
 package errors
 
 import (
-	"fmt"
-
 	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/logan/v3/fields"
+	"fmt"
 )
 
 const (
@@ -52,7 +51,7 @@ func WithStack(err error) error {
 // Fields can optionally be added. If provided multiple - fields will be merged.
 //
 // If err is nil, Wrap returns nil.
-func Wrap(err error, msg string, errorFields ...map[string]interface{}) error {
+func Wrap(err error, msg string, errorFields... map[string]interface{}) error {
 	wrapped := errors.Wrap(err, msg)
 	if wrapped == nil {
 		return nil
@@ -90,9 +89,9 @@ func From(err error, fields map[string]interface{}) error {
 // An error value has a cause if it implements the following
 // interface:
 //
-//	type causer interface {
-//	       Cause() error
-//	}
+//     type causer interface {
+//            Cause() error
+//     }
 //
 // If the error does not implement Cause, the original error will
 // be returned. If the error is nil, nil will be returned without further
@@ -104,9 +103,9 @@ func Cause(err error) error {
 // GetFields returns the underlying fields of the error and its nested cause-errors, if possible.
 // An error value has fields if it (or any of its nested cause) implements the following interface:
 //
-//	type fieldsProvider interface {
-//	       GetFields() F
-//	}
+//     type fieldsProvider interface {
+//            GetFields() F
+//     }
 //
 // If the error and all of its nested causes do not implement GetFields, empty fields map will
 // be returned.
@@ -169,15 +168,15 @@ func GetStack(err error) string {
 // GetErrorStack returns the stack, as a string, if one can be extracted from `err`.
 // Currently 2 interfaces of stack providing are supported:
 //
-//	type stackTraceProvider interface {
-//		StackTrace() errors.StackTrace
-//	}
+//		type stackTraceProvider interface {
+//			StackTrace() errors.StackTrace
+//		}
 //
-//	and
+//		and
 //
-//	type stackProvider interface {
-//		Stack() []byte
-//	}
+//		type stackProvider interface {
+//			Stack() []byte
+//		}
 //
 // The first one is implemented by errors from pkg/errors and
 // the second one - from go-errors.

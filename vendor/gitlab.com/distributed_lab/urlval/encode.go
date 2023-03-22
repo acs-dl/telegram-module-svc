@@ -27,7 +27,7 @@ func Encode(src interface{}) (string, error) {
 	return values.Encode(), nil
 }
 
-// MustEncode - encodes given struct with urlval tags into url query string. Panics on failure
+//MustEncode - encodes given struct with urlval tags into url query string. Panics on failure
 func MustEncode(src interface{}) string {
 	res, err := Encode(src)
 	if err != nil {

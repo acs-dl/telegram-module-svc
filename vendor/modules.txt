@@ -170,7 +170,7 @@ github.com/xelaj/mtproto/internal/utils
 github.com/xelaj/mtproto/telegram
 github.com/xelaj/mtproto/telegram/internal/calls
 github.com/xelaj/mtproto/telegram/internal/srp
-# gitlab.com/distributed_lab/acs/auth v0.0.0-20230208105816-fd7463e9c9f1
+# gitlab.com/distributed_lab/acs/auth v0.0.0-20230309115252-2c1f9e1d211a
 ## explicit; go 1.19
 gitlab.com/distributed_lab/acs/auth/internal/data
 gitlab.com/distributed_lab/acs/auth/internal/service/helpers
