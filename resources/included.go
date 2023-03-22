@@ -46,7 +46,7 @@ func (c *Included) add(include Resource) {
 	c.includes[include.GetKey()] = json.RawMessage(data)
 }
 
-// MarshalJSON - marshals include collection as array of json objects
+//MarshalJSON - marshals include collection as array of json objects
 func (c Included) MarshalJSON() ([]byte, error) {
 	uniqueEntries := make([]json.RawMessage, 0, len(c.includes))
 	for _, value := range c.includes {
@@ -56,7 +56,7 @@ func (c Included) MarshalJSON() ([]byte, error) {
 	return json.Marshal(uniqueEntries)
 }
 
-// UmarshalJSON - unmarshal array of json objects into include collection
+//UmarshalJSON - unmarshal array of json objects into include collection
 func (c *Included) UnmarshalJSON(data []byte) error {
 	var keys []Key
 	err := json.Unmarshal(data, &keys)

@@ -13,7 +13,7 @@ import (
 
 type Details json.RawMessage
 
-// UnmarshalJSON - casts data to Details
+//UnmarshalJSON - casts data to Details
 func (d *Details) UnmarshalJSON(data []byte) error {
 	if d == nil {
 		return errors.New("regources.Details: UnmarshalJSON on nil pointer")
@@ -22,7 +22,7 @@ func (d *Details) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// MarshalJSON - casts Details to []byte
+//MarshalJSON - casts Details to []byte
 func (d Details) MarshalJSON() ([]byte, error) {
 	if d == nil {
 		return []byte("null"), nil
@@ -34,7 +34,7 @@ func (d Details) String() string {
 	return string(d)
 }
 
-// Value - implements db driver method for auto marshal
+//Value - implements db driver method for auto marshal
 func (r Details) Value() (driver.Value, error) {
 	result, err := json.Marshal(r)
 	if err != nil {
@@ -44,7 +44,7 @@ func (r Details) Value() (driver.Value, error) {
 	return result, nil
 }
 
-// Scan - implements db driver method for auto unmarshal
+//Scan - implements db driver method for auto unmarshal
 func (r *Details) Scan(src interface{}) error {
 	var data []byte
 	switch rawData := src.(type) {

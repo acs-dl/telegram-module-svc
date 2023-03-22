@@ -30,6 +30,7 @@ registrator:
   topic: "telegram" #MODULE topic
   title: "Telegram" #MODULE title
   prefix: "+"
+  is_module: true
 
 cop:
   disabled: true
