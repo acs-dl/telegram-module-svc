@@ -46,6 +46,18 @@ func (p *processor) handleVerifyUserAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to upsert user in db")
 	}
 
+	err = p.sendUpdateUserTelegram(msg.RequestId, data.ModulePayload{
+		RequestId: msg.RequestId,
+		UserId:    msg.UserId,
+		Username:  msg.Username,
+		Phone:     msg.Phone,
+		Action:    UpdateTelegramAction,
+	})
+	if err != nil {
+		p.log.WithError(err).Errorf("failed to publish users for message action with id `%s`", msg.RequestId)
+		return errors.Wrap(err, "failed to publish users")
+	}
+
 	err = p.sendDeleteUser(msg.RequestId, *user)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to publish delete user for message action with id `%s`", msg.RequestId)

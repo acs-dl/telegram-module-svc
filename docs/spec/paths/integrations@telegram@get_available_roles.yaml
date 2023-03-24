@@ -6,6 +6,8 @@ get:
   description: Endpoint for getting all available roles (permission to set) from telegram module to pass them in FE.
   parameters:
     - $ref: '#/components/parameters/linkParam'
+    - $ref: '#/components/parameters/phoneParam'
+    - $ref: '#/components/parameters/usernameParam'
   responses:
     '200':
       description: Success
