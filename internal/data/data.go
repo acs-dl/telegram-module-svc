@@ -6,7 +6,7 @@ import (
 
 const (
 	ModuleName        = "telegram"
-	UnverifiedService = "unverified"
+	UnverifiedService = "unverified-svc"
 	IdentityService   = "identity"
 )
 
