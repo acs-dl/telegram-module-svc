@@ -90,7 +90,7 @@ func (p *processor) handleAddUserAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to publish users")
 	}
 
-	err = p.sendDeleteUser(msg.RequestId, *user)
+	err = p.SendDeleteUser(msg.RequestId, *user)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to publish users for message action with id `%s`", msg.RequestId)
 		return errors.Wrap(err, "failed to publish users")

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/fatih/structs"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
@@ -55,13 +56,14 @@ func (q *UsersQ) Upsert(user data.User) error {
 
 	clauses := structs.Map(user)
 
-	updateStmt := "NOTHING"
-	var args []interface{}
+	updateQuery := sq.Update(" ").
+		Set("updated_at", time.Now())
 
 	if user.Id != nil {
-		updateQuery := sq.Update(" ").Set("id", *user.Id)
-		updateStmt, args = updateQuery.MustSql()
+		updateQuery = updateQuery.Set("id", *user.Id)
 	}
+
+	updateStmt, args := updateQuery.MustSql()
 
 	query := sq.Insert(usersTableName).SetMap(clauses).Suffix("ON CONFLICT (telegram_id) DO "+updateStmt, args...)
 
@@ -69,7 +71,7 @@ func (q *UsersQ) Upsert(user data.User) error {
 }
 
 func (q *UsersQ) Delete(telegramId int64) error {
-	var deleted []data.Response
+	var deleted []data.User
 
 	query := sq.Delete(usersTableName).
 		Where(sq.Eq{
@@ -162,4 +164,10 @@ func (q *UsersQ) GetTotalCount() (int64, error) {
 	err := q.db.Get(&count, q.sql)
 
 	return count, err
+}
+
+func (q *UsersQ) FilterByLowerTime(time time.Time) data.Users {
+	q.sql = q.sql.Where(sq.Lt{usersTableName + ".updated_at": time})
+
+	return q
 }

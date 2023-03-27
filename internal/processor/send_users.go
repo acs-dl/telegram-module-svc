@@ -18,7 +18,7 @@ func (p *processor) sendUsers(uuid string, users []data.User) error {
 
 		permission, err := p.permissionsQ.
 			FilterByTelegramIds(users[i].TelegramId).
-			FilterByTime(users[i].CreatedAt).
+			FilterByGreaterTime(users[i].CreatedAt).
 			Get()
 		if err != nil {
 			p.log.WithError(err).Errorf("failed to select permissions by date `%s`", users[i].CreatedAt.String())
@@ -52,7 +52,7 @@ func (p *processor) sendUsers(uuid string, users []data.User) error {
 	return nil
 }
 
-func (p *processor) sendDeleteUser(uuid string, user data.User) error {
+func (p *processor) SendDeleteUser(uuid string, user data.User) error {
 	unverifiedUsers := make([]data.UnverifiedUser, 0)
 
 	unverifiedUsers = append(unverifiedUsers, createUnverifiedUserFromModuleUser(user, ""))

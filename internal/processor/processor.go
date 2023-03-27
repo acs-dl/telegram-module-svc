@@ -36,6 +36,7 @@ const (
 
 type Processor interface {
 	HandleNewMessage(msg data.ModulePayload) error
+	SendDeleteUser(uuid string, user data.User) error
 }
 
 type processor struct {
