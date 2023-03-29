@@ -41,6 +41,7 @@ func GetRoles(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		Log(r).WithError(err).Infof("failed to get user with `%s` username and `%s` phone", username, phone)
 		ape.RenderErr(w, problems.InternalError())
+		return
 	}
 	if user != nil {
 		permission, err := PermissionsQ(r).FilterByTelegramIds(user.TelegramId).FilterByLinks(*request.Link).Get()
