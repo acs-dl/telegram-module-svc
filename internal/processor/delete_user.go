@@ -1,8 +1,6 @@
 package processor
 
 import (
-	"fmt"
-
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 	"gitlab.com/distributed_lab/logan/v3/errors"
@@ -30,14 +28,10 @@ func (p *processor) handleDeleteUserAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to get user from api")
 	}
 
-	dbUser, err := p.usersQ.FilterByTelegramIds(user.TelegramId).Get()
+	dbUser, err := p.getUserFromDbByTelegramId(user.TelegramId)
 	if err != nil {
-		p.log.WithError(err).Errorf("failed to get user for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "failed to get user")
-	}
-	if dbUser == nil {
-		p.log.Errorf("no such user in module for message action with id `%s`", msg.RequestId)
-		return errors.Errorf("no such user in module")
+		p.log.WithError(err).Errorf("failed to get user from db for message action with id `%s`", msg.RequestId)
+		return errors.Wrap(err, "failed to get user from")
 	}
 
 	permissions, err := p.permissionsQ.FilterByTelegramIds(user.TelegramId).Select()
@@ -73,22 +67,10 @@ func (p *processor) handleDeleteUserAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to delete user")
 	}
 
-	if dbUser.Id == nil {
-		err = p.SendDeleteUser(msg.RequestId, *dbUser)
-		if err != nil {
-			p.log.WithError(err).Errorf("failed to publish delete user for message action with id `%s`", msg.RequestId)
-			return errors.Wrap(err, "failed to publish delete user")
-		}
-	} else {
-		err = p.sendUpdateUserTelegram(msg.RequestId, data.ModulePayload{
-			RequestId: msg.RequestId,
-			UserId:    fmt.Sprintf("%d", *dbUser.Id),
-			Action:    RemoveTelegramAction,
-		})
-		if err != nil {
-			p.log.WithError(err).Errorf("failed to publish users for message action with id `%s`", msg.RequestId)
-			return errors.Wrap(err, "failed to publish users")
-		}
+	err = p.sendDeleteInUnverifiedOrUpdateInIdentity(msg.RequestId, *dbUser)
+	if err != nil {
+		p.log.WithError(err).Errorf("failed to send delete unverified or update identity for message action with id `%s`", msg.RequestId)
+		return errors.Wrap(err, "failed to send delete unverified or update identity")
 	}
 
 	p.resetFilters()

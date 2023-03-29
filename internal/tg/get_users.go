@@ -1,6 +1,7 @@
 package tg
 
 import (
+	"syscall"
 	"time"
 
 	pkgErrors "github.com/pkg/errors"
@@ -13,6 +14,12 @@ import (
 func (t *tg) GetUsersFromApi(title string) ([]data.User, error) {
 	users, err := t.getChatMembersByTitle(title)
 	if err != nil {
+		if pkgErrors.Is(err, syscall.EPIPE) {
+			cl := NewTg(t.tgCfg, t.log)
+			t.client = cl.GetClient()
+			return t.GetUsersFromApi(title)
+		}
+
 		errResponse := &mtproto.ErrResponseCode{}
 		if !pkgErrors.As(err, &errResponse) {
 			return nil, errors.Wrap(err, "failed to get chat members, some strange error")

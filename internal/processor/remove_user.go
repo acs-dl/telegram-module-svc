@@ -38,14 +38,10 @@ func (p *processor) handleRemoveUserAction(msg data.ModulePayload) error {
 		return errors.Errorf("user is not in chat")
 	}
 
-	dbUser, err := p.usersQ.FilterByTelegramIds(user.TelegramId).Get()
+	dbUser, err := p.getUserFromDbByTelegramId(user.TelegramId)
 	if err != nil {
-		p.log.WithError(err).Errorf("failed to get user for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "failed to get user")
-	}
-	if dbUser == nil {
-		p.log.Errorf("no such user in module for message action with id `%s`", msg.RequestId)
-		return errors.Errorf("no such user in module")
+		p.log.WithError(err).Errorf("failed to get user from db for message action with id `%s`", msg.RequestId)
+		return errors.Wrap(err, "failed to get user from")
 	}
 
 	err = p.telegramClient.DeleteFromChatFromApi(msg.Username, msg.Phone, msg.Link)
@@ -55,41 +51,29 @@ func (p *processor) handleRemoveUserAction(msg data.ModulePayload) error {
 	}
 
 	err = p.managerQ.Transaction(func() error {
-		err := p.permissionsQ.Delete(user.TelegramId, msg.Link)
+		err = p.permissionsQ.Delete(user.TelegramId, msg.Link)
 		if err != nil {
 			p.log.WithError(err).Errorf("failed to delete permission by telegram id `%d` for message action with id `%s`", user.TelegramId, msg.RequestId)
 			return errors.Wrap(err, "failed to delete permission")
 		}
 
-		permissions, err := p.permissionsQ.FilterByTelegramIds(user.TelegramId).Select()
+		permissionsAmount, err := p.permissionsQ.Count().FilterByTelegramIds(user.TelegramId).GetTotalCount()
 		if err != nil {
-			p.log.WithError(err).Errorf("failed to select permissions by telegram id `%d` for message action with id `%s`", user.TelegramId, msg.RequestId)
-			return errors.Wrap(err, "failed to select permissions")
+			p.log.WithError(err).Errorf("failed to get permissions amount by telegram id `%d` for message action with id `%s`", user.TelegramId, msg.RequestId)
+			return errors.Wrap(err, "failed to get permissions amount")
 		}
 
-		if len(permissions) == 0 {
+		if permissionsAmount == 0 {
 			err = p.usersQ.Delete(user.TelegramId)
 			if err != nil {
 				p.log.WithError(err).Errorf("failed to delete user by telegram id `%d` for message action with id `%s`", user.TelegramId, msg.RequestId)
 				return errors.Wrap(err, "failed to delete user")
 			}
 
-			if dbUser.Id == nil {
-				err = p.SendDeleteUser(msg.RequestId, *dbUser)
-				if err != nil {
-					p.log.WithError(err).Errorf("failed to publish delete user for message action with id `%s`", msg.RequestId)
-					return errors.Wrap(err, "failed to publish delete user")
-				}
-			} else {
-				err = p.sendUpdateUserTelegram(msg.RequestId, data.ModulePayload{
-					RequestId: msg.RequestId,
-					UserId:    fmt.Sprintf("%d", *dbUser.Id),
-					Action:    RemoveTelegramAction,
-				})
-				if err != nil {
-					p.log.WithError(err).Errorf("failed to publish users for message action with id `%s`", msg.RequestId)
-					return errors.Wrap(err, "failed to publish users")
-				}
+			err = p.sendDeleteInUnverifiedOrUpdateInIdentity(msg.RequestId, *dbUser)
+			if err != nil {
+				p.log.WithError(err).Errorf("failed to send delete unverified or update identity for message action with id `%s`", msg.RequestId)
+				return errors.Wrap(err, "failed to send delete unverified or update identity")
 			}
 		}
 
@@ -102,5 +86,25 @@ func (p *processor) handleRemoveUserAction(msg data.ModulePayload) error {
 
 	p.resetFilters()
 	p.log.Infof("finish handle message action with id `%s`", msg.RequestId)
+	return nil
+}
+
+func (p *processor) sendDeleteInUnverifiedOrUpdateInIdentity(requestId string, user data.User) error {
+	if user.Id == nil {
+		err := p.SendDeleteUser(requestId, user)
+		if err != nil {
+			return errors.Wrap(err, "failed to publish delete telegram user in unverified-svc")
+		}
+	} else {
+		err := p.sendUpdateUserTelegram(requestId, data.ModulePayload{
+			RequestId: requestId,
+			UserId:    fmt.Sprintf("%d", *user.Id),
+			Action:    RemoveTelegramAction,
+		})
+		if err != nil {
+			return errors.Wrap(err, "failed to publish update telegram user in identity-svc")
+		}
+	}
+
 	return nil
 }

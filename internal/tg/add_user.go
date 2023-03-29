@@ -2,6 +2,7 @@ package tg
 
 import (
 	"fmt"
+	"syscall"
 	"time"
 
 	pkgErrors "github.com/pkg/errors"
@@ -13,6 +14,12 @@ import (
 func (t *tg) AddUserInChatFromApi(username, phone *string, title string) error {
 	err := t.addUserFlow(username, phone, title)
 	if err != nil {
+		if pkgErrors.Is(err, syscall.EPIPE) {
+			cl := NewTg(t.tgCfg, t.log)
+			t.client = cl.GetClient()
+			return t.AddUserInChatFromApi(username, phone, title)
+		}
+
 		errResponse := &mtproto.ErrResponseCode{}
 		if !pkgErrors.As(err, &errResponse) {
 			t.log.WithError(err).Errorf("failed to add user, some strange error")

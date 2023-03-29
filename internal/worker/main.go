@@ -65,7 +65,7 @@ func (w *worker) processPermissions(_ context.Context) error {
 		w.logger.Info("no links were found")
 		return nil
 	}
-	
+
 	w.logger.Infof("found %v links", reqAmount)
 
 	for _, link := range links {

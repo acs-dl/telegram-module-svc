@@ -25,11 +25,14 @@ type TelegramClient interface {
 	AddUserInChatFromApi(username, phone *string, title string) error
 	UpdateUserInChatFromApi(username, phone *string, title string) error
 	DeleteFromChatFromApi(username, phone *string, title string) error
+
+	GetClient() *telegram.Client
 }
 
 type tg struct {
 	client *telegram.Client
 	log    *logan.Entry
+	tgCfg  *config.TelegramCfg
 }
 
 func NewTg(cfg *config.TelegramCfg, log *logan.Entry) TelegramClient {
@@ -66,6 +69,7 @@ func NewTg(cfg *config.TelegramCfg, log *logan.Entry) TelegramClient {
 		return &tg{
 			client: client,
 			log:    log,
+			tgCfg:  cfg,
 		}
 	}
 
@@ -118,6 +122,7 @@ func NewTg(cfg *config.TelegramCfg, log *logan.Entry) TelegramClient {
 		return &tg{
 			client: client,
 			log:    log,
+			tgCfg:  cfg,
 		}
 	}
 
@@ -165,6 +170,7 @@ func NewTg(cfg *config.TelegramCfg, log *logan.Entry) TelegramClient {
 	return &tg{
 		client: client,
 		log:    log,
+		tgCfg:  cfg,
 	}
 }
 

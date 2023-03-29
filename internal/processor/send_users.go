@@ -15,7 +15,6 @@ func (p *processor) sendUsers(uuid string, users []data.User) error {
 		if users[i].Id != nil {
 			continue
 		}
-
 		permission, err := p.permissionsQ.
 			FilterByTelegramIds(users[i].TelegramId).
 			FilterByGreaterTime(users[i].CreatedAt).
