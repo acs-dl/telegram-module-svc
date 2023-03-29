@@ -10,7 +10,6 @@ import (
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data/manager"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data/postgres"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/sender"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/service/api/handlers"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/tg"
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/distributed_lab/logan/v3/errors"
@@ -60,7 +59,7 @@ var handleActions = map[string]func(proc *processor, msg data.ModulePayload) err
 func NewProcessor(cfg config.Config, ctx context.Context) Processor {
 	return &processor{
 		log:            cfg.Log().WithField("service", serviceName),
-		telegramClient: handlers.TelegramClient(ctx),
+		telegramClient: tg.NewTg(cfg.Telegram(), cfg.Log()),
 		permissionsQ:   postgres.NewPermissionsQ(cfg.DB()),
 		usersQ:         postgres.NewUsersQ(cfg.DB()),
 		managerQ:       manager.NewManager(cfg.DB()),
