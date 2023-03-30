@@ -29,3 +29,7 @@ allOf:
             type: string
             description: module name
             example: "telegram"
+          submodule:
+            type: string
+            description: submodule name
+            example: "WE vs. ACS"

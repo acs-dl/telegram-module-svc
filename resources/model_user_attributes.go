@@ -15,6 +15,8 @@ type UserAttributes struct {
 	Module string `json:"module"`
 	// phone from telegram
 	Phone *string `json:"phone,omitempty"`
+	// submodule name
+	Submodule *string `json:"submodule,omitempty"`
 	// user id from identity module, if user is not verified - null
 	UserId *int64 `json:"user_id,omitempty"`
 	// username from telegram

@@ -4,11 +4,14 @@ import (
 	"fmt"
 	"net/http"
 
+	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 )
 
-func UnregisterModule(name, outerEndpoint string) error {
-	req, err := http.NewRequest(http.MethodDelete, outerEndpoint+"/"+name, nil)
+func (r *registrar) UnregisterModule() error {
+	r.logger.Infof("started unregister module `%s`", data.ModuleName)
+
+	req, err := http.NewRequest(http.MethodDelete, r.config.OuterUrl+"/"+data.ModuleName, nil)
 	if err != nil {
 		return errors.Wrap(err, "couldn't create request")
 	}
@@ -22,5 +25,6 @@ func UnregisterModule(name, outerEndpoint string) error {
 		return errors.New(fmt.Sprintf("error in response, status %s", res.Status))
 	}
 
+	r.logger.Infof("finished unregister module `%s`", data.ModuleName)
 	return nil
 }

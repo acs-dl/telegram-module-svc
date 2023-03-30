@@ -107,7 +107,7 @@ func (w *worker) removeOldUsers(borderTime time.Time) error {
 	w.logger.Infof("found `%d` users to delete", len(users))
 
 	for _, user := range users {
-		if user.Id == nil { //if unverified user we need to remove them from `unverified-svc`
+		if user.Id == nil { //if unverified user we need to remove them from `telegram-module`
 			err = w.processor.SendDeleteUser(uuid.New().String(), user)
 			if err != nil {
 				w.logger.WithError(err).Errorf("failed to publish delete user")
