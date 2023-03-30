@@ -7,9 +7,12 @@ import (
 )
 
 func (p *processor) validateDeleteUser(msg data.ModulePayload) error {
+	phoneValidationCase := validation.When(msg.Username == nil, validation.Required.Error("phone is required if username is not set"))
+	usernameValidationCase := validation.When(msg.Phone == nil, validation.Required.Error("username is required if phone is not set"))
+
 	return validation.Errors{
-		"username": validation.Validate(msg.Username, validation.Required),
-		"phone":    validation.Validate(msg.Phone, validation.Required),
+		"username": validation.Validate(msg.Username, usernameValidationCase),
+		"phone":    validation.Validate(msg.Phone, phoneValidationCase),
 	}.Filter()
 }
 
