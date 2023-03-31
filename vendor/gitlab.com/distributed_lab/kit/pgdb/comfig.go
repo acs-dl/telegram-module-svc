@@ -2,8 +2,9 @@ package pgdb
 
 import (
 	"database/sql"
-	"github.com/lib/pq"
 	"time"
+
+	"github.com/lib/pq"
 
 	"github.com/pkg/errors"
 	"gitlab.com/distributed_lab/figure"
@@ -70,7 +71,7 @@ func (d *databaser) DB() *DB {
 	}).(*DB)
 }
 
-//NewListener - returns new listener for notify events
+// NewListener - returns new listener for notify events
 func (d *databaser) NewListener() *pq.Listener {
 	config := d.readConfig()
 	listener := pq.NewListener(config.URL, config.ListenerMinRetryDuration, config.ListenerMaxRetryDuration, nil)

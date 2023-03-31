@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
+
 	"github.com/ThreeDotsLabs/watermill-amqp/v2/pkg/amqp"
 	"github.com/ThreeDotsLabs/watermill/message"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/config"
@@ -13,7 +15,6 @@ import (
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 	"gitlab.com/distributed_lab/running"
-	"time"
 )
 
 const serviceName = data.ModuleName + "-receiver"
@@ -108,9 +109,10 @@ func (r *Receiver) processMessage(msg *message.Message) error {
 	}
 
 	err = r.responseQ.Insert(data.Response{
-		ID:     msg.UUID,
-		Status: responseStatus,
-		Error:  errMsg,
+		ID:      msg.UUID,
+		Status:  responseStatus,
+		Error:   errMsg,
+		Payload: json.RawMessage(msg.Payload),
 	})
 	if err != nil {
 		r.log.WithError(err).Errorf("failed to create response", msg.UUID)

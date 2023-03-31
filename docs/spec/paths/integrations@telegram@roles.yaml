@@ -1,0 +1,21 @@
+get:
+  tags:
+    - Roles
+  summary: Get Roles
+  operationId: getRoles
+  description: Endpoint for getting all roles name and value from existing modules to show in FE.
+  responses:
+    '200':
+      description: Success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: object
+                $ref: '#/components/schemas/ModuleRoles'
+    '400':
+      description: Bad request.
+    '500':
+      description: Internal server error.

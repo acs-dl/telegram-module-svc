@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"database/sql"
+
 	sq "github.com/Masterminds/squirrel"
 	"github.com/fatih/structs"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
@@ -57,30 +58,21 @@ func (q *ResponsesQ) Get() (*data.Response, error) {
 }
 
 func (q *ResponsesQ) Delete(id string) error {
-	query := sq.Delete(responsesTableName).Where(
-		sq.Eq{"id": id})
+	var deleted []data.Response
 
-	result, err := q.db.ExecWithResult(query)
+	query := sq.Delete(responsesTableName).
+		Where(sq.Eq{
+			"id": id,
+		}).
+		Suffix("RETURNING *")
+
+	err := q.db.Select(&deleted, query)
 	if err != nil {
 		return err
 	}
-
-	affectedRows, _ := result.RowsAffected()
-	if affectedRows == 0 {
-		return errors.New("no responses with such id")
+	if len(deleted) == 0 {
+		return errors.Errorf("no rows with `%s` uuid", id)
 	}
 
 	return nil
-}
-
-func (q *ResponsesQ) FilterById(id string) data.Responses {
-	q.sql = q.sql.Where(sq.Eq{"id": id})
-
-	return q
-}
-
-func (q *ResponsesQ) ResetFilters() data.Responses {
-	q.sql = selectedResponsesTable
-
-	return q
 }

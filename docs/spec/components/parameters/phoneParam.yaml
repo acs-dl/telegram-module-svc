@@ -1,0 +1,7 @@
+in: query
+name: 'filter[phone]'
+schema:
+  type: string
+  description: >-
+    Filter by phone from telegram
+  example: "380981541122"

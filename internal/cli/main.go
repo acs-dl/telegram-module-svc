@@ -1,6 +1,10 @@
 package cli
 
 import (
+	"os"
+	"os/signal"
+	"syscall"
+
 	"github.com/alecthomas/kingpin"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/config"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
@@ -8,9 +12,6 @@ import (
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/service/registrator"
 	"gitlab.com/distributed_lab/kit/kv"
 	"gitlab.com/distributed_lab/logan/v3"
-	"os"
-	"os/signal"
-	"syscall"
 )
 
 func Run(args []string) bool {
@@ -37,7 +38,6 @@ func Run(args []string) bool {
 		syscall.SIGTERM,
 		syscall.SIGQUIT)
 
-	signal.Notify(signalChannel, os.Interrupt)
 	go func() {
 		sig := <-signalChannel
 		log.Infof("service was interrupted by signal `%s`", sig.String())

@@ -1,6 +1,10 @@
 package tg
 
 import (
+	"os"
+	"path/filepath"
+	"time"
+
 	pkgErrors "github.com/pkg/errors"
 	"github.com/xelaj/mtproto"
 	"github.com/xelaj/mtproto/telegram"
@@ -8,12 +12,16 @@ import (
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/distributed_lab/logan/v3/errors"
-	"path/filepath"
-	"time"
 )
 
 type TelegramClient interface {
 	GetUsersFromApi(title string) ([]data.User, error)
+	GetUserFromApi(username, phone *string) (*data.User, error)
+	GetChatUserFromApi(username, phone *string, title string) (*data.User, error)
+	SearchByFromApi(username, phone *string, amount int64) ([]data.User, error)
+
+	GetChatFromApi(title string) (id *int32, accessHash *int64, err error)
+
 	AddUserInChatFromApi(username, phone *string, title string) error
 	UpdateUserInChatFromApi(username, phone *string, title string) error
 	DeleteFromChatFromApi(username, phone *string, title string) error
@@ -25,11 +33,12 @@ type tg struct {
 }
 
 func NewTg(cfg *config.TelegramCfg, log *logan.Entry) TelegramClient {
-	currentDir, err := filepath.Abs("telegram-module")
+	currentDir, err := os.Getwd()
 	if err != nil {
-		log.WithError(err).Errorf("failed to get `telegram-module` path")
-		panic(errors.Wrap(err, "failed to get `telegram-module` path"))
+		log.WithError(err).Errorf("failed to get current directory path")
+		panic(errors.Wrap(err, "failed to get current directory path"))
 	}
+
 	sessionFile := filepath.Join(currentDir, "session.json")
 	publicKeys := filepath.Join(currentDir, "tg_public_keys.pem")
 
