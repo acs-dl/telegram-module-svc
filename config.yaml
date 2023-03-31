@@ -1,0 +1,40 @@
+log:
+  level: debug
+  disable_sentry: true
+
+db:
+  url: "postgres://telegram:telegram@localhost:5433/telegram?sslmode=disable"
+
+amqp:
+  topic: "telegram"
+  publisher: "amqp://guest:guest@localhost:5672/" #telegram_publisher
+  subscriber: "amqp://guest:guest@localhost:5672/" #telegram_receiver
+
+telegram:
+  api_id: 15842525
+  api_hash: "bbaf56dbfc0be20c6c2ed6dfa38ade8d"
+  phone_number: "+380685379725"
+  host: "149.154.167.50:443"
+
+listener:
+  addr: :9000
+
+jwt:
+  secret: SuPeR SeCrEt PhRaSe
+  refresh_life: 6h
+  access_life: 10m5s
+
+registrator:
+  outer_url: "http://localhost:8000/integrations/orchestrator/modules" #endpoint to register MODULE
+  inner_url: "http://localhost:9000/integrations/telegram" #endpoint to MODULE itself
+  topic: "telegram" #MODULE topic
+  title: "Telegram" #MODULE title
+  prefix: "+"
+  is_module: true
+
+cop:
+  disabled: true
+  endpoint: "http://..."
+  upstream: "http://..."
+  service_name: core
+  service_port: 80

@@ -1,0 +1,9 @@
+.vscode/
+.idea/
+config.*.yaml
+docs/node_modules
+docs/web_deploy
+docker-compose.yml
+telegram-module
+/public
+session.json

@@ -1,0 +1,42 @@
+allOf:
+  - $ref: '#/components/schemas/RequestKey'
+  - type: object
+    required:
+      - attributes
+      - relationships
+    properties:
+      attributes:
+        type: object
+        required:
+          - module
+          - payload
+        properties:
+          module:
+            type: string
+            description: Module to grant permission
+            example: "github"
+          payload:
+            type: object
+            format: json.RawMessage
+            oneOf:
+              - $ref: '#/components/schemas/AddUser'
+              - $ref: '#/components/schemas/UpdateUser'
+              - $ref: '#/components/schemas/RemoveUser'
+              - $ref: '#/components/schemas/DeleteUser'
+              - $ref: '#/components/schemas/VerifyUser'
+              - $ref: '#/components/schemas/GetUsers'
+            description: Already built payload to grant permission <br><br>
+              -> "add_user" = action to add user in chat in telegram<br>
+              -> "verify_user" = action to verify user in telegram module (connect user id from identity with telegram info)<br>
+              -> "update_user" = action to update user access level in chat in telegram<br>
+              -> "get_users" = action to get users with their permissions from chats in telegram<br>
+              -> "delete_user" = action to delete user from module (from all links)<br>
+              -> "remove_user" = action to remove user from chat in telegram<br>
+      relationships:
+        type: object
+        required:
+          - user
+        properties:
+          user:
+            type: object
+            $ref: '#/components/schemas/UserKey'

@@ -1,0 +1,20 @@
+allOf:
+  - $ref: "#/components/schemas/RoleKey"
+  - type: object
+    required:
+      - attributes
+    properties:
+      attributes:
+        type: object
+        required:
+          - name
+          - value
+        properties:
+          name:
+            type: string
+            description: role name to show in FE
+            example: "Admin"
+          value:
+            type: string
+            description: role value to use in BE
+            example: "50"

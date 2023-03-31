@@ -1,0 +1,47 @@
+post:
+  tags:
+    - Links
+  summary: Create new link
+  operationId: addLink
+  description: Endpoint for creating new link for worker in telegram module.
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - data
+          properties:
+            data:
+              $ref: "#/components/schemas/Link"
+  responses:
+    '202':
+      description: Accepted
+    '400':
+      description: Bad request.
+    '500':
+      description: Internal server error.
+
+delete:
+  tags:
+    - Links
+  summary: Delete link
+  operationId: deleteLink
+  description: Endpoint for deleting link.
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - data
+          properties:
+            data:
+              $ref: "#/components/schemas/Link"
+  responses:
+    '202':
+      description: Accepted
+    '400':
+      description: Bad request
+    '500':
+      description: Internal server error
