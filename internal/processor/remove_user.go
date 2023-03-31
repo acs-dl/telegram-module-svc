@@ -93,7 +93,7 @@ func (p *processor) sendDeleteInUnverifiedOrUpdateInIdentity(requestId string, u
 	if user.Id == nil {
 		err := p.SendDeleteUser(requestId, user)
 		if err != nil {
-			return errors.Wrap(err, "failed to publish delete telegram user in unverified-svc")
+			return errors.Wrap(err, "failed to publish delete telegram user in telegram-module")
 		}
 	} else {
 		err := p.sendUpdateUserTelegram(requestId, data.ModulePayload{

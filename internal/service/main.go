@@ -4,11 +4,10 @@ import (
 	"context"
 	"sync"
 
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/receiver"
+	"gitlab.com/distributed_lab/acs/telegram-module/internal/registrator"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/sender"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/service/api"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/service/registrator"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/worker"
 
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/config"
@@ -16,19 +15,14 @@ import (
 )
 
 var availableServices = map[string]types.Runner{
-	"api":      api.Run,
-	"sender":   sender.Run,
-	"receiver": receiver.Run,
-	"worker":   worker.Run,
+	"api":       api.Run,
+	"sender":    sender.Run,
+	"receiver":  receiver.Run,
+	"worker":    worker.Run,
+	"registrar": registrator.Run,
 }
 
 func Run(cfg config.Config) {
-	// module registration before starting all services
-	regCfg := cfg.Registrator()
-	if err := registrator.RegisterModule(data.ModuleName, regCfg); err != nil {
-		panic(err)
-	}
-
 	logger := cfg.Log().WithField("service", "main")
 	ctx := context.Background()
 	wg := new(sync.WaitGroup)

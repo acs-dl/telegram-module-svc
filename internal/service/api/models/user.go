@@ -19,6 +19,7 @@ func NewUserModel(user data.User, id int) resources.User {
 			Phone:     user.Phone,
 			Module:    data.ModuleName,
 			CreatedAt: &user.CreatedAt,
+			Submodule: user.Submodule,
 		},
 	}
 

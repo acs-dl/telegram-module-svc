@@ -30,5 +30,16 @@ func GetUserById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	permission, err := PermissionsQ(r).FilterByTelegramIds(user.TelegramId).Get()
+	if err != nil {
+		Log(r).Errorf("failed to get submodule for user with id `%d`", userId)
+		ape.RenderErr(w, problems.NotFound())
+		return
+	}
+
+	if permission != nil {
+		user.Submodule = &permission.Link
+	}
+
 	ape.Render(w, models.NewUserResponse(*user))
 }

@@ -43,11 +43,11 @@ func (p *processor) sendUsers(uuid string, users []data.User) error {
 
 	err = p.sender.SendMessageToCustomChannel(data.UnverifiedService, p.buildMessage(uuid, marshaledPayload))
 	if err != nil {
-		p.log.WithError(err).Errorf("failed to publish users to `unverified-svc`")
-		return errors.Wrap(err, "failed to publish users to `unverified-svc`")
+		p.log.WithError(err).Errorf("failed to publish users to `telegram-module`")
+		return errors.Wrap(err, "failed to publish users to `telegram-module`")
 	}
 
-	p.log.Infof("successfully published users to `unverified-svc`")
+	p.log.Infof("successfully published users to `telegram-module`")
 	return nil
 }
 
@@ -67,12 +67,12 @@ func (p *processor) SendDeleteUser(uuid string, user data.User) error {
 
 	err = p.sender.SendMessageToCustomChannel(data.UnverifiedService, p.buildMessage(uuid, marshaledPayload))
 	if err != nil {
-		p.log.WithError(err).Errorf("failed to publish users to `unverified-svc`")
-		return errors.Wrap(err, "failed to publish users to `unverified-svc`")
+		p.log.WithError(err).Errorf("failed to publish users to `telegram-module`")
+		return errors.Wrap(err, "failed to publish users to `telegram-module`")
 	}
 
 	p.resetFilters()
-	p.log.Infof("successfully published users to `unverified-svc`")
+	p.log.Infof("successfully published users to `telegram-module`")
 	return nil
 }
 

@@ -39,6 +39,7 @@ type User struct {
 	CreatedAt  time.Time `json:"created_at" db:"created_at" structs:"-"`
 	UpdatedAt  time.Time `json:"updated_at" db:"updated_at" structs:"-"`
 	Module     string    `json:"module" db:"-" structs:"-"`
+	Submodule  *string   `json:"-" db:"-" structs:"-"`
 	// fields to create permission
 	AccessLevel string `json:"-" db:"-" structs:"-"`
 }
