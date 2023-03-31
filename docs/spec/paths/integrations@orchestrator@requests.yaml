@@ -1,0 +1,25 @@
+post:
+  tags: [ Requests ]
+  summary: Add Request
+  operationId: addRequest
+  description: Examples of payloads, that can be user in module
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            data:
+              type: object
+              $ref: '#/components/schemas/Request'
+  responses:
+    '200':
+      description: Success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: object
+                $ref: '#/components/schemas/Request'

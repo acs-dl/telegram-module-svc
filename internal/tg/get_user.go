@@ -2,12 +2,13 @@ package tg
 
 import (
 	"fmt"
+	"time"
+
 	pkgErrors "github.com/pkg/errors"
 	"github.com/xelaj/mtproto"
 	"github.com/xelaj/mtproto/telegram"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 	"gitlab.com/distributed_lab/logan/v3/errors"
-	"time"
 )
 
 func (t *tg) GetUserFromApi(username, phone *string) (*data.User, error) {
@@ -34,16 +35,9 @@ func (t *tg) GetUserFromApi(username, phone *string) (*data.User, error) {
 }
 
 func (t *tg) getUserFlow(username, phone *string) (*data.User, error) {
-	var inputUser *telegram.InputUserObj
-	var err error
-	if username != nil {
-		inputUser, err = t.getUserByUsername(*username)
-	}
-	if phone != nil {
-		inputUser, err = t.getUserByPhone(*phone)
-	}
+	inputUser, err := t.getInputUser(username, phone)
 	if err != nil {
-		t.log.WithError(err).Errorf("failed to get user")
+		t.log.WithError(err).Errorf("failed to get input user")
 		return nil, err
 	}
 
@@ -56,8 +50,8 @@ func (t *tg) getUserFlow(username, phone *string) (*data.User, error) {
 	tgUser := tgFullUser.User.(*telegram.UserObj)
 
 	return &data.User{
-		Username:   tgUser.Username,
-		Phone:      tgUser.Phone,
+		Username:   &tgUser.Username,
+		Phone:      &tgUser.Phone,
 		FirstName:  tgUser.FirstName,
 		LastName:   tgUser.LastName,
 		TelegramId: int64(tgUser.ID),

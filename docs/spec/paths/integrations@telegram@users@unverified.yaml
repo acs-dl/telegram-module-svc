@@ -1,0 +1,34 @@
+get:
+  tags:
+    - Users
+  summary: Get unverified users list
+  operationId: getUsers
+  description: Endpoint for getting unverified users from telegram module.
+  parameters:
+    - $ref: '#/components/parameters/usernameParam'
+    - $ref: '#/components/parameters/pageLimitParam'
+    - $ref: '#/components/parameters/pageNumberParam'
+  responses:
+    '200':
+      description: Success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  type: object
+                  $ref: '#/components/schemas/User'
+              meta:
+                type: object
+                properties:
+                  total_count:
+                    type: integer
+                    format: int64
+                    description: Total number of users
+    '400':
+      description: Bad request.
+    '500':
+      description: Internal server error.

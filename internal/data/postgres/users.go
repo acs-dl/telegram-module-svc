@@ -3,10 +3,11 @@ package postgres
 import (
 	"database/sql"
 	"fmt"
+	"strings"
+
 	"github.com/fatih/structs"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 	"gitlab.com/distributed_lab/logan/v3/errors"
-	"strings"
 
 	sq "github.com/Masterminds/squirrel"
 	"gitlab.com/distributed_lab/kit/pgdb"
@@ -19,18 +20,19 @@ type UsersQ struct {
 	sql sq.SelectBuilder
 }
 
-var selectedUsersTable = sq.Select("*").From(usersTableName)
-
-var usersColumns = []string{
-	permissionsTableName + ".id",
-	permissionsTableName + ".username",
-	permissionsTableName + ".phone",
-	permissionsTableName + ".telegram_id",
-	permissionsTableName + ".access_hash",
-	permissionsTableName + ".first_name",
-	permissionsTableName + ".last_name",
-	permissionsTableName + ".created_at",
-}
+var (
+	usersColumns = []string{
+		usersTableName + ".id",
+		usersTableName + ".username",
+		usersTableName + ".phone",
+		usersTableName + ".telegram_id",
+		usersTableName + ".access_hash",
+		usersTableName + ".first_name",
+		usersTableName + ".last_name",
+		usersTableName + ".created_at",
+	}
+	selectedUsersTable = sq.Select("*").From(usersTableName)
+)
 
 func NewUsersQ(db *pgdb.DB) data.Users {
 	return &UsersQ{
@@ -44,42 +46,43 @@ func (q *UsersQ) New() data.Users {
 }
 
 func (q *UsersQ) Upsert(user data.User) error {
+	if user.Phone != nil && *user.Phone == "" {
+		user.Phone = nil
+	}
+	if user.Username != nil && *user.Username == "" {
+		user.Username = nil
+	}
+
 	clauses := structs.Map(user)
 
-	stmt := "ON CONFLICT (telegram_id) DO UPDATE SET created_at = CURRENT_TIMESTAMP"
+	updateStmt := "NOTHING"
+	var args []interface{}
+
 	if user.Id != nil {
-		stmt = fmt.Sprintf("ON CONFLICT (gitlab_id) DO UPDATE SET created_at = CURRENT_TIMESTAMP, id = %d", *user.Id)
+		updateQuery := sq.Update(" ").Set("id", *user.Id)
+		updateStmt, args = updateQuery.MustSql()
 	}
-	query := sq.Insert(usersTableName).SetMap(clauses).Suffix(stmt)
+
+	query := sq.Insert(usersTableName).SetMap(clauses).Suffix("ON CONFLICT (telegram_id) DO "+updateStmt, args...)
 
 	return q.db.Exec(query)
 }
 
-func (q *UsersQ) GetById(id int64) (*data.User, error) {
-	query := q.sql.Where(sq.Eq{"id": id})
-
-	var result data.User
-	err := q.db.Get(&result, query)
-
-	if err == sql.ErrNoRows {
-		return nil, nil
-	}
-
-	return &result, err
-}
-
 func (q *UsersQ) Delete(telegramId int64) error {
-	query := sq.Delete(usersTableName).Where(
-		sq.Eq{"telegram_id": telegramId})
+	var deleted []data.Response
 
-	result, err := q.db.ExecWithResult(query)
+	query := sq.Delete(usersTableName).
+		Where(sq.Eq{
+			"telegram_id": telegramId,
+		}).
+		Suffix("RETURNING *")
+
+	err := q.db.Select(&deleted, query)
 	if err != nil {
 		return err
 	}
-
-	affectedRows, _ := result.RowsAffected()
-	if affectedRows == 0 {
-		return errors.Errorf("no users with id `%d`", telegramId)
+	if len(deleted) == 0 {
+		return errors.Errorf("no rows with `%d` telegram id", telegramId)
 	}
 
 	return nil
@@ -104,11 +107,8 @@ func (q *UsersQ) Select() ([]data.User, error) {
 	return result, err
 }
 
-func (q *UsersQ) FilterByIds(ids ...*int64) data.Users {
-	stmt := sq.Eq{usersTableName + ".id": nil}
-	if ids != nil {
-		stmt = sq.Eq{usersTableName + ".id": ids}
-	}
+func (q *UsersQ) FilterById(id *int64) data.Users {
+	stmt := sq.Eq{usersTableName + ".id": id}
 
 	q.sql = q.sql.Where(stmt)
 
@@ -121,14 +121,18 @@ func (q *UsersQ) FilterByTelegramIds(telegramIds ...int64) data.Users {
 	return q
 }
 
-func (q *UsersQ) FilterByUsernames(usernames ...string) data.Users {
-	q.sql = q.sql.Where(sq.Eq{usersTableName + ".username": usernames})
+func (q *UsersQ) FilterByUsername(username string) data.Users {
+	if username != "" {
+		q.sql = q.sql.Where(sq.Eq{usersTableName + ".username": username})
+	}
 
 	return q
 }
 
-func (q *UsersQ) FilterByPhones(phones ...string) data.Users {
-	q.sql = q.sql.Where(sq.Eq{usersTableName + ".phone": phones})
+func (q *UsersQ) FilterByPhone(phone string) data.Users {
+	if phone != "" {
+		q.sql = q.sql.Where(sq.Eq{usersTableName + ".phone": phone})
+	}
 
 	return q
 }
@@ -158,10 +162,4 @@ func (q *UsersQ) GetTotalCount() (int64, error) {
 	err := q.db.Get(&count, q.sql)
 
 	return count, err
-}
-
-func (q *UsersQ) ResetFilters() data.Users {
-	q.sql = selectedResponsesTable
-
-	return q
 }

@@ -2,6 +2,8 @@ package worker
 
 import (
 	"context"
+	"time"
+
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/config"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data/postgres"
@@ -9,7 +11,6 @@ import (
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 	"gitlab.com/distributed_lab/running"
-	"time"
 )
 
 const serviceName = data.ModuleName + "-worker"
@@ -65,8 +66,8 @@ func (w *worker) processPermissions(_ context.Context) error {
 
 		err = w.createPermissions(link.Link)
 		if err != nil {
-			w.logger.Infof("failed to create permissions for subs")
-			return errors.Wrap(err, "failed to create permissions for subs")
+			w.logger.Infof("failed to create permissions for chat")
+			return errors.Wrap(err, "failed to create permissions for chat")
 		}
 
 		w.logger.Infof("successfully processed link `%s`", link.Link)

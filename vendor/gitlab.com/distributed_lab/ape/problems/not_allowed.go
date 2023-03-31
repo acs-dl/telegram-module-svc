@@ -59,12 +59,13 @@ func NotAllowed(errs ...error) *jsonapi.ErrorObject {
 			Title:  http.StatusText(http.StatusUnauthorized),
 			Status: fmt.Sprintf("%d", http.StatusUnauthorized),
 		}
-	case isForbidden(cause): {
-		return &jsonapi.ErrorObject{
-			Title:  http.StatusText(http.StatusForbidden),
-			Status: fmt.Sprintf("%d", http.StatusForbidden),
+	case isForbidden(cause):
+		{
+			return &jsonapi.ErrorObject{
+				Title:  http.StatusText(http.StatusForbidden),
+				Status: fmt.Sprintf("%d", http.StatusForbidden),
+			}
 		}
-	}
 	default:
 		return &jsonapi.ErrorObject{
 			Title:  http.StatusText(http.StatusInternalServerError),

@@ -3,6 +3,7 @@ package config
 import (
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-amqp/v2/pkg/amqp"
+	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 	"gitlab.com/distributed_lab/figure"
 	"gitlab.com/distributed_lab/kit/kv"
 	"gitlab.com/distributed_lab/logan/v3/errors"
@@ -43,7 +44,7 @@ func (c *config) Amqp() *AmqpData {
 }
 
 func createSubscriber(url string) *amqp.Subscriber {
-	amqpConfig := amqp.NewDurablePubSubConfig(url, amqp.GenerateQueueNameTopicNameWithSuffix("SUFFIX"))
+	amqpConfig := amqp.NewDurablePubSubConfig(url, amqp.GenerateQueueNameTopicNameWithSuffix(data.ModuleName))
 	watermillLogger := watermill.NewStdLogger(false, false)
 
 	subscriber, err := amqp.NewSubscriber(amqpConfig, watermillLogger)

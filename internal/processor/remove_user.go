@@ -7,10 +7,13 @@ import (
 )
 
 func (p *processor) validateRemoveUser(msg data.ModulePayload) error {
+	phoneValidationCase := validation.When(msg.Username == nil, validation.Required.Error("phone is required if username is not set"))
+	usernameValidationCase := validation.When(msg.Phone == nil, validation.Required.Error("username is required if phone is not set"))
+
 	return validation.Errors{
 		"link":     validation.Validate(msg.Link, validation.Required),
-		"username": validation.Validate(msg.Username, validation.Required),
-		"phone":    validation.Validate(msg.Phone, validation.Required),
+		"username": validation.Validate(msg.Username, usernameValidationCase),
+		"phone":    validation.Validate(msg.Phone, phoneValidationCase),
 	}.Filter()
 }
 
@@ -23,7 +26,7 @@ func (p *processor) handleRemoveUserAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to validate fields")
 	}
 
-	user, err := p.telegramClient.GetChatUserFromApi(&msg.Username, &msg.Phone, msg.Link)
+	user, err := p.telegramClient.GetChatUserFromApi(msg.Username, msg.Phone, msg.Link)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to get user from API for message action with id `%s`", msg.RequestId)
 		return errors.Wrap(err, "some error while getting user from api")
@@ -43,7 +46,7 @@ func (p *processor) handleRemoveUserAction(msg data.ModulePayload) error {
 		return errors.Errorf("no such user in module")
 	}
 
-	err = p.telegramClient.DeleteFromChatFromApi(&msg.Username, &msg.Phone, msg.Link)
+	err = p.telegramClient.DeleteFromChatFromApi(msg.Username, msg.Phone, msg.Link)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to remove user from API for message action with id `%s`", msg.RequestId)
 		return errors.Wrap(err, "failed to remove user from api")
@@ -68,6 +71,14 @@ func (p *processor) handleRemoveUserAction(msg data.ModulePayload) error {
 				p.log.WithError(err).Errorf("failed to delete user by telegram id `%d` for message action with id `%s`", user.TelegramId, msg.RequestId)
 				return errors.Wrap(err, "failed to delete user")
 			}
+
+			if dbUser.Id == nil {
+				err = p.sendDeleteUser(msg.RequestId, *dbUser)
+				if err != nil {
+					p.log.WithError(err).Errorf("failed to publish delete user for message action with id `%s`", msg.RequestId)
+					return errors.Wrap(err, "failed to publish delete user")
+				}
+			}
 		}
 
 		return nil
@@ -77,6 +88,7 @@ func (p *processor) handleRemoveUserAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to make remove user transaction")
 	}
 
+	p.resetFilters()
 	p.log.Infof("finish handle message action with id `%s`", msg.RequestId)
 	return nil
 }

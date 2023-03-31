@@ -22,7 +22,7 @@ func (p *processor) handleDeleteUserAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to validate fields")
 	}
 
-	user, err := p.telegramClient.GetUserFromApi(&msg.Username, &msg.Phone)
+	user, err := p.telegramClient.GetUserFromApi(msg.Username, msg.Phone)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to get user from API for message action with id `%s`", msg.RequestId)
 		return errors.Wrap(err, "failed to get user from api")
@@ -45,14 +45,14 @@ func (p *processor) handleDeleteUserAction(msg data.ModulePayload) error {
 	}
 
 	for _, permission := range permissions {
-		chatUser, err := p.telegramClient.GetChatUserFromApi(&msg.Username, &msg.Phone, permission.Link)
+		chatUser, err := p.telegramClient.GetChatUserFromApi(msg.Username, msg.Phone, permission.Link)
 		if err != nil {
 			p.log.WithError(err).Errorf("failed to get chat user from API for message action with id `%s`", msg.RequestId)
 			return errors.Wrap(err, "some error while checking user from api")
 		}
 
 		if chatUser != nil {
-			err = p.telegramClient.DeleteFromChatFromApi(&msg.Username, &msg.Phone, permission.Link)
+			err = p.telegramClient.DeleteFromChatFromApi(msg.Username, msg.Phone, permission.Link)
 			if err != nil {
 				p.log.WithError(err).Errorf("failed to remove user from API for message action with id `%s`", msg.RequestId)
 				return errors.Wrap(err, "some error while removing user from api")
@@ -71,6 +71,15 @@ func (p *processor) handleDeleteUserAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to delete user")
 	}
 
+	if dbUser.Id == nil {
+		err = p.sendDeleteUser(msg.RequestId, *dbUser)
+		if err != nil {
+			p.log.WithError(err).Errorf("failed to publish delete user for message action with id `%s`", msg.RequestId)
+			return errors.Wrap(err, "failed to publish delete user")
+		}
+	}
+
+	p.resetFilters()
 	p.log.Infof("finish handle message action with id `%s`", msg.RequestId)
 	return nil
 }
