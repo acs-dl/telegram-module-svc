@@ -1,0 +1,12 @@
+type: object
+required:
+  - type
+  - id
+properties:
+  type:
+    type: string
+    enum:
+      - modules
+  id:
+    type: string
+    example: "1"

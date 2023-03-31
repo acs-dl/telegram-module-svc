@@ -1,0 +1,16 @@
+type: object
+required:
+  - action
+properties:
+  action:
+    type: string
+    description: action that must be handled in module, must be "delete_user"
+    example: "delete_user"
+  username:
+    type: string
+    description: user's username from telegram
+    example: "slandymani"
+  phone:
+    type: string
+    description: phone from telegram
+    example: "380..."

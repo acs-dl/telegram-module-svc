@@ -1,0 +1,36 @@
+parameters:
+  - name: module
+    in: path
+    required: true
+    schema:
+      type: string
+  - name: link
+    in: path
+    required: true
+    schema:
+      type: string
+
+
+get:
+  tags:
+    - Inputs
+  summary: Get inputs
+  operationId: getInputs
+  description: Endpoint for getting all inputs from telegram module to fill them in FE.
+  responses:
+    '200':
+      description: Success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  type: object
+                  $ref: '#/components/schemas/Inputs'
+    '400':
+      description: Bad request.
+    '500':
+      description: Internal server error.

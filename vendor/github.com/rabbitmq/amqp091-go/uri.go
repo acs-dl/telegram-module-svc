@@ -45,13 +45,12 @@ type URI struct {
 //
 // Default values for the fields are:
 //
-//   Scheme: amqp
-//   Host: localhost
-//   Port: 5672
-//   Username: guest
-//   Password: guest
-//   Vhost: /
-//
+//	Scheme: amqp
+//	Host: localhost
+//	Port: 5672
+//	Username: guest
+//	Password: guest
+//	Vhost: /
 func ParseURI(uri string) (URI, error) {
 	builder := defaultURI
 

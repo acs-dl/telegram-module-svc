@@ -2,8 +2,10 @@ package handlers
 
 import (
 	"context"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/config"
 	"net/http"
+
+	"gitlab.com/distributed_lab/acs/telegram-module/internal/config"
+	"gitlab.com/distributed_lab/logan/v3"
 
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 )
@@ -29,14 +31,14 @@ func Log(r *http.Request) *logan.Entry {
 	return r.Context().Value(logCtxKey).(*logan.Entry)
 }
 
-func CtxParams(entry *config.GitLabCfg) func(context.Context) context.Context {
+func CtxParams(entry *config.TelegramCfg) func(context.Context) context.Context {
 	return func(ctx context.Context) context.Context {
 		return context.WithValue(ctx, paramsCtxKey, entry)
 	}
 }
 
-func Params(r *http.Request) *config.GitLabCfg {
-	return r.Context().Value(paramsCtxKey).(*config.GitLabCfg)
+func Params(r *http.Request) *config.TelegramCfg {
+	return r.Context().Value(paramsCtxKey).(*config.TelegramCfg)
 }
 
 func PermissionsQ(r *http.Request) data.Permissions {
@@ -66,15 +68,5 @@ func LinksQ(r *http.Request) data.Links {
 func CtxLinksQ(entry data.Links) func(context.Context) context.Context {
 	return func(ctx context.Context) context.Context {
 		return context.WithValue(ctx, linksCtxKey, entry)
-	}
-}
-
-func SubsQ(r *http.Request) data.Subs {
-	return r.Context().Value(subsCtxKey).(data.Subs).New()
-}
-
-func CtxSubsQ(entry data.Subs) func(context.Context) context.Context {
-	return func(ctx context.Context) context.Context {
-		return context.WithValue(ctx, subsCtxKey, entry)
 	}
 }

@@ -1,0 +1,26 @@
+allOf:
+  - $ref: "#/components/schemas/InputsKey"
+  - type: object
+    required:
+      - attributes
+    properties:
+      attributes:
+        type: object
+        required:
+          - username
+          - phone
+          - link
+          - access_level
+        properties:
+          username:
+            type: string
+            description: username from telegram
+          phone:
+            type: string
+            description: phone from telegram
+          link:
+            type: string
+            description: link for which would be given access
+          access_level:
+            type: string
+            description: level of access that would be given
