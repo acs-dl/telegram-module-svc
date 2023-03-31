@@ -1,8 +1,9 @@
 package figure
 
 import (
-	"gitlab.com/distributed_lab/logan/v3"
 	"reflect"
+
+	"gitlab.com/distributed_lab/logan/v3"
 
 	"strings"
 

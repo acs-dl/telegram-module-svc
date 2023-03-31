@@ -1,0 +1,12 @@
+type: object
+required:
+  - type
+  - id
+properties:
+  type:
+    type: string
+    enum:
+      - requests
+  id:
+    type: string
+    example: "1"

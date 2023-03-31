@@ -1,0 +1,35 @@
+get:
+  tags:
+    - Permissions
+  summary: Get permission list
+  operationId: getPermissions
+  description: Endpoint for getting permissions from telegram module.
+  parameters:
+    - $ref: '#/components/parameters/userIdParam'
+    - $ref: '#/components/parameters/linkParam'
+    - $ref: '#/components/parameters/pageLimitParam'
+    - $ref: '#/components/parameters/pageNumberParam'
+  responses:
+    '200':
+      description: Success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  type: object
+                  $ref: '#/components/schemas/UserPermission'
+              meta:
+                type: object
+                properties:
+                  total_count:
+                    type: integer
+                    format: int64
+                    description: total number of permissions
+    '400':
+      description: Bad request.
+    '500':
+      description: Internal server error.

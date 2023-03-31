@@ -3,10 +3,11 @@ package postgres
 import (
 	"database/sql"
 	"fmt"
+	"strings"
+
 	"github.com/fatih/structs"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 	"gitlab.com/distributed_lab/logan/v3/errors"
-	"strings"
 
 	sq "github.com/Masterminds/squirrel"
 	"gitlab.com/distributed_lab/kit/pgdb"
@@ -14,104 +15,80 @@ import (
 
 const usersTableName = "users"
 
-type GitlabUsersQ struct {
+type UsersQ struct {
 	db  *pgdb.DB
 	sql sq.SelectBuilder
 }
 
-var selectedUsersTable = sq.Select("*").From(usersTableName)
+var (
+	usersColumns = []string{
+		usersTableName + ".id",
+		usersTableName + ".username",
+		usersTableName + ".phone",
+		usersTableName + ".telegram_id",
+		usersTableName + ".access_hash",
+		usersTableName + ".first_name",
+		usersTableName + ".last_name",
+		usersTableName + ".created_at",
+	}
+	selectedUsersTable = sq.Select("*").From(usersTableName)
+)
 
 func NewUsersQ(db *pgdb.DB) data.Users {
-	return &GitlabUsersQ{
+	return &UsersQ{
 		db:  db.Clone(),
 		sql: selectedUsersTable,
 	}
 }
 
-func (q *GitlabUsersQ) New() data.Users {
+func (q *UsersQ) New() data.Users {
 	return NewUsersQ(q.db)
 }
 
-func (q *GitlabUsersQ) Upsert(user data.User) error {
+func (q *UsersQ) Upsert(user data.User) error {
+	if user.Phone != nil && *user.Phone == "" {
+		user.Phone = nil
+	}
+	if user.Username != nil && *user.Username == "" {
+		user.Username = nil
+	}
+
 	clauses := structs.Map(user)
 
-	stmt := "ON CONFLICT (gitlab_id) DO UPDATE SET created_at = CURRENT_TIMESTAMP"
+	updateStmt := "NOTHING"
+	var args []interface{}
+
 	if user.Id != nil {
-		stmt = fmt.Sprintf("ON CONFLICT (gitlab_id) DO UPDATE SET created_at = CURRENT_TIMESTAMP, id = %d", *user.Id)
+		updateQuery := sq.Update(" ").Set("id", *user.Id)
+		updateStmt, args = updateQuery.MustSql()
 	}
-	query := sq.Insert(usersTableName).SetMap(clauses).Suffix(stmt)
+
+	query := sq.Insert(usersTableName).SetMap(clauses).Suffix("ON CONFLICT (telegram_id) DO "+updateStmt, args...)
 
 	return q.db.Exec(query)
 }
 
-func (q *GitlabUsersQ) GetById(id int64) (*data.User, error) {
-	query := q.sql.Where(sq.Eq{"id": id})
+func (q *UsersQ) Delete(telegramId int64) error {
+	var deleted []data.Response
 
-	var result data.User
-	err := q.db.Get(&result, query)
+	query := sq.Delete(usersTableName).
+		Where(sq.Eq{
+			"telegram_id": telegramId,
+		}).
+		Suffix("RETURNING *")
 
-	if err == sql.ErrNoRows {
-		return nil, nil
-	}
-
-	return &result, err
-}
-
-func (q *GitlabUsersQ) GetByUsername(username string) (*data.User, error) {
-	query := q.sql.Where(sq.Eq{"username": username})
-
-	var result data.User
-	err := q.db.Get(&result, query)
-
-	if err == sql.ErrNoRows {
-		return nil, nil
-	}
-
-	return &result, err
-}
-
-func (q *GitlabUsersQ) GetByGitlabId(gitlabId int64) (*data.User, error) {
-	query := q.sql.Where(sq.Eq{"gitlab_id": gitlabId})
-
-	var result data.User
-	err := q.db.Get(&result, query)
-
-	if err == sql.ErrNoRows {
-		return nil, nil
-	}
-
-	return &result, err
-}
-
-func (q *GitlabUsersQ) Delete(gitlabId int64) error {
-	query := sq.Delete(usersTableName).Where(
-		sq.Eq{"gitlab_id": gitlabId})
-
-	result, err := q.db.ExecWithResult(query)
+	err := q.db.Select(&deleted, query)
 	if err != nil {
 		return err
 	}
-
-	affectedRows, _ := result.RowsAffected()
-	if affectedRows == 0 {
-		return errors.Errorf("no users with id `%d`", gitlabId)
+	if len(deleted) == 0 {
+		return errors.Errorf("no rows with `%d` telegram id", telegramId)
 	}
 
 	return nil
 }
 
-func (q *GitlabUsersQ) FilterByIds(ids ...*int64) data.Users {
-	stmt := sq.Eq{usersTableName + ".id": nil}
-	if ids == nil {
-		stmt = sq.Eq{usersTableName + ".id": ids}
-	}
-
-	q.sql = q.sql.Where(stmt)
-
-	return q
-}
-
-func (q *GitlabUsersQ) Get() (*data.User, error) {
+func (q *UsersQ) Get() (*data.User, error) {
 	var result data.User
 
 	err := q.db.Get(&result, q.sql)
@@ -122,7 +99,7 @@ func (q *GitlabUsersQ) Get() (*data.User, error) {
 	return &result, err
 }
 
-func (q *GitlabUsersQ) Select() ([]data.User, error) {
+func (q *UsersQ) Select() ([]data.User, error) {
 	var result []data.User
 
 	err := q.db.Select(&result, q.sql)
@@ -130,13 +107,43 @@ func (q *GitlabUsersQ) Select() ([]data.User, error) {
 	return result, err
 }
 
-func (q *GitlabUsersQ) Page(pageParams pgdb.OffsetPageParams) data.Users {
+func (q *UsersQ) FilterById(id *int64) data.Users {
+	stmt := sq.Eq{usersTableName + ".id": id}
+
+	q.sql = q.sql.Where(stmt)
+
+	return q
+}
+
+func (q *UsersQ) FilterByTelegramIds(telegramIds ...int64) data.Users {
+	q.sql = q.sql.Where(sq.Eq{usersTableName + ".telegram_id": telegramIds})
+
+	return q
+}
+
+func (q *UsersQ) FilterByUsername(username string) data.Users {
+	if username != "" {
+		q.sql = q.sql.Where(sq.Eq{usersTableName + ".username": username})
+	}
+
+	return q
+}
+
+func (q *UsersQ) FilterByPhone(phone string) data.Users {
+	if phone != "" {
+		q.sql = q.sql.Where(sq.Eq{usersTableName + ".phone": phone})
+	}
+
+	return q
+}
+
+func (q *UsersQ) Page(pageParams pgdb.OffsetPageParams) data.Users {
 	q.sql = pageParams.ApplyTo(q.sql, "username")
 
 	return q
 }
 
-func (q *GitlabUsersQ) SearchBy(search string) data.Users {
+func (q *UsersQ) SearchBy(search string) data.Users {
 	search = strings.Replace(search, " ", "%", -1)
 	search = fmt.Sprint("%", search, "%")
 
@@ -144,13 +151,13 @@ func (q *GitlabUsersQ) SearchBy(search string) data.Users {
 	return q
 }
 
-func (q *GitlabUsersQ) Count() data.Users {
+func (q *UsersQ) Count() data.Users {
 	q.sql = sq.Select("COUNT (*)").From(usersTableName)
 
 	return q
 }
 
-func (q *GitlabUsersQ) GetTotalCount() (int64, error) {
+func (q *UsersQ) GetTotalCount() (int64, error) {
 	var count int64
 	err := q.db.Get(&count, q.sql)
 

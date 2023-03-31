@@ -1,0 +1,23 @@
+get:
+  tags:
+    - Role
+  summary: Get Role
+  operationId: getRole
+  description: Endpoint for getting role name and value to show in FE.
+  parameters:
+    - $ref: '#/components/parameters/accessLevelParam'
+  responses:
+    '200':
+      description: Success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: object
+                $ref: '#/components/schemas/Role'
+    '400':
+      description: Bad request.
+    '500':
+      description: Internal server error.
