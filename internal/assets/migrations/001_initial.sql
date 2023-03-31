@@ -18,6 +18,7 @@ create table if not exists users (
     first_name text not null,
     last_name text not null,
     phone text unique,
+    updated_at timestamp with time zone not null default current_timestamp,
     created_at timestamp with time zone default current_timestamp
 );
 

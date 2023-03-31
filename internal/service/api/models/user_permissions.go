@@ -8,6 +8,11 @@ import (
 )
 
 func NewUserPermissionModel(permission data.Permission, counter int) resources.UserPermission {
+	if permission.Phone != nil {
+		phoneWithoutCode := (*permission.Phone)[3:]
+		permission.Phone = &phoneWithoutCode
+	}
+
 	result := resources.UserPermission{
 		Key: resources.Key{
 			ID:   strconv.Itoa(counter),

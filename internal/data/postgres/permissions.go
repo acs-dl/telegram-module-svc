@@ -89,7 +89,7 @@ func (q *PermissionsQ) Get() (*data.Permission, error) {
 }
 
 func (q *PermissionsQ) Delete(telegramId int64, link string) error {
-	var deleted []data.Response
+	var deleted []data.Permission
 
 	query := sq.Delete(permissionsTableName).
 		Where(sq.Eq{
@@ -140,12 +140,6 @@ func (q *PermissionsQ) Count() data.Permissions {
 	return q
 }
 
-func (q *PermissionsQ) FilterByTime(time time.Time) data.Permissions {
-	q.sql = q.sql.Where(sq.Gt{permissionsTableName + ".updated_at": time})
-
-	return q
-}
-
 func (q *PermissionsQ) GetTotalCount() (int64, error) {
 	var count int64
 	err := q.db.Get(&count, q.sql)
@@ -185,6 +179,18 @@ func (q *PermissionsQ) FilterByUserIds(userIds ...int64) data.Permissions {
 	}
 
 	q.sql = q.sql.Where(stmt)
+
+	return q
+}
+
+func (q *PermissionsQ) FilterByGreaterTime(time time.Time) data.Permissions {
+	q.sql = q.sql.Where(sq.Gt{permissionsTableName + ".updated_at": time})
+
+	return q
+}
+
+func (q *PermissionsQ) FilterByLowerTime(time time.Time) data.Permissions {
+	q.sql = q.sql.Where(sq.Lt{permissionsTableName + ".updated_at": time})
 
 	return q
 }

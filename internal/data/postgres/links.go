@@ -50,7 +50,7 @@ func (r *LinksQ) Insert(link data.Link) error {
 }
 
 func (r *LinksQ) Delete(link string) error {
-	var deleted []data.Response
+	var deleted []data.Link
 
 	query := sq.Delete(linksTableName).
 		Where(sq.Eq{

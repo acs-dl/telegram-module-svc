@@ -28,7 +28,8 @@ type Permissions interface {
 
 	FilterByTelegramIds(telegramIds ...int64) Permissions
 	FilterByLinks(links ...string) Permissions
-	FilterByTime(time time.Time) Permissions
+	FilterByGreaterTime(time time.Time) Permissions
+	FilterByLowerTime(time time.Time) Permissions
 	SearchBy(search string) Permissions
 
 	WithUsers() Permissions

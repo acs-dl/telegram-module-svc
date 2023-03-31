@@ -37,14 +37,10 @@ func (p *processor) handleUpdateUserAction(msg data.ModulePayload) error {
 		return errors.Errorf("user is not in chat")
 	}
 
-	dbUser, err := p.usersQ.FilterByTelegramIds(user.TelegramId).Get()
+	_, err = p.getUserFromDbByTelegramId(user.TelegramId)
 	if err != nil {
-		p.log.WithError(err).Errorf("failed to get user for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "failed to get user")
-	}
-	if dbUser == nil {
-		p.log.Errorf("no such user in module for message action with id `%s`", msg.RequestId)
-		return errors.Errorf("no such user in module")
+		p.log.WithError(err).Errorf("failed to get user from db for message action with id `%s`", msg.RequestId)
+		return errors.Wrap(err, "failed to get user from")
 	}
 
 	err = p.telegramClient.UpdateUserInChatFromApi(msg.Username, msg.Phone, msg.Link)

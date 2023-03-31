@@ -6,6 +6,7 @@ import (
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/service/api/models"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/service/api/requests"
+	"gitlab.com/distributed_lab/acs/telegram-module/internal/tg"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
 )
@@ -40,6 +41,7 @@ func GetRoles(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		Log(r).WithError(err).Infof("failed to get user with `%s` username and `%s` phone", username, phone)
 		ape.RenderErr(w, problems.InternalError())
+		return
 	}
 	if user != nil {
 		permission, err := PermissionsQ(r).FilterByTelegramIds(user.TelegramId).FilterByLinks(*request.Link).Get()
@@ -55,7 +57,7 @@ func GetRoles(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	chatUser, err := TelegramClient(r.Context()).GetChatUserFromApi(request.Username, request.Phone, *request.Link)
+	chatUser, err := tg.NewTg(Params(r), Log(r)).GetChatUserFromApi(request.Username, request.Phone, *request.Link)
 	if err != nil {
 		Log(r).WithError(err).Info("failed to check user from api")
 		ape.RenderErr(w, problems.InternalError())
