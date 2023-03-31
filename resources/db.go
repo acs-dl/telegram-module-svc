@@ -12,7 +12,7 @@ import (
 	"gitlab.com/distributed_lab/logan/v3/errors"
 )
 
-// driverValue - converts interface into db supported type
+//driverValue - converts interface into db supported type
 func driverValue(data interface{}) (driver.Value, error) {
 	data, err := json.Marshal(data)
 	if err != nil {
@@ -22,7 +22,7 @@ func driverValue(data interface{}) (driver.Value, error) {
 	return data, nil
 }
 
-// driveScan - converts jsonb into type struct
+//driveScan - converts jsonb into type struct
 func driveScan(src, dest interface{}) error {
 	data, err := convertJSONB(src)
 	if err != nil {

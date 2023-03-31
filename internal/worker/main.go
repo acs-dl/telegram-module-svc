@@ -25,10 +25,10 @@ type worker struct {
 	linksQ    data.Links
 }
 
-func NewWorker(cfg config.Config) Worker {
+func NewWorker(cfg config.Config, ctx context.Context) Worker {
 	return &worker{
 		logger:    cfg.Log().WithField("runner", serviceName),
-		processor: processor.NewProcessor(cfg),
+		processor: processor.NewProcessor(cfg, ctx),
 		linksQ:    postgres.NewLinksQ(cfg.DB()),
 	}
 }

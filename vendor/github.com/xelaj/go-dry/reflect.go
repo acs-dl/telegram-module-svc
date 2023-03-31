@@ -74,7 +74,6 @@ ReflectExportedStructFields returns a map from exported struct field names to va
 inlining anonymous sub-structs so that their field names are available
 at the base level.
 Example:
-
 	type A struct {
 		X int
 	}

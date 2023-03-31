@@ -9,7 +9,7 @@ import (
 	"gitlab.com/distributed_lab/logan/v3"
 )
 
-// ServeOpts - defines serve configuration options that must be specified by developer
+//ServeOpts - defines serve configuration options that must be specified by developer
 type ServeOpts struct {
 	// ReadTimeout is the maximum duration for reading the entire
 	// request, including the body. Default is 5s.
@@ -22,13 +22,13 @@ type ServeOpts struct {
 	ShutdownTimeout time.Duration
 }
 
-// ServeConfig - defines external dependencies of serve
+//ServeConfig - defines external dependencies of serve
 type ServeConfig interface {
 	Log() *logan.Entry
 	Listener() net.Listener
 }
 
-// Serve - accepts incoming connections on the Listener. Similar to http.Server, but with default sane timeouts suitable
+//Serve - accepts incoming connections on the Listener. Similar to http.Server, but with default sane timeouts suitable
 // for generic REST API and graceful shutdown.
 func Serve(ctx context.Context, handler http.Handler, cfg ServeConfig, opts ServeOpts) {
 	if opts.ShutdownTimeout == 0 {

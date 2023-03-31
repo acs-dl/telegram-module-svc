@@ -559,6 +559,8 @@ github.com/yuin/goldmark v1.4.0/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1
 github.com/yuin/goldmark v1.4.13/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
 gitlab.com/distributed_lab/acs/auth v0.0.0-20230208105816-fd7463e9c9f1 h1:bsPdC6S9RO6oFQM8Qri42VLrOtXXmqlTDe/XduDHXQQ=
 gitlab.com/distributed_lab/acs/auth v0.0.0-20230208105816-fd7463e9c9f1/go.mod h1:MTJBcrAZbUve2Iz/o46D9xRhPZvEeArlf1Ug1lG6LyU=
+gitlab.com/distributed_lab/acs/auth v0.0.0-20230309115252-2c1f9e1d211a h1:ZD9Htsle72NgSMdHb292tGUWXQcDToErcPAsaoC7ir8=
+gitlab.com/distributed_lab/acs/auth v0.0.0-20230309115252-2c1f9e1d211a/go.mod h1:0kZvT9LUCzy0cORWP21ue/u4CAuRcJWzO3ANJBCYc3A=
 gitlab.com/distributed_lab/ape v1.7.1 h1:LpTmZgG7Lvx6ulopQbH2aWI3s8ey9FsKVjbic3ZQIy4=
 gitlab.com/distributed_lab/ape v1.7.1/go.mod h1:Qy9Y2arL0hmZIpVpctGEFhdrVsjWtyVJ5G+bZWcFT4s=
 gitlab.com/distributed_lab/figure v2.1.0+incompatible/go.mod h1:tk+aPBohT49MGPLy5+eVbE1HpD/CaC5drBHfVpRI8eE=

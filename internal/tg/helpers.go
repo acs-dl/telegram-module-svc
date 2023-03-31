@@ -2,6 +2,7 @@ package tg
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"strings"
 
@@ -11,6 +12,7 @@ import (
 )
 
 func enter(whatToEnter string) string {
+	fmt.Printf("Enter %s :", whatToEnter)
 	entered, _ := bufio.NewReader(os.Stdin).ReadString('\n')
 	entered = strings.ReplaceAll(entered, "\n", "")
 

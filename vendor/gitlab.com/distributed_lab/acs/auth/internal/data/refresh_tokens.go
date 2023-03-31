@@ -13,5 +13,5 @@ type RefreshTokens interface {
 type RefreshToken struct {
 	Token     string `db:"token" structs:"token"`
 	OwnerId   int64  `db:"owner_id" structs:"owner_id"`
-	ValidDate int64  `db:"valid_date" structs:"valid_date"`
+	ValidTill int64  `db:"valid_till" structs:"valid_till"`
 }

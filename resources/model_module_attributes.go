@@ -5,6 +5,8 @@
 package resources
 
 type ModuleAttributes struct {
+	// indicates whether module (gitlab, telegram etc.) or service (unverified, role etc.)
+	IsModule bool `json:"is_module"`
 	// Module url
 	Link string `json:"link"`
 	// Module name

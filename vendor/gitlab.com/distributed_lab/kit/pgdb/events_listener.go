@@ -10,12 +10,12 @@ import (
 	"gitlab.com/distributed_lab/logan/v3/errors"
 )
 
-// Handler - handles notification of new event received form postgres or ticks
+//Handler - handles notification of new event received form postgres or ticks
 type Handler interface {
 	Handle(ctx context.Context) error
 }
 
-// EventsListenerOpts - defines config for events listener
+//EventsListenerOpts - defines config for events listener
 type EventsListenerOpts struct {
 	Log        *logan.Entry
 	Payload    string // skip notifications from the channel if payload does not match. Empty string is treated as no filter is present

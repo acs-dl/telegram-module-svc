@@ -23,13 +23,13 @@ func Jwt(secret, module string, permissions ...string) func(http.Handler) http.H
 				ape.RenderErr(w, problems.Unauthorized())
 				return
 			}
-			claims, err := helpers.ParseJwtToken(splitAuthHeader[1], secret)
+			claims, err := helpers.RetrieveClaimsFromJwtString(splitAuthHeader[1], secret)
 			if err != nil {
 				ape.RenderErr(w, problems.BadRequest(err)...)
 				return
 			}
 
-			splitModulePermission := strings.Split(claims["module.permission"].(string), "/")
+			splitModulePermission := strings.Split(claims.ModulePermission, "/")
 
 			permissionMap := make(map[string]string)
 			for _, modulePermission := range splitModulePermission {

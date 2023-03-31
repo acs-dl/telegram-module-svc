@@ -1,6 +1,8 @@
 package processor
 
 import (
+	"fmt"
+
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 	"gitlab.com/distributed_lab/logan/v3/errors"
@@ -76,6 +78,16 @@ func (p *processor) handleDeleteUserAction(msg data.ModulePayload) error {
 		if err != nil {
 			p.log.WithError(err).Errorf("failed to publish delete user for message action with id `%s`", msg.RequestId)
 			return errors.Wrap(err, "failed to publish delete user")
+		}
+	} else {
+		err = p.sendUpdateUserTelegram(msg.RequestId, data.ModulePayload{
+			RequestId: msg.RequestId,
+			UserId:    fmt.Sprintf("%d", *dbUser.Id),
+			Action:    RemoveTelegramAction,
+		})
+		if err != nil {
+			p.log.WithError(err).Errorf("failed to publish users for message action with id `%s`", msg.RequestId)
+			return errors.Wrap(err, "failed to publish users")
 		}
 	}
 

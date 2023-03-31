@@ -5,7 +5,9 @@ import (
 )
 
 const (
-	ModuleName = "telegram"
+	ModuleName        = "telegram"
+	UnverifiedService = "unverified-svc"
+	IdentityService   = "identity"
 )
 
 type ModuleRequest struct {

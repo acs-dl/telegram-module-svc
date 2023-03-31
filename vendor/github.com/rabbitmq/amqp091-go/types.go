@@ -196,21 +196,21 @@ type Decimal struct {
 
 // Table stores user supplied fields of the following types:
 //
-//	bool
-//	byte
-//	float32
-//	float64
-//	int
-//	int16
-//	int32
-//	int64
-//	nil
-//	string
-//	time.Time
-//	amqp.Decimal
-//	amqp.Table
-//	[]byte
-//	[]interface{} - containing above types
+//   bool
+//   byte
+//   float32
+//   float64
+//   int
+//   int16
+//   int32
+//   int64
+//   nil
+//   string
+//   time.Time
+//   amqp.Decimal
+//   amqp.Table
+//   []byte
+//   []interface{} - containing above types
 //
 // Functions taking a table will immediately fail when the table contains a
 // value of an unsupported type.
@@ -221,6 +221,7 @@ type Decimal struct {
 // Use a type assertion when reading values from a table for type conversion.
 //
 // RabbitMQ expects int32 for integer values.
+//
 type Table map[string]interface{}
 
 func validateField(f interface{}) error {
@@ -287,11 +288,11 @@ The base interface implemented as:
 All frames consist of a header (7 octets), a payload of arbitrary size, and a 'frame-end' octet that detects
 malformed frames:
 
-	0      1         3             7                  size+7 size+8
-	+------+---------+-------------+  +------------+  +-----------+
-	| type | channel |     size    |  |  payload   |  | frame-end |
-	+------+---------+-------------+  +------------+  +-----------+
-	 octet   short         long         size octets       octet
+  0      1         3             7                  size+7 size+8
+  +------+---------+-------------+  +------------+  +-----------+
+  | type | channel |     size    |  |  payload   |  | frame-end |
+  +------+---------+-------------+  +------------+  +-----------+
+   octet   short         long         size octets       octet
 
 To read a frame, we:
 
@@ -302,6 +303,7 @@ To read a frame, we:
 In realistic implementations where performance is a concern, we would use
 “read-ahead buffering” or “gathering reads” to avoid doing three separate
 system calls to read a frame.
+
 */
 type frame interface {
 	write(io.Writer) error
@@ -332,17 +334,17 @@ func (protocolHeader) channel() uint16 {
 Method frames carry the high-level protocol commands (which we call "methods").
 One method frame carries one command.  The method frame payload has this format:
 
-	0          2           4
-	+----------+-----------+-------------- - -
-	| class-id | method-id | arguments...
-	+----------+-----------+-------------- - -
-	   short      short    ...
+  0          2           4
+  +----------+-----------+-------------- - -
+  | class-id | method-id | arguments...
+  +----------+-----------+-------------- - -
+     short      short    ...
 
 To process a method frame, we:
  1. Read the method frame payload.
  2. Unpack it into a structure.  A given method always has the same structure,
-    so we can unpack the method rapidly.  3. Check that the method is allowed in
-    the current context.
+ so we can unpack the method rapidly.  3. Check that the method is allowed in
+ the current context.
  4. Check that the method arguments are valid.
  5. Execute the method.
 
@@ -381,11 +383,11 @@ follows it with a content header and zero or more content body frames.
 
 A content header frame has this format:
 
-	0          2        4           12               14
-	+----------+--------+-----------+----------------+------------- - -
-	| class-id | weight | body size | property flags | property list...
-	+----------+--------+-----------+----------------+------------- - -
-	  short     short    long long       short        remainder...
+    0          2        4           12               14
+    +----------+--------+-----------+----------------+------------- - -
+    | class-id | weight | body size | property flags | property list...
+    +----------+--------+-----------+----------------+------------- - -
+      short     short    long long       short        remainder...
 
 We place content body in distinct frames (rather than including it in the
 method) so that AMQP may support "zero copy" techniques in which content is
@@ -413,10 +415,10 @@ into several (or many) chunks, each forming a "content body frame".
 Looking at the frames for a specific channel, as they pass on the wire, we
 might see something like this:
 
-	[method]
-	[method] [header] [body] [body]
-	[method]
-	...
+		[method]
+		[method] [header] [body] [body]
+		[method]
+		...
 */
 type bodyFrame struct {
 	ChannelId uint16

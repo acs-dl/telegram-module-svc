@@ -12,6 +12,7 @@ allOf:
           - topic
           - link
           - prefix
+          - is_module
         properties:
           name:
             type: string
@@ -33,3 +34,7 @@ allOf:
             type: string
             description: Module name to use in FE
             example: "Gitlab"
+          is_module:
+            type: bool
+            description: indicates whether module (gitlab, telegram etc.) or service (unverified, role etc.)
+            example: true

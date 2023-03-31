@@ -12,6 +12,7 @@ type RegistratorConfig struct {
 	Title    string `fig:"title,required"`
 	Topic    string `fig:"topic,required"`
 	Prefix   string `fig:"prefix,required"`
+	IsModule bool   `fig:"is_module,required"`
 }
 
 func (c *config) Registrator() RegistratorConfig {

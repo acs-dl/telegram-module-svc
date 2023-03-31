@@ -7,5 +7,5 @@ import (
 )
 
 func Run(ctx context.Context, cfg config.Config) {
-	NewWorker(cfg).Run(ctx)
+	NewWorker(cfg, ctx).Run(ctx)
 }

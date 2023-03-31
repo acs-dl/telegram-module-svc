@@ -49,7 +49,7 @@ func (p *OffsetPageParams) ApplyTo(sql squirrel.SelectBuilder, cols ...string) s
 	return sql
 }
 
-// CursorPageParams - page params of the db query
+//CursorPageParams - page params of the db query
 type CursorPageParams struct {
 	Cursor uint64 `page:"cursor"`
 	Order  string `page:"order"`

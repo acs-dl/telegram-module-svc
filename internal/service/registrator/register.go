@@ -17,11 +17,12 @@ func RegisterModule(name string, cfg config.RegistratorConfig) error {
 	}{
 		Data: resources.Module{
 			Attributes: resources.ModuleAttributes{
-				Name:   name,
-				Topic:  cfg.Topic,
-				Link:   cfg.InnerUrl,
-				Title:  cfg.Title,
-				Prefix: cfg.Prefix,
+				Name:     name,
+				Topic:    cfg.Topic,
+				Link:     cfg.InnerUrl,
+				Title:    cfg.Title,
+				Prefix:   cfg.Prefix,
+				IsModule: cfg.IsModule,
 			},
 		},
 	}

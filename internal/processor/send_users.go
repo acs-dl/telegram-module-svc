@@ -33,10 +33,16 @@ func (p *processor) sendUsers(uuid string, users []data.User) error {
 		unverifiedUsers = append(unverifiedUsers, createUnverifiedUserFromModuleUser(users[i], permission.Link))
 	}
 
-	err := p.sender.SendMessageToCustomChannel("unverified-svc", p.buildUnverifiedUserListMessage(uuid, data.UnverifiedPayload{
+	marshaledPayload, err := json.Marshal(data.UnverifiedPayload{
 		Action: SetUsersAction,
 		Users:  unverifiedUsers,
-	}))
+	})
+	if err != nil {
+		p.log.WithError(err).Errorf("failed to marshal unverified users list")
+		return errors.Wrap(err, "failed to marshal unverified users list")
+	}
+
+	err = p.sender.SendMessageToCustomChannel(data.UnverifiedService, p.buildMessage(uuid, marshaledPayload))
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to publish users to `unverified-svc`")
 		return errors.Wrap(err, "failed to publish users to `unverified-svc`")
@@ -51,10 +57,16 @@ func (p *processor) sendDeleteUser(uuid string, user data.User) error {
 
 	unverifiedUsers = append(unverifiedUsers, createUnverifiedUserFromModuleUser(user, ""))
 
-	err := p.sender.SendMessageToCustomChannel("unverified-svc", p.buildUnverifiedUserListMessage(uuid, data.UnverifiedPayload{
+	marshaledPayload, err := json.Marshal(data.UnverifiedPayload{
 		Action: DeleteUsersAction,
 		Users:  unverifiedUsers,
-	}))
+	})
+	if err != nil {
+		p.log.WithError(err).Errorf("failed to marshal unverified users list")
+		return errors.Wrap(err, "failed to marshal unverified users list")
+	}
+
+	err = p.sender.SendMessageToCustomChannel(data.UnverifiedService, p.buildMessage(uuid, marshaledPayload))
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to publish users to `unverified-svc`")
 		return errors.Wrap(err, "failed to publish users to `unverified-svc`")
@@ -65,16 +77,11 @@ func (p *processor) sendDeleteUser(uuid string, user data.User) error {
 	return nil
 }
 
-func (p *processor) buildUnverifiedUserListMessage(uuid string, unverifiedPayload data.UnverifiedPayload) *message.Message {
-	marshaled, err := json.Marshal(unverifiedPayload)
-	if err != nil {
-		p.log.WithError(err).Errorf("failed to marshal response")
-	}
-
+func (p *processor) buildMessage(uuid string, payload []byte) *message.Message {
 	return &message.Message{
 		UUID:     uuid,
 		Metadata: nil,
-		Payload:  marshaled,
+		Payload:  payload,
 	}
 }
 
@@ -89,4 +96,21 @@ func createUnverifiedUserFromModuleUser(user data.User, submodule string) data.U
 		Phone:     nil,
 		Username:  user.Username,
 	}
+}
+
+func (p *processor) sendUpdateUserTelegram(uuid string, msg data.ModulePayload) error {
+	marshaledPayload, err := json.Marshal(msg)
+	if err != nil {
+		p.log.WithError(err).Errorf("failed to marshal update telegram info")
+		return errors.Wrap(err, "failed to marshal update telegram info")
+	}
+
+	err = p.sender.SendMessageToCustomChannel(data.IdentityService, p.buildMessage(uuid, marshaledPayload))
+	if err != nil {
+		p.log.WithError(err).Errorf("failed to publish users to `identity-svc`")
+		return errors.Wrap(err, "failed to publish users to `identity-svc`")
+	}
+
+	p.log.Infof("successfully published user to `identity-svc`")
+	return nil
 }
