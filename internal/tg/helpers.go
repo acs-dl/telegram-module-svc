@@ -2,11 +2,12 @@ package tg
 
 import (
 	"bufio"
+	"os"
+	"strings"
+
 	pkgErrors "github.com/pkg/errors"
 	"github.com/xelaj/mtproto"
 	"github.com/xelaj/mtproto/telegram"
-	"os"
-	"strings"
 )
 
 func enter(whatToEnter string) string {

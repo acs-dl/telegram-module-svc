@@ -2,10 +2,11 @@ package requests
 
 import (
 	"encoding/json"
+	"net/http"
+
 	validation "github.com/go-ozzo/ozzo-validation"
 	"gitlab.com/distributed_lab/acs/telegram-module/resources"
 	"gitlab.com/distributed_lab/logan/v3/errors"
-	"net/http"
 )
 
 type AddLinkRequest struct {

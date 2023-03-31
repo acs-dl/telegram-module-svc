@@ -1,10 +1,11 @@
 package data
 
 import (
-	"gitlab.com/distributed_lab/acs/telegram-module/resources"
-	"gitlab.com/distributed_lab/kit/pgdb"
 	"net/http"
 	"strconv"
+
+	"gitlab.com/distributed_lab/acs/telegram-module/resources"
+	"gitlab.com/distributed_lab/kit/pgdb"
 
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/distributed_lab/logan/v3/errors"

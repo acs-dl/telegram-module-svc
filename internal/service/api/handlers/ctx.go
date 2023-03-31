@@ -2,9 +2,10 @@ package handlers
 
 import (
 	"context"
+	"net/http"
+
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/config"
 	"gitlab.com/distributed_lab/logan/v3"
-	"net/http"
 
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 )

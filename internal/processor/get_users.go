@@ -1,10 +1,11 @@
 package processor
 
 import (
+	"time"
+
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 	"gitlab.com/distributed_lab/logan/v3/errors"
-	"time"
 )
 
 func (p *processor) validateGetUsers(msg data.ModulePayload) error {
@@ -33,7 +34,7 @@ func (p *processor) handleGetUsersAction(msg data.ModulePayload) error {
 		return nil
 	}
 
-	borderTime := time.Now()
+	usersToUnverified := make([]data.User, 0)
 
 	for _, user := range users {
 		user.CreatedAt = time.Now()
@@ -42,6 +43,7 @@ func (p *processor) handleGetUsersAction(msg data.ModulePayload) error {
 				p.log.WithError(err).Errorf("failed to create user in db for message action with id `%s`", msg.RequestId)
 				return errors.Wrap(err, "failed to create user in user db")
 			}
+			usersToUnverified = append(usersToUnverified, user)
 
 			if err = p.permissionsQ.Upsert(data.Permission{
 				RequestId:   msg.RequestId,
@@ -62,7 +64,7 @@ func (p *processor) handleGetUsersAction(msg data.ModulePayload) error {
 		}
 	}
 
-	err = p.sendUsers(msg.RequestId, borderTime)
+	err = p.sendUsers(msg.RequestId, usersToUnverified)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to publish users for message action with id `%s`", msg.RequestId)
 		return errors.Wrap(err, "failed to publish users")

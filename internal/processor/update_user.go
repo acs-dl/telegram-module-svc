@@ -53,7 +53,7 @@ func (p *processor) handleUpdateUserAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to update user from api")
 	}
 
-	if err = p.permissionsQ.Update(data.Permission{
+	if err = p.permissionsQ.UpdateAccessLevel(data.Permission{
 		TelegramId:  user.TelegramId,
 		AccessLevel: msg.AccessLevel,
 		Link:        msg.Link,

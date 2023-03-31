@@ -3,29 +3,37 @@ package processor
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/ThreeDotsLabs/watermill/message"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 	"gitlab.com/distributed_lab/logan/v3/errors"
-	"time"
 )
 
-func (p *processor) sendUsers(uuid string, borderTime time.Time) error {
-	users, err := p.usersQ.FilterByTime(borderTime).FilterById(nil).Select()
-	if err != nil {
-		p.log.WithError(err).Errorf("failed to select users by date `%s`", borderTime.String())
-		return errors.Wrap(err, "failed to select users by date")
-	}
-
+func (p *processor) sendUsers(uuid string, users []data.User) error {
 	unverifiedUsers := make([]data.UnverifiedUser, 0)
 	for i := range users {
 		if users[i].Id != nil {
 			continue
 		}
 
-		unverifiedUsers = append(unverifiedUsers, createUnverifiedUserFromModuleUser(users[i]))
+		permission, err := p.permissionsQ.
+			FilterByTelegramIds(users[i].TelegramId).
+			FilterByTime(users[i].CreatedAt).
+			Get()
+		if err != nil {
+			p.log.WithError(err).Errorf("failed to select permissions by date `%s`", users[i].CreatedAt.String())
+			return errors.Wrap(err, "failed to select permissions by date")
+		}
+		p.resetFilters()
+
+		if permission == nil {
+			continue
+		}
+
+		unverifiedUsers = append(unverifiedUsers, createUnverifiedUserFromModuleUser(users[i], permission.Link))
 	}
 
-	err = p.sender.SendMessageToCustomChannel("unverified-svc", p.buildUnverifiedUserListMessage(uuid, data.UnverifiedPayload{
+	err := p.sender.SendMessageToCustomChannel("unverified-svc", p.buildUnverifiedUserListMessage(uuid, data.UnverifiedPayload{
 		Action: SetUsersAction,
 		Users:  unverifiedUsers,
 	}))
@@ -34,7 +42,6 @@ func (p *processor) sendUsers(uuid string, borderTime time.Time) error {
 		return errors.Wrap(err, "failed to publish users to `unverified-svc`")
 	}
 
-	p.resetFilters()
 	p.log.Infof("successfully published users to `unverified-svc`")
 	return nil
 }
@@ -42,7 +49,7 @@ func (p *processor) sendUsers(uuid string, borderTime time.Time) error {
 func (p *processor) sendDeleteUser(uuid string, user data.User) error {
 	unverifiedUsers := make([]data.UnverifiedUser, 0)
 
-	unverifiedUsers = append(unverifiedUsers, createUnverifiedUserFromModuleUser(user))
+	unverifiedUsers = append(unverifiedUsers, createUnverifiedUserFromModuleUser(user, ""))
 
 	err := p.sender.SendMessageToCustomChannel("unverified-svc", p.buildUnverifiedUserListMessage(uuid, data.UnverifiedPayload{
 		Action: DeleteUsersAction,
@@ -71,15 +78,15 @@ func (p *processor) buildUnverifiedUserListMessage(uuid string, unverifiedPayloa
 	}
 }
 
-func createUnverifiedUserFromModuleUser(user data.User) data.UnverifiedUser {
-	name := fmt.Sprintf("%s %s", user.FirstName, user.LastName)
+func createUnverifiedUserFromModuleUser(user data.User, submodule string) data.UnverifiedUser {
 	return data.UnverifiedUser{
 		CreatedAt: user.CreatedAt,
 		Module:    data.ModuleName,
+		Submodule: submodule,
 		ModuleId:  fmt.Sprintf("%d", user.TelegramId),
 		Email:     nil,
-		Name:      &name,
-		Phone:     user.Phone,
+		Name:      nil,
+		Phone:     nil,
 		Username:  user.Username,
 	}
 }

@@ -2,11 +2,12 @@ package tg
 
 import (
 	"fmt"
+	"time"
+
 	pkgErrors "github.com/pkg/errors"
 	"github.com/xelaj/mtproto"
 	"github.com/xelaj/mtproto/telegram"
 	"gitlab.com/distributed_lab/logan/v3/errors"
-	"time"
 )
 
 func (t *tg) GetChatFromApi(title string) (*int32, *int64, error) {

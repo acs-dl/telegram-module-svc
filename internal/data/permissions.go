@@ -1,8 +1,9 @@
 package data
 
 import (
-	"gitlab.com/distributed_lab/kit/pgdb"
 	"time"
+
+	"gitlab.com/distributed_lab/kit/pgdb"
 )
 
 const (
@@ -19,7 +20,7 @@ type Permissions interface {
 
 	Create(permission Permission) error
 	Upsert(permission Permission) error
-	Update(permission Permission) error
+	UpdateAccessLevel(permission Permission) error
 	Delete(telegramId int64, link string) error
 
 	Select() ([]Permission, error)
@@ -27,6 +28,7 @@ type Permissions interface {
 
 	FilterByTelegramIds(telegramIds ...int64) Permissions
 	FilterByLinks(links ...string) Permissions
+	FilterByTime(time time.Time) Permissions
 	SearchBy(search string) Permissions
 
 	WithUsers() Permissions
@@ -35,8 +37,6 @@ type Permissions interface {
 	Count() Permissions
 	CountWithUsers() Permissions
 	GetTotalCount() (int64, error)
-
-	ResetFilters() Permissions
 
 	Page(pageParams pgdb.OffsetPageParams) Permissions
 }

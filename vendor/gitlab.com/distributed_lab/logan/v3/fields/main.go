@@ -14,9 +14,9 @@ type fields map[string]interface{}
 
 // Obtain tries to extract fields from `value`, if `value` implements Provider.
 //
-//		type Provider interface {
-//			GetLoganFields() map[string]interface{}
-//		}
+//	type Provider interface {
+//		GetLoganFields() map[string]interface{}
+//	}
 //
 // If `value` does not implement Provider - a map with 1 key and plain value will be returned.
 func Obtain(entityName string, value interface{}) map[string]interface{} {

@@ -3,6 +3,8 @@ package sender
 import (
 	"context"
 	"encoding/json"
+	"time"
+
 	"github.com/ThreeDotsLabs/watermill-amqp/v2/pkg/amqp"
 	"github.com/ThreeDotsLabs/watermill/message"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/config"
@@ -11,7 +13,6 @@ import (
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 	"gitlab.com/distributed_lab/running"
-	"time"
 )
 
 const serviceName = data.ModuleName + "-sender"

@@ -11,19 +11,19 @@ import (
 	"gitlab.com/distributed_lab/running"
 )
 
-//EventsRouterOpts - config for new EventsRouter
+// EventsRouterOpts - config for new EventsRouter
 type EventsRouterOpts struct {
 	Log      *logan.Entry
 	Channel  string
 	Listener *pq.Listener
 }
 
-//EventsRouter - listens to events of postgres channel and sends notification to listeners
+// EventsRouter - listens to events of postgres channel and sends notification to listeners
 type EventsRouter interface {
 	RunNewListener(ctx context.Context, opts EventsListenerOpts)
 }
 
-//NewEventsRouter - creates new EventsRouter and starts corresponding routines
+// NewEventsRouter - creates new EventsRouter and starts corresponding routines
 func NewEventsRouter(ctx context.Context, opts EventsRouterOpts) EventsRouter {
 	r := &router{
 		EventsRouterOpts: opts,
@@ -41,7 +41,7 @@ type router struct {
 	listeners []*eventListener
 }
 
-//RunNewListener - subscribes new listener to postgres events and runs blocking function to process them
+// RunNewListener - subscribes new listener to postgres events and runs blocking function to process them
 func (r *router) RunNewListener(ctx context.Context, opts EventsListenerOpts) {
 	notify := make(chan struct{}, 1) // buffer of 1 is needed to ensure we do not miss event
 	notify <- struct{}{}             // trigger processing of events that were created before start of the listener

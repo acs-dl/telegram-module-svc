@@ -1,8 +1,9 @@
 package data
 
 import (
-	"gitlab.com/distributed_lab/kit/pgdb"
 	"time"
+
+	"gitlab.com/distributed_lab/kit/pgdb"
 )
 
 type Users interface {
@@ -14,14 +15,11 @@ type Users interface {
 	Select() ([]User, error)
 	Get() (*User, error)
 
-	FilterByTime(time time.Time) Users
 	FilterById(id *int64) Users
 	FilterByTelegramIds(telegramIds ...int64) Users
 	FilterByUsername(username string) Users
 	FilterByPhone(phone string) Users
 	SearchBy(search string) Users
-
-	ResetFilters() Users
 
 	Count() Users
 	GetTotalCount() (int64, error)
@@ -46,6 +44,7 @@ type User struct {
 type UnverifiedUser struct {
 	CreatedAt time.Time `json:"created_at"`
 	Module    string    `json:"module"`
+	Submodule string    `json:"submodule"`
 	ModuleId  string    `json:"module_id"`
 	Email     *string   `json:"email,omitempty"`
 	Name      *string   `json:"name,omitempty"`

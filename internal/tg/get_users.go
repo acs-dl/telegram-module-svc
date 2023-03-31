@@ -1,12 +1,13 @@
 package tg
 
 import (
+	"time"
+
 	pkgErrors "github.com/pkg/errors"
 	"github.com/xelaj/mtproto"
 	"github.com/xelaj/mtproto/telegram"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 	"gitlab.com/distributed_lab/logan/v3/errors"
-	"time"
 )
 
 func (t *tg) GetUsersFromApi(title string) ([]data.User, error) {
