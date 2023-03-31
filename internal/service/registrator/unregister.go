@@ -2,8 +2,9 @@ package registrator
 
 import (
 	"fmt"
-	"gitlab.com/distributed_lab/logan/v3/errors"
 	"net/http"
+
+	"gitlab.com/distributed_lab/logan/v3/errors"
 )
 
 func UnregisterModule(name, outerEndpoint string) error {

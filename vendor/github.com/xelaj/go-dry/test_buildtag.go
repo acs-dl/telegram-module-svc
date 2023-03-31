@@ -3,6 +3,7 @@
 // This file is a part of go-dry package.
 // See https://github.com/xelaj/go-dry/blob/master/LICENSE for details
 
+//go:build test
 // +build test
 
 package dry

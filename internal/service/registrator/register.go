@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"net/http"
+
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/config"
 	"gitlab.com/distributed_lab/acs/telegram-module/resources"
 	"gitlab.com/distributed_lab/logan/v3/errors"
-	"net/http"
 )
 
 func RegisterModule(name string, cfg config.RegistratorConfig) error {

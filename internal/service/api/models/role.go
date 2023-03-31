@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+
 	"gitlab.com/distributed_lab/acs/telegram-module/resources"
 )
 

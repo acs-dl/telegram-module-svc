@@ -3,11 +3,11 @@ package postgres
 import (
 	"database/sql"
 	"fmt"
+	"strings"
+
 	"github.com/fatih/structs"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 	"gitlab.com/distributed_lab/logan/v3/errors"
-	"strings"
-	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"gitlab.com/distributed_lab/kit/pgdb"
@@ -20,18 +20,19 @@ type UsersQ struct {
 	sql sq.SelectBuilder
 }
 
-var selectedUsersTable = sq.Select("*").From(usersTableName)
-
-var usersColumns = []string{
-	usersTableName + ".id",
-	usersTableName + ".username",
-	usersTableName + ".phone",
-	usersTableName + ".telegram_id",
-	usersTableName + ".access_hash",
-	usersTableName + ".first_name",
-	usersTableName + ".last_name",
-	usersTableName + ".created_at",
-}
+var (
+	usersColumns = []string{
+		usersTableName + ".id",
+		usersTableName + ".username",
+		usersTableName + ".phone",
+		usersTableName + ".telegram_id",
+		usersTableName + ".access_hash",
+		usersTableName + ".first_name",
+		usersTableName + ".last_name",
+		usersTableName + ".created_at",
+	}
+	selectedUsersTable = sq.Select("*").From(usersTableName)
+)
 
 func NewUsersQ(db *pgdb.DB) data.Users {
 	return &UsersQ{
@@ -67,31 +68,21 @@ func (q *UsersQ) Upsert(user data.User) error {
 	return q.db.Exec(query)
 }
 
-func (q *UsersQ) GetById(id int64) (*data.User, error) {
-	query := q.sql.Where(sq.Eq{"id": id})
-
-	var result data.User
-	err := q.db.Get(&result, query)
-
-	if err == sql.ErrNoRows {
-		return nil, nil
-	}
-
-	return &result, err
-}
-
 func (q *UsersQ) Delete(telegramId int64) error {
-	query := sq.Delete(usersTableName).Where(
-		sq.Eq{"telegram_id": telegramId})
+	var deleted []data.Response
 
-	result, err := q.db.ExecWithResult(query)
+	query := sq.Delete(usersTableName).
+		Where(sq.Eq{
+			"telegram_id": telegramId,
+		}).
+		Suffix("RETURNING *")
+
+	err := q.db.Select(&deleted, query)
 	if err != nil {
 		return err
 	}
-
-	affectedRows, _ := result.RowsAffected()
-	if affectedRows == 0 {
-		return errors.Errorf("no users with id `%d`", telegramId)
+	if len(deleted) == 0 {
+		return errors.Errorf("no rows with `%d` telegram id", telegramId)
 	}
 
 	return nil
@@ -114,12 +105,6 @@ func (q *UsersQ) Select() ([]data.User, error) {
 	err := q.db.Select(&result, q.sql)
 
 	return result, err
-}
-
-func (q *UsersQ) FilterByTime(time time.Time) data.Users {
-	q.sql = q.sql.Where(sq.Gt{usersTableName + ".created_at": time})
-
-	return q
 }
 
 func (q *UsersQ) FilterById(id *int64) data.Users {
@@ -177,10 +162,4 @@ func (q *UsersQ) GetTotalCount() (int64, error) {
 	err := q.db.Get(&count, q.sql)
 
 	return count, err
-}
-
-func (q *UsersQ) ResetFilters() data.Users {
-	q.sql = selectedUsersTable
-
-	return q
 }

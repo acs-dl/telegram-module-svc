@@ -2,11 +2,12 @@ package tg
 
 import (
 	"fmt"
+	"time"
+
 	pkgErrors "github.com/pkg/errors"
 	"github.com/xelaj/mtproto"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 	"gitlab.com/distributed_lab/logan/v3/errors"
-	"time"
 )
 
 func (t *tg) GetChatUserFromApi(username, phone *string, title string) (*data.User, error) {
