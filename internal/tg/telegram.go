@@ -19,6 +19,8 @@ type TelegramClient interface {
 	GetChatUserFromApi(username, phone *string, title string) (*data.User, error)
 	SearchByFromApi(username, phone *string, amount int64) ([]data.User, error)
 
+	GetChatFromApi(title string) (id *int32, accessHash *int64, err error)
+
 	AddUserInChatFromApi(username, phone *string, title string) error
 	UpdateUserInChatFromApi(username, phone *string, title string) error
 	DeleteFromChatFromApi(username, phone *string, title string) error

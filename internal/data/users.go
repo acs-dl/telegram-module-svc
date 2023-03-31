@@ -17,8 +17,8 @@ type Users interface {
 	FilterByTime(time time.Time) Users
 	FilterById(id *int64) Users
 	FilterByTelegramIds(telegramIds ...int64) Users
-	FilterByUsernames(usernames ...string) Users
-	FilterByPhones(phones ...string) Users
+	FilterByUsername(username string) Users
+	FilterByPhone(phone string) Users
 	SearchBy(search string) Users
 
 	ResetFilters() Users

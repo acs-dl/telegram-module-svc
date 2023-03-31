@@ -78,6 +78,8 @@ func (p *processor) handleDeleteUserAction(msg data.ModulePayload) error {
 			return errors.Wrap(err, "failed to publish delete user")
 		}
 	}
+
+	p.resetFilters()
 	p.log.Infof("finish handle message action with id `%s`", msg.RequestId)
 	return nil
 }

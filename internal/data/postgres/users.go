@@ -136,14 +136,18 @@ func (q *UsersQ) FilterByTelegramIds(telegramIds ...int64) data.Users {
 	return q
 }
 
-func (q *UsersQ) FilterByUsernames(usernames ...string) data.Users {
-	q.sql = q.sql.Where(sq.Eq{usersTableName + ".username": usernames})
+func (q *UsersQ) FilterByUsername(username string) data.Users {
+	if username != "" {
+		q.sql = q.sql.Where(sq.Eq{usersTableName + ".username": username})
+	}
 
 	return q
 }
 
-func (q *UsersQ) FilterByPhones(phones ...string) data.Users {
-	q.sql = q.sql.Where(sq.Eq{usersTableName + ".phone": phones})
+func (q *UsersQ) FilterByPhone(phone string) data.Users {
+	if phone != "" {
+		q.sql = q.sql.Where(sq.Eq{usersTableName + ".phone": phone})
+	}
 
 	return q
 }
