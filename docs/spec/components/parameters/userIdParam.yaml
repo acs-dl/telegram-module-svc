@@ -1,0 +1,9 @@
+in: query
+name: 'filter[userId]'
+required: true
+schema:
+  type: string
+  description: >-
+    Filter by user id from identity. If user id param is not specified, permissions for all 
+    users arer returned.
+  example: "666"

@@ -1,0 +1,1 @@
+* it's not obvious how to pass resource id to problems.NotAllowed in batch update scenario
