@@ -8,7 +8,7 @@ type UserInfoAttributes struct {
 	// name from gitlab account
 	Name string `json:"name"`
 	// phone from telegram
-	Phone string `json:"phone"`
+	Phone *string `json:"phone,omitempty"`
 	// username from telegram
-	Username string `json:"username"`
+	Username *string `json:"username,omitempty"`
 }

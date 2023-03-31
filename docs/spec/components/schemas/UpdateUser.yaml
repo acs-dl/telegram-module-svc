@@ -2,8 +2,6 @@ type: object
 required:
   - action
   - link
-  - username
-  - access_level
 properties:
   action:
     type: string
@@ -15,9 +13,9 @@ properties:
     example: "distributed_lab/acs"
   username:
     type: string
-    description: user's username from gitlab
+    description: user's username from telegram
     example: "slandymani"
-  access_level:
-    type: int
-    description: user's id from identity
-    example: 123
+  phone:
+    type: string
+    description: phone from telegram
+    example: "380..."

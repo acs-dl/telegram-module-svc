@@ -26,12 +26,6 @@ func (r *LinksQ) New() data.Links {
 	return NewLinksQ(r.db)
 }
 
-func (r *LinksQ) FilterByLinks(links ...string) data.Links {
-	stmt := sq.Eq{linksTableName + ".link": links}
-	r.selectBuilder = r.selectBuilder.Where(stmt)
-	return r
-}
-
 func (r *LinksQ) Get() (*data.Link, error) {
 	var result data.Link
 	err := r.db.Get(&result, r.selectBuilder)
@@ -56,17 +50,20 @@ func (r *LinksQ) Insert(link data.Link) error {
 }
 
 func (r *LinksQ) Delete(link string) error {
-	query := sq.Delete(linksTableName).Where(
-		sq.Eq{"link": link})
+	var deleted []data.Response
 
-	result, err := r.db.ExecWithResult(query)
+	query := sq.Delete(linksTableName).
+		Where(sq.Eq{
+			"link": link,
+		}).
+		Suffix("RETURNING *")
+
+	err := r.db.Select(&deleted, query)
 	if err != nil {
 		return err
 	}
-
-	affectedRows, _ := result.RowsAffected()
-	if affectedRows == 0 {
-		return errors.New("no such link")
+	if len(deleted) == 0 {
+		return errors.Errorf("no rows with `%s` link", link)
 	}
 
 	return nil

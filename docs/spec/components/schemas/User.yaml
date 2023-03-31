@@ -7,7 +7,6 @@ allOf:
       attributes:
         type: object
         required:
-          - username
           - module
         properties:
           user_id:
@@ -22,6 +21,10 @@ allOf:
             type: string
             description: username from telegram
             example: "mhrynenko"
+          phone:
+            type: string
+            description: phone from telegram
+            example: "380..."
           module:
             type: string
             description: module name

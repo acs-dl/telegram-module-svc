@@ -2,11 +2,12 @@ package tg
 
 import (
 	"fmt"
+	"time"
+
 	pkgErrors "github.com/pkg/errors"
 	"github.com/xelaj/mtproto"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 	"gitlab.com/distributed_lab/logan/v3/errors"
-	"time"
 )
 
 func (t *tg) GetChatUserFromApi(username, phone *string, title string) (*data.User, error) {
@@ -21,7 +22,7 @@ func (t *tg) GetChatUserFromApi(username, phone *string, title string) (*data.Us
 			timeoutDuration := time.Second * time.Duration(errResponse.AdditionalInfo.(int))
 			t.log.Warnf("we need to wait `%s`", timeoutDuration.String())
 			time.Sleep(timeoutDuration)
-			return t.getChatUserFlow(username, phone, title)
+			return t.GetChatUserFromApi(username, phone, title)
 		}
 
 		t.log.WithError(err).Errorf("failed to get chat user")
@@ -33,14 +34,15 @@ func (t *tg) GetChatUserFromApi(username, phone *string, title string) (*data.Us
 }
 
 func (t *tg) getChatUserFlow(username, phone *string, title string) (*data.User, error) {
-	id, accessHash, err := t.findChatByTitle(title)
+	id, accessHash, err := t.GetChatFromApi(title)
 	if err != nil {
 		t.log.WithError(err).Errorf("failed to find chat %s", title)
 		return nil, err
 	}
 
-	user, err := t.getUserFlow(username, phone)
+	user, err := t.GetUserFromApi(username, phone)
 	if err != nil {
+		t.log.WithError(err).Errorf("failed to get user")
 		return nil, err
 	}
 

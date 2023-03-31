@@ -1,12 +1,14 @@
 package handlers
 
 import (
+	"net/http"
+
+	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/service/api/models"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/service/api/requests"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/tg"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
-	"net/http"
 )
 
 func GetRoles(w http.ResponseWriter, r *http.Request) {
@@ -22,21 +24,28 @@ func GetRoles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	username := ""
 	if request.Username != nil {
-		//GET user by phone of username
-		user, err := UsersQ(r).FilterByUsernames(*request.Username).Get()
-		if err != nil {
-			Log(r).WithError(err).Infof("failed to get user with `%s` username", *request.Username)
-			ape.RenderErr(w, problems.InternalError())
-		}
-		if user == nil {
-			Log(r).WithError(err).Infof("no user was found with `%s` username", *request.Username)
-			ape.RenderErr(w, problems.InternalError())
-		}
+		username = *request.Username
+	}
 
+	phone := ""
+	if request.Phone != nil {
+		phone = *request.Phone
+		if phone[0:1] == "+" {
+			phone = phone[1:]
+		}
+	}
+
+	user, err := UsersQ(r).FilterByUsername(username).FilterByPhone(phone).Get()
+	if err != nil {
+		Log(r).WithError(err).Infof("failed to get user with `%s` username and `%s` phone", username, phone)
+		ape.RenderErr(w, problems.InternalError())
+	}
+	if user != nil {
 		permission, err := PermissionsQ(r).FilterByTelegramIds(user.TelegramId).FilterByLinks(*request.Link).Get()
 		if err != nil {
-			Log(r).WithError(err).Infof("failed to get permission from `%s` to `%s`", *request.Link, *request.Username)
+			Log(r).WithError(err).Infof("failed to get permission from `%s` to `%s`/`%s`", *request.Link, username, phone)
 			ape.RenderErr(w, problems.BadRequest(err)...)
 			return
 		}
@@ -47,19 +56,18 @@ func GetRoles(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if request.Username != nil {
-		chatUser, err := tg.NewTg(Params(r), Log(r)).GetChatUserFromApi(request.Username, nil, *request.Link)
-		if err != nil {
-			Log(r).WithError(err).Info("failed to check user from api")
-			ape.RenderErr(w, problems.InternalError())
-			return
-		}
-
-		if chatUser != nil {
-			ape.Render(w, models.NewRolesResponse(true, chatUser.AccessLevel))
-			return
-		}
+	chatUser, err := tg.NewTg(Params(r), Log(r)).GetChatUserFromApi(request.Username, request.Phone, *request.Link)
+	if err != nil {
+		Log(r).WithError(err).Info("failed to check user from api")
+		ape.RenderErr(w, problems.InternalError())
+		return
 	}
 
-	ape.Render(w, models.NewRolesResponse(true, ""))
+	if chatUser != nil {
+		ape.Render(w, models.NewRolesResponse(true, chatUser.AccessLevel))
+		return
+	}
+
+	// when we add user ALWAYS member
+	ape.Render(w, models.NewRolesResponse(true, data.Admin))
 }

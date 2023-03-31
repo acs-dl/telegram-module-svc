@@ -1,12 +1,13 @@
 package tg
 
 import (
+	"time"
+
 	pkgErrors "github.com/pkg/errors"
 	"github.com/xelaj/mtproto"
 	"github.com/xelaj/mtproto/telegram"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 	"gitlab.com/distributed_lab/logan/v3/errors"
-	"time"
 )
 
 func (t *tg) GetUsersFromApi(title string) ([]data.User, error) {
@@ -72,6 +73,7 @@ func (t *tg) getAllUsers(id int32, hashID *int64) ([]data.User, error) {
 		return nil, errors.Errorf("no users in chat with id `%d` and hash `%d`", id, hashID)
 	}
 
+	t.log.Infof("found `%d` users", len(users))
 	return users, nil
 }
 
@@ -88,15 +90,15 @@ func (t *tg) getAllUsersFromChat(chatId int32) ([]data.User, error) {
 		//can't be so, because this `MessagesGetFullChat` returns chat, not channel, BUT I suppose we need to process such case
 		t.log.Errorf("chat can't be channel")
 		return nil, errors.Errorf("chat can't be channel")
-	case *telegram.ChatFullObj: // member
+	case *telegram.ChatFullObj:
 		for _, participant := range full.Participants.(*telegram.ChatParticipantsObj).Participants {
 			switch user := participant.(type) {
 			case *telegram.ChatParticipantObj: // member
-				userStatus[user.UserID] = "member"
+				userStatus[user.UserID] = data.Member
 			case *telegram.ChatParticipantCreator: // owner
-				userStatus[user.UserID] = "owner"
+				userStatus[user.UserID] = data.Owner
 			case *telegram.ChatParticipantAdmin: // admin
-				userStatus[user.UserID] = "admin"
+				userStatus[user.UserID] = data.Admin
 			default:
 				t.log.Errorf("unexpected user type %T", user)
 				return nil, errors.Errorf("unexpected user type %T", user)
@@ -113,8 +115,8 @@ func (t *tg) getAllUsersFromChat(chatId int32) ([]data.User, error) {
 	for i := range fullChat.Users {
 		tgUser := fullChat.Users[i].(*telegram.UserObj)
 		users = append(users, data.User{
-			Username:    tgUser.Username,
-			Phone:       tgUser.Phone,
+			Username:    &tgUser.Username,
+			Phone:       &tgUser.Phone,
 			FirstName:   tgUser.FirstName,
 			LastName:    tgUser.LastName,
 			TelegramId:  int64(tgUser.ID),
@@ -127,13 +129,12 @@ func (t *tg) getAllUsersFromChat(chatId int32) ([]data.User, error) {
 }
 
 func (t *tg) getAllUsersFromChannel(id int32, hashID *int64) ([]data.User, error) {
-	var totalAmount int32 = -5
 	var tgUsers []telegram.User
 	var dbUsers []data.User
 	var limit int32 = 1000
 	var offset int32 = 0
 
-	for totalAmount != int32(len(tgUsers)) {
+	for {
 		participants, err := t.client.ChannelsGetParticipants(&telegram.InputChannelObj{
 			ChannelID:  id,
 			AccessHash: *hashID}, &telegram.ChannelParticipantsSearch{}, offset, limit, 0)
@@ -157,34 +158,40 @@ func (t *tg) getAllUsersFromChannel(id int32, hashID *int64) ([]data.User, error
 		userStatus := map[int32]string{}
 		participantsObject := participants.(*telegram.ChannelsChannelParticipantsObj)
 
+		if len(participantsObject.Users) == 0 {
+			break
+		}
+
 		for _, participant := range participantsObject.Participants {
 			switch user := participant.(type) {
-			case *telegram.ChannelParticipantSelf: // myself - it exists in tg api, but IDK when and why it is used
-				userStatus[user.UserID] = "self"
+			case *telegram.ChannelParticipantSelf: // myself - it exists in tg api, when user (whose acc we use) isn't admin, but can get participant list user's status is 'self'
+				userStatus[user.UserID] = data.Member
 			case *telegram.ChannelParticipantObj: // member
-				userStatus[user.UserID] = "member"
+				userStatus[user.UserID] = data.Member
 			case *telegram.ChannelParticipantAdmin: // Admin
-				userStatus[user.UserID] = "admin"
+				userStatus[user.UserID] = data.Admin
 			case *telegram.ChannelParticipantCreator: // Owner
-				userStatus[user.UserID] = "owner"
+				userStatus[user.UserID] = data.Owner
 			case *telegram.ChannelParticipantBanned: // Banned/kicked user
-				userStatus[user.UserID] = "banned"
+				userStatus[user.UserID] = data.Banned
 			case *telegram.ChannelParticipantLeft: // A participant that left the channel/supergroup
-				userStatus[user.UserID] = "left"
+				userStatus[user.UserID] = data.Left
 			default:
 				t.log.Errorf("unexpected user type %T", user)
 				return nil, errors.Errorf("unexpected user type %T", user)
 			}
 		}
 
-		totalAmount = participantsObject.Count
 		tgUsers = append(tgUsers, removeDuplicateUser(participantsObject.Users)...)
 
 		for i := range participantsObject.Users {
 			tgUser := participantsObject.Users[i].(*telegram.UserObj)
+			if userStatus[tgUser.ID] == "" {
+				continue
+			}
 			dbUsers = append(dbUsers, data.User{
-				Username:    tgUser.Username,
-				Phone:       tgUser.Phone,
+				Username:    &tgUser.Username,
+				Phone:       &tgUser.Phone,
 				FirstName:   tgUser.FirstName,
 				LastName:    tgUser.LastName,
 				TelegramId:  int64(tgUser.ID),

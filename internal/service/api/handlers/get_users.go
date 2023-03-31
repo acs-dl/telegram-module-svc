@@ -1,12 +1,13 @@
 package handlers
 
 import (
+	"net/http"
+
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/service/api/models"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/service/api/requests"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/tg"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
-	"net/http"
 )
 
 func GetUsers(w http.ResponseWriter, r *http.Request) {
@@ -34,7 +35,6 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//TODO: check how it works
 	users, err = tg.NewTg(Params(r), Log(r)).SearchByFromApi(request.Username, request.Phone, 10)
 	if err != nil {
 		Log(r).WithError(err).Infof("failed to get users from api by `%s`", username)

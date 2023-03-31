@@ -1,18 +1,22 @@
 package processor
 
 import (
+	"strconv"
+	"time"
+
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 	"gitlab.com/distributed_lab/logan/v3/errors"
-	"strconv"
-	"time"
 )
 
 func (p *processor) validateAddUser(msg data.ModulePayload) error {
+	phoneValidationCase := validation.When(msg.Username == nil, validation.Required.Error("phone is required if username is not set"))
+	usernameValidationCase := validation.When(msg.Phone == nil, validation.Required.Error("username is required if phone is not set"))
+
 	return validation.Errors{
 		"link":     validation.Validate(msg.Link, validation.Required),
-		"username": validation.Validate(msg.Username, validation.Required),
-		"phone":    validation.Validate(msg.Phone, validation.Required),
+		"username": validation.Validate(msg.Username, usernameValidationCase),
+		"phone":    validation.Validate(msg.Phone, phoneValidationCase),
 		"user_id":  validation.Validate(msg.UserId, validation.Required),
 	}.Filter()
 }
@@ -32,13 +36,13 @@ func (p *processor) handleAddUserAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to parse user id")
 	}
 
-	err = p.telegramClient.AddUserInChatFromApi(&msg.Username, &msg.Phone, msg.Link)
+	err = p.telegramClient.AddUserInChatFromApi(msg.Username, msg.Phone, msg.Link)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to add user from API for message action with id `%s`", msg.RequestId)
 		return errors.Wrap(err, "failed to add user from api")
 	}
 
-	user, err := p.telegramClient.GetChatUserFromApi(&msg.Username, &msg.Phone, msg.Link)
+	user, err := p.telegramClient.GetChatUserFromApi(msg.Username, msg.Phone, msg.Link)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to get chat user from API for message action with id `%s`", msg.RequestId)
 		return errors.Wrap(err, "failed to get chat user from api")
@@ -74,6 +78,18 @@ func (p *processor) handleAddUserAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to make add user transaction")
 	}
 
+	err = p.sendDeleteUser(msg.RequestId, *user)
+	if err != nil {
+		p.log.WithError(err).Errorf("failed to publish users for message action with id `%s`", msg.RequestId)
+		return errors.Wrap(err, "failed to publish users")
+	}
+
+	p.resetFilters()
 	p.log.Infof("finish handle message action with id `%s`", msg.RequestId)
 	return nil
+}
+
+func (p *processor) resetFilters() {
+	p.usersQ = p.usersQ.New()
+	p.permissionsQ = p.permissionsQ.New()
 }

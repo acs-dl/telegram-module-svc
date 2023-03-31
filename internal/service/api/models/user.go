@@ -1,9 +1,10 @@
 package models
 
 import (
+	"strconv"
+
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 	"gitlab.com/distributed_lab/acs/telegram-module/resources"
-	"strconv"
 )
 
 func NewUserModel(user data.User, id int) resources.User {
@@ -15,6 +16,7 @@ func NewUserModel(user data.User, id int) resources.User {
 		Attributes: resources.UserAttributes{
 			UserId:    user.Id,
 			Username:  user.Username,
+			Phone:     user.Phone,
 			Module:    data.ModuleName,
 			CreatedAt: &user.CreatedAt,
 		},

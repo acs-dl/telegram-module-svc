@@ -13,8 +13,10 @@ type UserAttributes struct {
 	CreatedAt *time.Time `json:"created_at,omitempty"`
 	// module name
 	Module string `json:"module"`
+	// phone from telegram
+	Phone *string `json:"phone,omitempty"`
 	// user id from identity module, if user is not verified - null
 	UserId *int64 `json:"user_id,omitempty"`
 	// username from telegram
-	Username string `json:"username"`
+	Username *string `json:"username,omitempty"`
 }

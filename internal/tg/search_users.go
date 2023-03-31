@@ -2,12 +2,13 @@ package tg
 
 import (
 	"fmt"
+	"time"
+
 	pkgErrors "github.com/pkg/errors"
 	"github.com/xelaj/mtproto"
 	"github.com/xelaj/mtproto/telegram"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 	"gitlab.com/distributed_lab/logan/v3/errors"
-	"time"
 )
 
 func (t *tg) SearchByFromApi(username, phone *string, amount int64) ([]data.User, error) {
@@ -68,8 +69,8 @@ func (t *tg) searchUsersByPhone(phone string, amount int64) ([]data.User, error)
 	for i, user := range imported.Users {
 		tgUser := user.(*telegram.UserObj)
 		users = append(users, data.User{
-			Username:   tgUser.Username,
-			Phone:      tgUser.Phone,
+			Username:   &tgUser.Username,
+			Phone:      &tgUser.Phone,
 			FirstName:  tgUser.FirstName,
 			LastName:   tgUser.LastName,
 			TelegramId: int64(tgUser.ID),
@@ -80,7 +81,7 @@ func (t *tg) searchUsersByPhone(phone string, amount int64) ([]data.User, error)
 		}
 	}
 
-	t.log.Errorf("found %v users with phone `%s`", len(users), phone)
+	t.log.Infof("found %v users with phone `%s`", len(users), phone)
 	return users, nil
 }
 
@@ -96,8 +97,8 @@ func (t *tg) searchUsersByUsername(username string, amount int64) ([]data.User, 
 	for _, user := range search.Users {
 		tgUser := user.(*telegram.UserObj)
 		users = append(users, data.User{
-			Username:   tgUser.Username,
-			Phone:      tgUser.Phone,
+			Username:   &tgUser.Username,
+			Phone:      &tgUser.Phone,
 			FirstName:  tgUser.FirstName,
 			LastName:   tgUser.LastName,
 			TelegramId: int64(tgUser.ID),
@@ -105,6 +106,6 @@ func (t *tg) searchUsersByUsername(username string, amount int64) ([]data.User, 
 		})
 	}
 
-	t.log.Errorf("found %v users with username `%s`", len(users), username)
+	t.log.Infof("found %v users with username `%s`", len(users), username)
 	return users, nil
 }

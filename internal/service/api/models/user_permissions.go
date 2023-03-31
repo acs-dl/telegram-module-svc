@@ -1,9 +1,10 @@
 package models
 
 import (
+	"strconv"
+
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 	"gitlab.com/distributed_lab/acs/telegram-module/resources"
-	"strconv"
 )
 
 func NewUserPermissionModel(permission data.Permission, counter int) resources.UserPermission {
@@ -15,10 +16,10 @@ func NewUserPermissionModel(permission data.Permission, counter int) resources.U
 		Attributes: resources.UserPermissionAttributes{
 			Username: permission.Username,
 			Phone:    permission.Phone,
-			ModuleId: permission.TelegramId,
+			ModuleId: permission.User.TelegramId,
 			UserId:   permission.Id,
-			Level:    1,
 			Link:     permission.Link,
+			Path:     permission.Link,
 			AccessLevel: resources.AccessLevel{
 				Name:  data.Roles[permission.AccessLevel],
 				Value: permission.AccessLevel,

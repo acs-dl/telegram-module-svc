@@ -1,10 +1,11 @@
 package requests
 
 import (
-	"github.com/go-chi/chi"
-	"gitlab.com/distributed_lab/logan/v3/errors"
 	"net/http"
 	"strconv"
+
+	"github.com/go-chi/chi"
+	"gitlab.com/distributed_lab/logan/v3/errors"
 )
 
 func NewGetUserByIdRequest(r *http.Request) (int64, error) {
