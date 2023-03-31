@@ -3,7 +3,6 @@ package receiver
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"time"
 
 	"github.com/ThreeDotsLabs/watermill-amqp/v2/pkg/amqp"
@@ -49,20 +48,7 @@ func (r *Receiver) Run(ctx context.Context) {
 
 func (r *Receiver) listenMessages(ctx context.Context) error {
 	r.log.Info("started listening messages")
-	r.startSubscriber(ctx, r.topic)
-	return nil
-}
-
-func (r *Receiver) startSubscriber(ctx context.Context, topic string) {
-	go running.WithBackOff(ctx, r.log,
-		fmt.Sprint(serviceName, "_", topic),
-		func(ctx context.Context) error {
-			return r.subscribeForTopic(ctx, topic)
-		},
-		30*time.Second,
-		30*time.Second,
-		30*time.Second,
-	)
+	return r.subscribeForTopic(ctx, r.topic)
 }
 
 func (r *Receiver) subscribeForTopic(ctx context.Context, topic string) error {
