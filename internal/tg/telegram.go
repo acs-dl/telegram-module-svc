@@ -19,6 +19,8 @@ type TelegramClient interface {
 	GetChatUserFromApi(username, phone *string, title string) (*data.User, error)
 	SearchByFromApi(username, phone *string, amount int64) ([]data.User, error)
 
+	GetChatFromApi(title string) (id *int32, accessHash *int64, err error)
+
 	AddUserInChatFromApi(username, phone *string, title string) error
 	UpdateUserInChatFromApi(username, phone *string, title string) error
 	DeleteFromChatFromApi(username, phone *string, title string) error
@@ -36,10 +38,6 @@ func NewTg(cfg *config.TelegramCfg, log *logan.Entry) TelegramClient {
 		panic(errors.Wrap(err, "failed to get current directory path"))
 	}
 
-	if err != nil {
-		log.WithError(err).Errorf("failed to get `telegram-module` path")
-		panic(errors.Wrap(err, "failed to get `telegram-module` path"))
-	}
 	sessionFile := filepath.Join(currentDir, "session.json")
 	publicKeys := filepath.Join(currentDir, "tg_public_keys.pem")
 

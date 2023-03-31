@@ -18,10 +18,12 @@ CREATE TABLE IF NOT EXISTS users (
     first_name TEXT NOT NULL,
     last_name TEXT NOT NULL,
     phone TEXT UNIQUE,
-    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX IF NOT EXISTS users_idx ON users(id, username, phone, telegram_id);
+CREATE INDEX IF NOT EXISTS users_id_idx ON users(id);
+CREATE INDEX IF NOT EXISTS users_username_idx ON users(username);
+CREATE INDEX IF NOT EXISTS users_telegramId_idx ON users(telegram_id);
 
 CREATE TABLE IF NOT EXISTS links (
     id SERIAL PRIMARY KEY,
@@ -30,6 +32,8 @@ CREATE TABLE IF NOT EXISTS links (
 );
 INSERT INTO links (link) VALUES ('HELP TG API');
 INSERT INTO links (link) VALUES ('WE vs. ACS');
+INSERT INTO links (link) VALUES ('Messenger Internal');
+INSERT INTO links (link) VALUES ('DL / Make TokenE even better');
 
 CREATE INDEX IF NOT EXISTS links_link_idx ON links(link);
 
@@ -46,7 +50,8 @@ CREATE TABLE IF NOT EXISTS permissions (
     FOREIGN KEY(link) REFERENCES links(link) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE INDEX IF NOT EXISTS permissions_idx ON permissions(telegram_id, link);
+CREATE INDEX IF NOT EXISTS permissions_telegramId_idx ON permissions(telegram_id, link);
+CREATE INDEX IF NOT EXISTS permissions_link_idx ON permissions(telegram_id, link);
 
 -- +migrate Down
 
@@ -55,8 +60,13 @@ DROP TABLE IF EXISTS responses;
 DROP TABLE IF EXISTS links;
 DROP TABLE IF EXISTS users;
 
-DROP INDEX IF EXISTS users_idx;
+DROP INDEX IF EXISTS users_id_idx;
+DROP INDEX IF EXISTS users_username_idx;
+DROP INDEX IF EXISTS users_telegramId_idx;
+
 DROP INDEX IF EXISTS links_link_idx;
-DROP INDEX IF EXISTS permissions_idx;
+
+DROP INDEX IF EXISTS permissions_telegramId_idx;
+DROP INDEX IF EXISTS permissions_link_idx;
 
 DROP TYPE IF EXISTS telegram_access_levels_enum;

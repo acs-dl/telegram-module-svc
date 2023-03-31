@@ -54,14 +54,13 @@ func (q *UsersQ) Upsert(user data.User) error {
 
 	clauses := structs.Map(user)
 
-	updateQuery := sq.Update(" ").
-		Set("created_at", time.Now())
+	updateStmt := "NOTHING"
+	var args []interface{}
 
 	if user.Id != nil {
-		updateQuery = updateQuery.Set("id", *user.Id)
+		updateQuery := sq.Update(" ").Set("id", *user.Id)
+		updateStmt, args = updateQuery.MustSql()
 	}
-
-	updateStmt, args := updateQuery.MustSql()
 
 	query := sq.Insert(usersTableName).SetMap(clauses).Suffix("ON CONFLICT (telegram_id) DO "+updateStmt, args...)
 
@@ -117,6 +116,12 @@ func (q *UsersQ) Select() ([]data.User, error) {
 	return result, err
 }
 
+func (q *UsersQ) FilterByTime(time time.Time) data.Users {
+	q.sql = q.sql.Where(sq.Gt{usersTableName + ".created_at": time})
+
+	return q
+}
+
 func (q *UsersQ) FilterById(id *int64) data.Users {
 	stmt := sq.Eq{usersTableName + ".id": id}
 
@@ -131,14 +136,18 @@ func (q *UsersQ) FilterByTelegramIds(telegramIds ...int64) data.Users {
 	return q
 }
 
-func (q *UsersQ) FilterByUsernames(usernames ...string) data.Users {
-	q.sql = q.sql.Where(sq.Eq{usersTableName + ".username": usernames})
+func (q *UsersQ) FilterByUsername(username string) data.Users {
+	if username != "" {
+		q.sql = q.sql.Where(sq.Eq{usersTableName + ".username": username})
+	}
 
 	return q
 }
 
-func (q *UsersQ) FilterByPhones(phones ...string) data.Users {
-	q.sql = q.sql.Where(sq.Eq{usersTableName + ".phone": phones})
+func (q *UsersQ) FilterByPhone(phone string) data.Users {
+	if phone != "" {
+		q.sql = q.sql.Where(sq.Eq{usersTableName + ".phone": phone})
+	}
 
 	return q
 }
@@ -171,7 +180,7 @@ func (q *UsersQ) GetTotalCount() (int64, error) {
 }
 
 func (q *UsersQ) ResetFilters() data.Users {
-	q.sql = selectedResponsesTable
+	q.sql = selectedUsersTable
 
 	return q
 }

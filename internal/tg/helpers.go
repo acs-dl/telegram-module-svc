@@ -2,7 +2,6 @@ package tg
 
 import (
 	"bufio"
-	"fmt"
 	pkgErrors "github.com/pkg/errors"
 	"github.com/xelaj/mtproto"
 	"github.com/xelaj/mtproto/telegram"
@@ -11,7 +10,6 @@ import (
 )
 
 func enter(whatToEnter string) string {
-	fmt.Print(whatToEnter, ": ")
 	entered, _ := bufio.NewReader(os.Stdin).ReadString('\n')
 	entered = strings.ReplaceAll(entered, "\n", "")
 

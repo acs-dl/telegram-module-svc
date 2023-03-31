@@ -77,6 +77,18 @@ func (p *processor) handleAddUserAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to make add user transaction")
 	}
 
+	err = p.sendUsers(msg.RequestId, user.CreatedAt)
+	if err != nil {
+		p.log.WithError(err).Errorf("failed to publish users for message action with id `%s`", msg.RequestId)
+		return errors.Wrap(err, "failed to publish users")
+	}
+
+	p.resetFilters()
 	p.log.Infof("finish handle message action with id `%s`", msg.RequestId)
 	return nil
+}
+
+func (p *processor) resetFilters() {
+	p.usersQ.ResetFilters()
+	p.permissionsQ.ResetFilters()
 }

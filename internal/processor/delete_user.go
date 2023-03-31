@@ -71,6 +71,15 @@ func (p *processor) handleDeleteUserAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to delete user")
 	}
 
+	if dbUser.Id == nil {
+		err = p.sendDeleteUser(msg.RequestId, *dbUser)
+		if err != nil {
+			p.log.WithError(err).Errorf("failed to publish delete user for message action with id `%s`", msg.RequestId)
+			return errors.Wrap(err, "failed to publish delete user")
+		}
+	}
+
+	p.resetFilters()
 	p.log.Infof("finish handle message action with id `%s`", msg.RequestId)
 	return nil
 }

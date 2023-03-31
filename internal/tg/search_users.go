@@ -80,7 +80,7 @@ func (t *tg) searchUsersByPhone(phone string, amount int64) ([]data.User, error)
 		}
 	}
 
-	t.log.Errorf("found %v users with phone `%s`", len(users), phone)
+	t.log.Infof("found %v users with phone `%s`", len(users), phone)
 	return users, nil
 }
 
@@ -105,6 +105,6 @@ func (t *tg) searchUsersByUsername(username string, amount int64) ([]data.User, 
 		})
 	}
 
-	t.log.Errorf("found %v users with username `%s`", len(users), username)
+	t.log.Infof("found %v users with username `%s`", len(users), username)
 	return users, nil
 }

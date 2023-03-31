@@ -33,6 +33,8 @@ func (p *processor) handleGetUsersAction(msg data.ModulePayload) error {
 		return nil
 	}
 
+	borderTime := time.Now()
+
 	for _, user := range users {
 		user.CreatedAt = time.Now()
 		err = p.managerQ.Transaction(func() error {
@@ -60,6 +62,13 @@ func (p *processor) handleGetUsersAction(msg data.ModulePayload) error {
 		}
 	}
 
+	err = p.sendUsers(msg.RequestId, borderTime)
+	if err != nil {
+		p.log.WithError(err).Errorf("failed to publish users for message action with id `%s`", msg.RequestId)
+		return errors.Wrap(err, "failed to publish users")
+	}
+
+	p.resetFilters()
 	p.log.Infof("finish handle message action with id `%s`", msg.RequestId)
 	return nil
 }

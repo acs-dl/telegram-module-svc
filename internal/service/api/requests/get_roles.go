@@ -8,6 +8,7 @@ import (
 type GetRolesRequest struct {
 	Link     *string `filter:"link"`
 	Username *string `filter:"username"`
+	Phone    *string `filter:"phone"`
 }
 
 func NewGetRolesRequest(r *http.Request) (GetRolesRequest, error) {

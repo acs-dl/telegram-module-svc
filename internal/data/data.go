@@ -1,6 +1,8 @@
 package data
 
-import "time"
+import (
+	"time"
+)
 
 const (
 	ModuleName = "telegram"
@@ -26,6 +28,11 @@ type ModulePayload struct {
 	Username    *string `json:"username"`
 	Phone       *string `json:"phone"`
 	AccessLevel string  `json:"access_level"`
+}
+
+type UnverifiedPayload struct {
+	Action string           `json:"action"`
+	Users  []UnverifiedUser `json:"users"`
 }
 
 var Roles = map[string]string{
