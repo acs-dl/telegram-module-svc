@@ -56,4 +56,3 @@ func (db *DB) TransactionWithOptions(opts *sql.TxOptions, fn TransactionFunc) (e
 
 	return
 }
-

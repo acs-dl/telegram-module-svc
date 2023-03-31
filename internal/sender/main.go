@@ -3,6 +3,8 @@ package sender
 import (
 	"context"
 	"encoding/json"
+	"time"
+
 	"github.com/ThreeDotsLabs/watermill-amqp/v2/pkg/amqp"
 	"github.com/ThreeDotsLabs/watermill/message"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/config"
@@ -11,7 +13,6 @@ import (
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 	"gitlab.com/distributed_lab/running"
-	"time"
 )
 
 const serviceName = data.ModuleName + "-sender"
@@ -82,4 +83,14 @@ func (s *Sender) buildResponse(response data.Response) *message.Message {
 		Metadata: nil,
 		Payload:  marshaled,
 	}
+}
+
+func (s *Sender) SendMessageToCustomChannel(topic string, msg *message.Message) error {
+	err := (*s.publisher).Publish(topic, msg)
+	if err != nil {
+		s.log.WithError(err).Errorf("failed to send msg `%s to `%s`", msg.UUID, topic)
+		return errors.Wrap(err, "failed to send msg: "+msg.UUID)
+	}
+
+	return nil
 }

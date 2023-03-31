@@ -8,8 +8,10 @@ allOf:
         type: object
         required:
           - name
-          - endpoint
+          - title
+          - topic
           - link
+          - prefix
         properties:
           name:
             type: string
@@ -19,7 +21,15 @@ allOf:
             type: string
             description: Module url
             example: "https://traefik/gitlab"
-          endpoint:
+          topic:
             type: string
-            description: Module endpoint for sender and others
+            description: Module topic for sender and others
             example: "gitlab"
+          prefix:
+            type: string
+            description: Module prefix to use in FE
+            example: "https://gitlab.com"
+          title:
+            type: string
+            description: Module name to use in FE
+            example: "Gitlab"

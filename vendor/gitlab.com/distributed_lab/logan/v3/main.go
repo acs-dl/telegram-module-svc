@@ -4,8 +4,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"io"
+
+	"github.com/sirupsen/logrus"
 )
 
 func New() *Entry {

@@ -20,7 +20,6 @@ type Config interface {
 	// other config values
 	Telegram() *TelegramCfg
 	Amqp() *AmqpData
-	Cache() *CacheData
 	JwtParams() *JwtCfg
 
 	// Registrator config
@@ -40,7 +39,6 @@ type config struct {
 	// other config values
 	telegram    comfig.Once
 	amqp        comfig.Once
-	cache       comfig.Once
 	registrator comfig.Once
 	jwtCfg      comfig.Once
 }

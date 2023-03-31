@@ -1,9 +1,47 @@
 package tg
 
 import (
+	"fmt"
+	"time"
+
+	pkgErrors "github.com/pkg/errors"
+	"github.com/xelaj/mtproto"
 	"github.com/xelaj/mtproto/telegram"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 )
+
+func (t *tg) GetChatFromApi(title string) (*int32, *int64, error) {
+	id, accessHash, err := t.getChatFlow(title)
+	if err != nil {
+		errResponse := &mtproto.ErrResponseCode{}
+		if !pkgErrors.As(err, &errResponse) {
+			t.log.WithError(err).Errorf("failed to get chat, some strange error")
+			return nil, nil, errors.Wrap(err, "failed to get chat, some strange error")
+		}
+		if errResponse.Message == "FLOOD_WAIT_X" {
+			timeoutDuration := time.Second * time.Duration(errResponse.AdditionalInfo.(int))
+			t.log.Warnf("we need to wait `%s`", timeoutDuration.String())
+			time.Sleep(timeoutDuration)
+			return t.getChatFlow(title)
+		}
+
+		t.log.WithError(err).Errorf("failed to get chat")
+		return nil, nil, errors.Wrap(err, fmt.Sprintf("failed to get chat"))
+	}
+
+	t.log.Infof("successfully got chat")
+	return id, accessHash, nil
+}
+
+func (t *tg) getChatFlow(title string) (*int32, *int64, error) {
+	id, accessHash, err := t.findChatByTitle(title)
+	if err != nil {
+		t.log.WithError(err).Errorf("failed to find chat %s", title)
+		return nil, nil, err
+	}
+
+	return id, accessHash, nil
+}
 
 func (t *tg) findChatByTitle(title string) (*int32, *int64, error) {
 	discussion, err := t.client.MessagesGetAllChats(nil)

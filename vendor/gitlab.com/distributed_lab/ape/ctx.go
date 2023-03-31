@@ -2,8 +2,9 @@ package ape
 
 import (
 	"context"
-	"gitlab.com/distributed_lab/lorem"
 	"net/http"
+
+	"gitlab.com/distributed_lab/lorem"
 
 	"gitlab.com/distributed_lab/logan/v3"
 )
