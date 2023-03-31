@@ -1,63 +1,74 @@
 -- +migrate Up
 
-CREATE TYPE telegram_access_levels_enum AS ENUM ('owner', 'admin', 'member');
+create type telegram_access_levels_enum as enum ('owner', 'admin', 'member', 'self', 'left', 'banned');
 
-CREATE TABLE IF NOT EXISTS responses (
-    id UUID PRIMARY KEY,
-    status TEXT NOT NULL,
-    error TEXT
---     payload JSONB,
---     created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+create table if not exists responses (
+    id uuid primary key,
+    status text not null,
+    error text,
+    payload jsonb,
+    created_at timestamp without time zone not null default current_timestamp
 );
 
-CREATE TABLE IF NOT EXISTS users (
-    id BIGINT UNIQUE,
-    username TEXT NOT NULL UNIQUE,
-    telegram_id BIGINT PRIMARY KEY,
-    access_hash BIGINT NOT NULL,
-    first_name TEXT NOT NULL,
-    last_name TEXT NOT NULL,
-    phone TEXT NOT NULL UNIQUE,
-    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
+create table if not exists users (
+    id bigint unique,
+    username text unique,
+    telegram_id bigint primary key,
+    access_hash bigint not null,
+    first_name text not null,
+    last_name text not null,
+    phone text unique,
+    created_at timestamp with time zone default current_timestamp
 );
 
-CREATE INDEX IF NOT EXISTS users_idx ON users(id, username, phone, telegram_id);
+create index if not exists users_id_idx on users(id);
+create index if not exists users_username_idx on users(username);
+create index if not exists users_telegramid_idx on users(telegram_id);
 
-CREATE TABLE IF NOT EXISTS links (
-    id SERIAL PRIMARY KEY,
-    link TEXT NOT NULL,
-    UNIQUE(link)
+create table if not exists links (
+    id serial primary key,
+    link text not null,
+    unique(link)
 );
-INSERT INTO links (link) VALUES ('HELP TG API');
-INSERT INTO links (link) VALUES ('Подпивковичи');
-INSERT INTO links (link) VALUES ('VMDM²NA vs. ACS');
+insert into links (link) values ('HELP TG API');
+insert into links (link) values ('WE vs. ACS');
+insert into links (link) values ('Messenger Internal');
+insert into links (link) values ('DL / Make TokenE even better');
 
-CREATE INDEX IF NOT EXISTS links_link_idx ON links(link);
+create index if not exists links_link_idx on links(link);
 
-CREATE TABLE IF NOT EXISTS permissions (
-    request_id TEXT NOT NULL,
-    telegram_id INT NOT NULL,
-    link TEXT NOT NULL,
-    access_level telegram_access_levels_enum NOT NULL,
-    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+create table if not exists permissions (
+    request_id text not null,
+    telegram_id int not null,
+    link text not null,
+    access_level telegram_access_levels_enum not null,
+    created_at timestamp without time zone not null,
+    updated_at timestamp without time zone not null default current_timestamp,
 
-    UNIQUE (telegram_id, link),
-    FOREIGN KEY(telegram_id) REFERENCES users(telegram_id) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY(link) REFERENCES links(link) ON DELETE CASCADE ON UPDATE CASCADE
+    unique (telegram_id, link),
+    foreign key(telegram_id) references users(telegram_id) on delete cascade on update cascade,
+    foreign key(link) references links(link) on delete cascade on update cascade
 );
 
-CREATE INDEX IF NOT EXISTS permissions_idx ON permissions(user_id, telegram_id, link);
+create index if not exists permissions_telegramid_idx on permissions(telegram_id, link);
+create index if not exists permissions_link_idx on permissions(telegram_id, link);
 
 -- +migrate Down
 
-DROP TABLE IF EXISTS permissions;
-DROP TABLE IF EXISTS responses;
-DROP TABLE IF EXISTS links;
-DROP TABLE IF EXISTS users;
+drop index if exists permissions_telegramid_idx;
+drop index if exists permissions_link_idx;
 
-DROP INDEX IF EXISTS users_idx;
-DROP INDEX IF EXISTS links_link_idx;
-DROP INDEX IF EXISTS permissions_idx;
+drop table if exists permissions;
 
-DROP TYPE IF EXISTS telegram_access_levels_enum;
+drop index if exists links_link_idx;
+
+drop table if exists links;
+
+drop index if exists users_id_idx;
+drop index if exists users_username_idx;
+drop index if exists users_telegramid_idx;
+
+drop table if exists users;
+drop table if exists responses;
+
+drop type if exists telegram_access_levels_enum;

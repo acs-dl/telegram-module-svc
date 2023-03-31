@@ -1,0 +1,18 @@
+type: object
+required:
+  - action
+  - username
+  - user_id
+properties:
+  action:
+    type: string
+    description: action that must be handled in module, must be "verify_user"
+    example: "add_user"
+  username:
+    type: string
+    description: user's username from gitlab
+    example: "slandymani"
+  user_id:
+    type: string
+    description: user's id from identity
+    example: "123"

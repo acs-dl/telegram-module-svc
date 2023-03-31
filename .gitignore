@@ -6,3 +6,4 @@ docs/web_deploy
 docker-compose.yml
 telegram-module
 /public
+session.json

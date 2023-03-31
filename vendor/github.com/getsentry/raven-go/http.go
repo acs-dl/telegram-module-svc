@@ -65,6 +65,7 @@ func (h *Http) Class() string { return "request" }
 
 // Recovery handler to wrap the stdlib net/http Mux.
 // Example:
+//
 //	http.HandleFunc("/", raven.RecoveryHandler(func(w http.ResponseWriter, r *http.Request) {
 //		...
 //	}))
@@ -74,9 +75,10 @@ func RecoveryHandler(handler func(http.ResponseWriter, *http.Request)) func(http
 
 // Recovery handler to wrap the stdlib net/http Mux.
 // Example:
-//  mux := http.NewServeMux
-//  ...
-//	http.Handle("/", raven.Recoverer(mux))
+//
+//	 mux := http.NewServeMux
+//	 ...
+//		http.Handle("/", raven.Recoverer(mux))
 func Recoverer(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {

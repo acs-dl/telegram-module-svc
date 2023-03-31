@@ -1,0 +1,8 @@
+in: query
+name: 'filter[accessLevel]'
+required: true
+schema:
+  type: string
+  description: >-
+    Filter by access level.
+  example: "admin"

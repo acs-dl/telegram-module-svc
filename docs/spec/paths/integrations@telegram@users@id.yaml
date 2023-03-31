@@ -1,0 +1,23 @@
+get:
+  tags:
+    - Users
+  summary: Get user
+  operationId: getUserById
+  description: Endpoint for getting user by its id from identity in telegram module.
+  responses:
+    '200':
+      description: Success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  type: object
+                  $ref: '#/components/schemas/User'
+    '400':
+      description: Bad request.
+    '500':
+      description: Internal server error.

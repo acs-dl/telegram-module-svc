@@ -2,8 +2,9 @@ package problems
 
 import (
 	"fmt"
-	"github.com/google/jsonapi"
 	"net/http"
+
+	"github.com/google/jsonapi"
 )
 
 func Unauthorized() *jsonapi.ErrorObject {

@@ -1,0 +1,10 @@
+allOf:
+  - $ref: '#/components/schemas/ModuleKey'
+  - type: object
+    required:
+      - attributes
+    properties:
+      attributes:
+        type: object
+        additionalProperties:
+          type: string

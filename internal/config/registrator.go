@@ -9,8 +9,9 @@ import (
 type RegistratorConfig struct {
 	OuterUrl string `fig:"outer_url,required"`
 	InnerUrl string `fig:"inner_url,required"`
-	Endpoint string `fig:"endpoint,required"`
+	Title    string `fig:"title,required"`
 	Topic    string `fig:"topic,required"`
+	Prefix   string `fig:"prefix,required"`
 }
 
 func (c *config) Registrator() RegistratorConfig {

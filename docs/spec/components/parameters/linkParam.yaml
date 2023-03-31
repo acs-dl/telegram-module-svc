@@ -1,0 +1,8 @@
+in: query
+name: 'filter[link]'
+required: true
+schema:
+  type: string
+  description: >-
+    Filter by chat title. If link param is not specified, returns all permissions
+  example: "WE vs. ACS"
