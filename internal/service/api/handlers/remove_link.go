@@ -16,7 +16,7 @@ func RemoveLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = LinksQ(r).Delete(request.Data.Attributes.Link)
+	err = LinksQ(r).FilterByLinks(request.Data.Attributes.Link).Delete()
 	if err != nil {
 		Log(r).WithError(err).Error("failed to delete link")
 		ape.RenderErr(w, problems.InternalError())

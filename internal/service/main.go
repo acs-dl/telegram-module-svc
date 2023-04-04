@@ -3,11 +3,14 @@ package service
 import (
 	"context"
 	"sync"
+	"time"
 
+	"gitlab.com/distributed_lab/acs/telegram-module/internal/pqueue"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/receiver"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/registrator"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/sender"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/service/api"
+	"gitlab.com/distributed_lab/acs/telegram-module/internal/service/api/handlers"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/worker"
 
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/config"
@@ -31,6 +34,10 @@ func Run(cfg config.Config) {
 
 	// create new tg sessions better from this point
 	//tgClient := tg.NewTg(cfg.Telegram(), cfg.Log())
+
+	newPqueue := make(pqueue.PriorityQueue, 0)
+	go newPqueue.ProcessQueue(2, 80*time.Second)
+	ctx = handlers.CtxPQueue(&newPqueue, ctx)
 
 	for serviceName, service := range availableServices {
 		wg.Add(1)

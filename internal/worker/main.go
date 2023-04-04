@@ -115,7 +115,7 @@ func (w *worker) removeOldUsers(borderTime time.Time) error {
 			}
 		}
 
-		err = w.usersQ.Delete(user.TelegramId)
+		err = w.usersQ.FilterByTelegramIds(user.TelegramId).Delete()
 		if err != nil {
 			w.logger.Infof("failed to delete user with telegram id `%d`", user.TelegramId)
 			return errors.Wrap(err, " failed to delete user")
@@ -138,7 +138,7 @@ func (w *worker) removeOldPermissions(borderTime time.Time) error {
 	w.logger.Infof("found `%d` permissions to delete", len(permissions))
 
 	for _, permission := range permissions {
-		err = w.permissionsQ.Delete(permission.TelegramId, permission.Link)
+		err = w.permissionsQ.FilterByTelegramIds(permission.TelegramId).FilterByLinks(permission.Link).Delete()
 		if err != nil {
 			w.logger.Infof("failed to delete permission")
 			return errors.Wrap(err, " failed to delete permission")

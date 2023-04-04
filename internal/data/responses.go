@@ -5,11 +5,12 @@ import "encoding/json"
 type Responses interface {
 	New() Responses
 
+	Insert(response Response) error
 	Get() (*Response, error)
 	Select() ([]Response, error)
+	Delete() error
 
-	Insert(response Response) error
-	Delete(id string) error
+	FilterByIds(ids ...string) Responses
 }
 
 type Response struct {

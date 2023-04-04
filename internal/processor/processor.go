@@ -9,7 +9,9 @@ import (
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data/manager"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data/postgres"
+	"gitlab.com/distributed_lab/acs/telegram-module/internal/pqueue"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/sender"
+	"gitlab.com/distributed_lab/acs/telegram-module/internal/service/api/handlers"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/tg"
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/distributed_lab/logan/v3/errors"
@@ -45,6 +47,7 @@ type processor struct {
 	usersQ         data.Users
 	managerQ       *manager.Manager
 	sender         *sender.Sender
+	pqueue         *pqueue.PriorityQueue
 }
 
 var handleActions = map[string]func(proc *processor, msg data.ModulePayload) error{
@@ -64,6 +67,7 @@ func NewProcessor(cfg config.Config, ctx context.Context) Processor {
 		usersQ:         postgres.NewUsersQ(cfg.DB()),
 		managerQ:       manager.NewManager(cfg.DB()),
 		sender:         sender.NewSender(cfg),
+		pqueue:         handlers.PQueue(ctx),
 	}
 }
 

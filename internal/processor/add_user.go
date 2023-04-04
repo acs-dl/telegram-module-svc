@@ -36,20 +36,27 @@ func (p *processor) handleAddUserAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to parse user id")
 	}
 
-	err = p.telegramClient.AddUserInChatFromApi(msg.Username, msg.Phone, msg.Link)
+	arguments := []any{any(msg.Username), any(msg.Phone), any(msg.Link)}
+
+	item := p.addFunctionInPqueue(
+		any(p.telegramClient.AddUserInChatFromApi), arguments, 10)
+	err = item.Response.Error
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to add user from API for message action with id `%s`", msg.RequestId)
 		return errors.Wrap(err, "failed to add user from api")
 	}
 
-	user, err := p.telegramClient.GetChatUserFromApi(msg.Username, msg.Phone, msg.Link)
+	item = p.addFunctionInPqueue(any(p.telegramClient.GetChatUserFromApi), arguments, 10)
+	err = item.Response.Error
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to get chat user from API for message action with id `%s`", msg.RequestId)
 		return errors.Wrap(err, "failed to get chat user from api")
 	}
-	if user == nil {
-		p.log.WithError(err).Errorf("something wrong with user from api for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "something wrong with user from api")
+
+	user, err := p.convertUserFromInterfaceAndCheck(item.Response.Value)
+	if err != nil {
+		p.log.WithError(err).Errorf("something wrong with user for message action with id `%s`", msg.RequestId)
+		return errors.Errorf("something wrong with user from api")
 	}
 	user.CreatedAt = time.Now()
 	user.Id = &userId

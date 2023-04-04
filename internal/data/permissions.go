@@ -18,11 +18,9 @@ const (
 type Permissions interface {
 	New() Permissions
 
-	Create(permission Permission) error
 	Upsert(permission Permission) error
 	UpdateAccessLevel(permission Permission) error
-	Delete(telegramId int64, link string) error
-
+	Delete() error
 	Select() ([]Permission, error)
 	Get() (*Permission, error)
 

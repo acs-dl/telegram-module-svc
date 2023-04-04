@@ -23,10 +23,17 @@ func (p *processor) handleGetUsersAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to validate fields")
 	}
 
-	users, err := p.telegramClient.GetUsersFromApi(msg.Link)
+	item := p.addFunctionInPqueue(any(p.telegramClient.GetUsersFromApi), []any{any(msg.Link)}, 10)
+	err = item.Response.Error
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to get users from API for message action with id `%s`", msg.RequestId)
 		return errors.Wrap(err, "some error while getting users from api")
+	}
+
+	users, ok := item.Response.Value.([]data.User)
+	if !ok {
+		p.log.WithError(err).Errorf("wrong response type for message action with id `%s`", msg.RequestId)
+		return errors.Wrap(err, "wrong response type while getting users from api")
 	}
 
 	if len(users) == 0 {

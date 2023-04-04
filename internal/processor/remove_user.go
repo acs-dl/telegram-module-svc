@@ -28,14 +28,16 @@ func (p *processor) handleRemoveUserAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to validate fields")
 	}
 
-	user, err := p.telegramClient.GetChatUserFromApi(msg.Username, msg.Phone, msg.Link)
+	item := p.addFunctionInPqueue(any(p.telegramClient.GetChatUserFromApi), []any{any(msg.Username), any(msg.Phone), any(msg.Link)}, 10)
+	err = item.Response.Error
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to get user from API for message action with id `%s`", msg.RequestId)
 		return errors.Wrap(err, "some error while getting user from api")
 	}
-	if user == nil {
-		p.log.Errorf("user is not in chat for message action with id `%s`", msg.RequestId)
-		return errors.Errorf("user is not in chat")
+	user, err := p.convertUserFromInterfaceAndCheck(item.Response.Value)
+	if err != nil {
+		p.log.WithError(err).Errorf("something wrong with user for message action with id `%s`", msg.RequestId)
+		return errors.Errorf("something wrong with user from api")
 	}
 
 	dbUser, err := p.getUserFromDbByTelegramId(user.TelegramId)
@@ -44,14 +46,15 @@ func (p *processor) handleRemoveUserAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to get user from")
 	}
 
-	err = p.telegramClient.DeleteFromChatFromApi(msg.Username, msg.Phone, msg.Link)
+	item = p.addFunctionInPqueue(any(p.telegramClient.DeleteFromChatFromApi), []any{any(msg.Username), any(msg.Phone), any(msg.Link)}, 10)
+	err = item.Response.Error
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to remove user from API for message action with id `%s`", msg.RequestId)
 		return errors.Wrap(err, "failed to remove user from api")
 	}
 
 	err = p.managerQ.Transaction(func() error {
-		err = p.permissionsQ.Delete(user.TelegramId, msg.Link)
+		err = p.permissionsQ.FilterByTelegramIds(user.TelegramId).FilterByLinks(msg.Link).Delete()
 		if err != nil {
 			p.log.WithError(err).Errorf("failed to delete permission by telegram id `%d` for message action with id `%s`", user.TelegramId, msg.RequestId)
 			return errors.Wrap(err, "failed to delete permission")
@@ -64,7 +67,7 @@ func (p *processor) handleRemoveUserAction(msg data.ModulePayload) error {
 		}
 
 		if permissionsAmount == 0 {
-			err = p.usersQ.Delete(user.TelegramId)
+			err = p.usersQ.FilterByTelegramIds(user.TelegramId).Delete()
 			if err != nil {
 				p.log.WithError(err).Errorf("failed to delete user by telegram id `%d` for message action with id `%s`", user.TelegramId, msg.RequestId)
 				return errors.Wrap(err, "failed to delete user")

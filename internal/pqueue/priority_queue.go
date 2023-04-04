@@ -1,19 +1,12 @@
 package pqueue
 
 import (
-	"container/heap"
 	"fmt"
+	"log"
+	"time"
 
 	"github.com/google/uuid"
 )
-
-type QueueItem struct {
-	Uuid     uuid.UUID
-	Func     interface{}
-	Priority int
-	invoked  bool
-	index    int
-}
 
 type PriorityQueue []*QueueItem
 
@@ -33,6 +26,7 @@ func (pq *PriorityQueue) Push(x interface{}) {
 	n := len(*pq)
 	item := x.(*QueueItem)
 	item.index = n
+	item.invoked = false
 	*pq = append(*pq, item)
 }
 
@@ -46,6 +40,11 @@ func (pq *PriorityQueue) Pop() interface{} {
 	return item
 }
 
+func (pq *PriorityQueue) RemoveByUUID(uuid uuid.UUID) {
+	item := pq.getElement(uuid)
+	*pq = append((*pq)[:item.index], (*pq)[item.index+1:]...)
+}
+
 func (pq *PriorityQueue) getElement(uuid uuid.UUID) *QueueItem {
 	for i := range *pq {
 		if (*pq)[i].Uuid.String() == uuid.String() {
@@ -56,35 +55,41 @@ func (pq *PriorityQueue) getElement(uuid uuid.UUID) *QueueItem {
 	return nil
 }
 
-func (pq *PriorityQueue) isInvoked(uuid uuid.UUID) bool {
-	element := pq.getElement(uuid)
-	if element == nil {
-		return false
-	}
+func (pq *PriorityQueue) WaitUntilInvoked(uuid uuid.UUID) *QueueItem {
+	log.Printf("waiting until invoked for `%s`", uuid.String())
+	for {
+		element := pq.getElement(uuid)
+		if element == nil {
+			log.Printf("not found with uuid `%s`", uuid.String())
+			return nil
+		}
 
-	return element.invoked
+		if element.invoked {
+			return element
+		}
+
+		log.Printf("need to sleep 3sec")
+		time.Sleep(3 * time.Second)
+	}
 }
 
-func TestHeap(items map[interface{}]int) {
-	pq := make(PriorityQueue, 0)
+// ProcessQueue amount - the number of request for proper rate limit, duration - time to limit (e.g. 30, time.Second)
+// TODO: ask about better way for limiting requests
+func (pq *PriorityQueue) ProcessQueue(amount int64, duration time.Duration) {
+	for {
+		for i := 0; i < pq.Len(); i++ {
+			item := (*pq)[i]
+			if item == nil { //sometimes item can be nil that causes segfault
+				continue
+			}
 
-	for value, priority := range items {
-		item := &QueueItem{
-			Func:     value,
-			Priority: priority,
+			if item.invoked {
+				continue
+			}
+			item.callFunction()
+
+			fmt.Println(time.Duration(duration.Nanoseconds() / amount))
+			time.Sleep(time.Duration(duration.Nanoseconds() / amount))
 		}
-		heap.Push(&pq, item)
-	}
-	//heap.Init(&pq)
-	//
-	//item := &QueueItem{
-	//	Func:     "orange",
-	//	priority: 1,
-	//}
-	//heap.Push(&pq, item)
-
-	for pq.Len() > 0 {
-		item := heap.Pop(&pq).(*QueueItem)
-		fmt.Printf("%.2d:%s ", item.Priority, item.Func)
 	}
 }

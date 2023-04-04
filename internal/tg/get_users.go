@@ -1,86 +1,41 @@
 package tg
 
 import (
-	"container/heap"
-	"fmt"
+	"syscall"
 	"time"
 
-	"github.com/google/uuid"
 	pkgErrors "github.com/pkg/errors"
 	"github.com/xelaj/mtproto"
 	"github.com/xelaj/mtproto/telegram"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/pqueue"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 )
 
 func (t *tg) GetUsersFromApi(title string) ([]data.User, error) {
-	myInterface1 := interface{}(t.GetUsersFromApi)
-	myInterface2 := interface{}(t.UpdateUserInChatFromApi)
-	myInterface3 := interface{}(t.DeleteFromChatFromApi)
-	//fmt.Println(reflect.TypeOf(myInterface3))
-	//pqueue.TestHeap(map[interface{}]int{myInterface1: 1, myInterface2: 5, myInterface3: 3})
+	users, err := t.getChatMembersByTitle(title)
+	if err != nil {
+		if pkgErrors.Is(err, syscall.EPIPE) {
+			cl := NewTg(t.tgCfg, t.log)
+			t.client = cl.GetClient()
+			return t.GetUsersFromApi(title)
+		}
 
-	pq := make(pqueue.PriorityQueue, 0)
+		errResponse := &mtproto.ErrResponseCode{}
+		if !pkgErrors.As(err, &errResponse) {
+			return nil, errors.Wrap(err, "failed to get chat members, some strange error")
+		}
+		if errResponse.Message == "FLOOD_WAIT_X" {
+			timeoutDuration := time.Second * time.Duration(errResponse.AdditionalInfo.(int))
+			t.log.Warnf("we need to wait `%s`", timeoutDuration.String())
+			time.Sleep(timeoutDuration)
+			return t.GetUsersFromApi(title)
+		}
 
-	item1 := &pqueue.QueueItem{
-		Uuid:     uuid.New(),
-		Func:     myInterface3,
-		Priority: 10,
-	}
-	heap.Push(&pq, item1)
-
-	item3 := &pqueue.QueueItem{
-		Uuid:     uuid.New(),
-		Func:     myInterface1,
-		Priority: 5,
-	}
-	heap.Push(&pq, item3)
-
-	item2 := &pqueue.QueueItem{
-		Uuid:     uuid.New(),
-		Func:     myInterface2,
-		Priority: 15,
-	}
-	heap.Push(&pq, item2)
-
-	for pq.Len() > 0 {
-		item := heap.Pop(&pq).(*pqueue.QueueItem)
-		fmt.Printf("%s, %d, %s \n", item.Uuid.String(), item.Priority, item.Func)
+		t.log.WithError(err).Errorf("failed to get chat members")
+		return nil, errors.Wrap(err, "failed to get chat members")
 	}
 
-	/* OUTPUT:
-	79602114-5227-49bc-aec7-7f2ca322bf06, 15, %!s(func(*string, *string, string) error=0x9e64c0)
-	01343912-33cf-43b5-bc57-2e720bacd1a4, 10, %!s(func(*string, *string, string) error=0x9e6560)
-	79b1c46d-b423-4bf2-8968-fbe93b42d063, 5, %!s(func(string) ([]data.User, error)=0x9e6440)
-	*/
-
-	panic("hard stop")
-	return nil, nil
-	//users, err := t.getChatMembersByTitle(title)
-	//if err != nil {
-	//	if pkgErrors.Is(err, syscall.EPIPE) {
-	//		cl := NewTg(t.tgCfg, t.log)
-	//		t.client = cl.GetClient()
-	//		return t.GetUsersFromApi(title)
-	//	}
-	//
-	//	errResponse := &mtproto.ErrResponseCode{}
-	//	if !pkgErrors.As(err, &errResponse) {
-	//		return nil, errors.Wrap(err, "failed to get chat members, some strange error")
-	//	}
-	//	if errResponse.Message == "FLOOD_WAIT_X" {
-	//		timeoutDuration := time.Second * time.Duration(errResponse.AdditionalInfo.(int))
-	//		t.log.Warnf("we need to wait `%s`", timeoutDuration.String())
-	//		time.Sleep(timeoutDuration)
-	//		return t.GetUsersFromApi(title)
-	//	}
-	//
-	//	t.log.WithError(err).Errorf("failed to get chat members")
-	//	return nil, errors.Wrap(err, "failed to get chat members")
-	//}
-
-	//return users, nil
+	return users, nil
 }
 
 func (t *tg) getChatMembersByTitle(title string) ([]data.User, error) {
