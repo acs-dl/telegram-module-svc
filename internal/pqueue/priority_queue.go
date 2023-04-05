@@ -8,7 +8,17 @@ import (
 	"github.com/google/uuid"
 )
 
+type PriorityQueueInterface interface {
+	WaitUntilInvoked(uuid uuid.UUID) (*QueueItem, error)
+	ProcessQueue(requestLimit int64, timeLimit time.Duration, stop chan struct{})
+}
+
 type PriorityQueue []*QueueItem
+
+func NewPriorityQueue() PriorityQueueInterface {
+	newPqueue := make(PriorityQueue, 0)
+	return &newPqueue
+}
 
 func (pq *PriorityQueue) Len() int { return len(*pq) }
 

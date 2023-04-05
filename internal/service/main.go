@@ -36,9 +36,9 @@ func Run(cfg config.Config) {
 	//tgClient := tg.NewTg(cfg.Telegram(), cfg.Log())
 
 	stopProcessQueue := make(chan struct{})
-	newPqueue := make(pqueue.PriorityQueue, 0)
+	newPqueue := pqueue.NewPriorityQueue()
 	go newPqueue.ProcessQueue(2, 80*time.Second, stopProcessQueue)
-	ctx = handlers.CtxPQueue(&newPqueue, ctx)
+	ctx = handlers.CtxPQueue(newPqueue.(*pqueue.PriorityQueue), ctx)
 
 	for serviceName, service := range availableServices {
 		wg.Add(1)
