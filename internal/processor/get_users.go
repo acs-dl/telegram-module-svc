@@ -23,7 +23,12 @@ func (p *processor) handleGetUsersAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to validate fields")
 	}
 
-	item := p.addFunctionInPqueue(any(p.telegramClient.GetUsersFromApi), []any{any(msg.Link)}, 10)
+	item, err := p.addFunctionInPqueue(any(p.telegramClient.GetUsersFromApi), []any{any(msg.Link)}, 10)
+	if err != nil {
+		p.log.WithError(err).Errorf("failed to add function in pqueue for message action with id `%s`", msg.RequestId)
+		return errors.Wrap(err, "failed to add function in pqueue")
+	}
+
 	err = item.Response.Error
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to get users from API for message action with id `%s`", msg.RequestId)

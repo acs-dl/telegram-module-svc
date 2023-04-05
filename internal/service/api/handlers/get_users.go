@@ -47,8 +47,20 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 		Priority: 10,
 	}
 	heap.Push(PQueue(r.Context()), queueItem)
-	item := PQueue(r.Context()).WaitUntilInvoked(newUuid)
-	PQueue(r.Context()).RemoveByUUID(newUuid)
+	item, err := PQueue(r.Context()).WaitUntilInvoked(newUuid)
+	if err != nil {
+		Log(r).WithError(err).Info("failed to wait until invoked")
+		ape.RenderErr(w, problems.InternalError())
+		return
+	}
+
+	err = PQueue(r.Context()).RemoveByUUID(newUuid)
+	if err != nil {
+		Log(r).WithError(err).Info("failed to remove by uuid")
+		ape.RenderErr(w, problems.InternalError())
+		return
+	}
+
 	err = item.Response.Error
 	if err != nil {
 		Log(r).WithError(err).Infof("failed to get users from api by `%s`", username)

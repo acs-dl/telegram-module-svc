@@ -8,6 +8,7 @@ import (
 
 	"github.com/fatih/structs"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
+	"gitlab.com/distributed_lab/acs/telegram-module/internal/helpers"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 
 	sq "github.com/Masterminds/squirrel"
@@ -140,7 +141,7 @@ func (q UsersQ) FilterByTelegramIds(telegramIds ...int64) data.Users {
 }
 
 func (q UsersQ) FilterByUsername(username string) data.Users {
-	if username == "" {
+	if err := helpers.ValidateNonEmptyString(username); err != nil {
 		return q
 
 	}
@@ -154,8 +155,9 @@ func (q UsersQ) FilterByUsername(username string) data.Users {
 }
 
 func (q UsersQ) FilterByPhone(phone string) data.Users {
-	if phone == "" {
+	if err := helpers.ValidateNonEmptyString(phone); err != nil {
 		return q
+
 	}
 
 	equalPhone := sq.Eq{usersPhoneColumn: phone}

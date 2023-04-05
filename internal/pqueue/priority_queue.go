@@ -1,7 +1,7 @@
 package pqueue
 
 import (
-	"fmt"
+	"errors"
 	"log"
 	"time"
 
@@ -26,7 +26,7 @@ func (pq *PriorityQueue) Push(x interface{}) {
 	n := len(*pq)
 	item := x.(*QueueItem)
 	item.index = n
-	item.invoked = false
+	item.invoked = PROCESSING
 	*pq = append(*pq, item)
 }
 
@@ -40,56 +40,64 @@ func (pq *PriorityQueue) Pop() interface{} {
 	return item
 }
 
-func (pq *PriorityQueue) RemoveByUUID(uuid uuid.UUID) {
-	item := pq.getElement(uuid)
-	*pq = append((*pq)[:item.index], (*pq)[item.index+1:]...)
-}
-
-func (pq *PriorityQueue) getElement(uuid uuid.UUID) *QueueItem {
-	for i := range *pq {
-		if (*pq)[i].Uuid.String() == uuid.String() {
-			return (*pq)[i]
-		}
+func (pq *PriorityQueue) RemoveByUUID(uuid uuid.UUID) error {
+	item, err := pq.getElement(uuid)
+	if err != nil {
+		return err
 	}
-
+	*pq = append((*pq)[:item.index], (*pq)[item.index+1:]...)
 	return nil
 }
 
-func (pq *PriorityQueue) WaitUntilInvoked(uuid uuid.UUID) *QueueItem {
+func (pq *PriorityQueue) getElement(uuid uuid.UUID) (*QueueItem, error) {
+	for i := range *pq {
+		if (*pq)[i].Uuid.String() == uuid.String() {
+			return (*pq)[i], nil
+		}
+	}
+
+	return nil, errors.New("element not found")
+}
+
+func (pq *PriorityQueue) WaitUntilInvoked(uuid uuid.UUID) (*QueueItem, error) {
 	log.Printf("waiting until invoked for `%s`", uuid.String())
+
+	item, err := pq.getElement(uuid)
+	if err != nil {
+		return nil, err
+	}
+
+	item.waitInvoked()
+
+	return item, nil
+}
+
+func (pq *PriorityQueue) ProcessQueue(requestLimit int64, timeLimit time.Duration, stop chan struct{}) {
+	ticker := time.NewTicker(timeLimit / time.Duration(requestLimit))
+	defer ticker.Stop()
+
 	for {
-		element := pq.getElement(uuid)
-		if element == nil {
-			log.Printf("not found with uuid `%s`", uuid.String())
-			return nil
+		select {
+		case <-ticker.C:
+			pq.processNextItem()
+		case <-stop:
+			return
 		}
-
-		if element.invoked {
-			return element
-		}
-
-		log.Printf("need to sleep 3sec")
-		time.Sleep(3 * time.Second)
 	}
 }
 
-// ProcessQueue amount - the number of request for proper rate limit, duration - time to limit (e.g. 30, time.Second)
-// TODO: ask about better way for limiting requests
-func (pq *PriorityQueue) ProcessQueue(amount int64, duration time.Duration) {
-	for {
-		for i := 0; i < pq.Len(); i++ {
-			item := (*pq)[i]
-			if item == nil { //sometimes item can be nil that causes segfault
-				continue
-			}
-
-			if item.invoked {
-				continue
-			}
-			item.callFunction()
-
-			fmt.Println(time.Duration(duration.Nanoseconds() / amount))
-			time.Sleep(time.Duration(duration.Nanoseconds() / amount))
+func (pq *PriorityQueue) processNextItem() {
+	for i := 0; i < pq.Len(); i++ {
+		item := (*pq)[i]
+		if item == nil {
+			continue
 		}
+
+		if item.invoked == INVOKED {
+			continue
+		}
+
+		item.callFunction()
+		return
 	}
 }

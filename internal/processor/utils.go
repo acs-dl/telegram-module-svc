@@ -9,7 +9,7 @@ import (
 	"gitlab.com/distributed_lab/logan/v3/errors"
 )
 
-func (p *processor) addFunctionInPqueue(function any, functionArgs []any, priority int) *pqueue.QueueItem {
+func (p *processor) addFunctionInPqueue(function any, functionArgs []any, priority int) (*pqueue.QueueItem, error) {
 	newUuid := uuid.New()
 	queueItem := &pqueue.QueueItem{
 		Uuid:     newUuid,
@@ -18,10 +18,17 @@ func (p *processor) addFunctionInPqueue(function any, functionArgs []any, priori
 		Priority: priority,
 	}
 	heap.Push(p.pqueue, queueItem)
-	item := p.pqueue.WaitUntilInvoked(newUuid)
-	p.pqueue.RemoveByUUID(newUuid)
+	item, err := p.pqueue.WaitUntilInvoked(newUuid)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to wait until invoked")
+	}
 
-	return item
+	err = p.pqueue.RemoveByUUID(newUuid)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to remove by uuid")
+	}
+
+	return item, nil
 }
 
 func (p *processor) convertUserFromInterfaceAndCheck(userInterface any) (*data.User, error) {

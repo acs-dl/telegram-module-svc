@@ -38,15 +38,24 @@ func (p *processor) handleAddUserAction(msg data.ModulePayload) error {
 
 	arguments := []any{any(msg.Username), any(msg.Phone), any(msg.Link)}
 
-	item := p.addFunctionInPqueue(
-		any(p.telegramClient.AddUserInChatFromApi), arguments, 10)
+	item, err := p.addFunctionInPqueue(any(p.telegramClient.AddUserInChatFromApi), arguments, 10)
+	if err != nil {
+		p.log.WithError(err).Errorf("failed to add function in pqueue for message action with id `%s`", msg.RequestId)
+		return errors.Wrap(err, "failed to add function in pqueue")
+	}
+
 	err = item.Response.Error
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to add user from API for message action with id `%s`", msg.RequestId)
 		return errors.Wrap(err, "failed to add user from api")
 	}
 
-	item = p.addFunctionInPqueue(any(p.telegramClient.GetChatUserFromApi), arguments, 10)
+	item, err = p.addFunctionInPqueue(any(p.telegramClient.GetChatUserFromApi), arguments, 10)
+	if err != nil {
+		p.log.WithError(err).Errorf("failed to add function in pqueue for message action with id `%s`", msg.RequestId)
+		return errors.Wrap(err, "failed to add function in pqueue")
+	}
+
 	err = item.Response.Error
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to get chat user from API for message action with id `%s`", msg.RequestId)

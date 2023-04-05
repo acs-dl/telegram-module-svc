@@ -25,7 +25,12 @@ func (p *processor) handleDeleteUserAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to validate fields")
 	}
 
-	item := p.addFunctionInPqueue(any(p.telegramClient.GetUserFromApi), []any{any(msg.Username), any(msg.Phone)}, 10)
+	item, err := p.addFunctionInPqueue(any(p.telegramClient.GetUserFromApi), []any{any(msg.Username), any(msg.Phone)}, 10)
+	if err != nil {
+		p.log.WithError(err).Errorf("failed to add function in pqueue for message action with id `%s`", msg.RequestId)
+		return errors.Wrap(err, "failed to add function in pqueue")
+	}
+
 	err = item.Response.Error
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to get user from API for message action with id `%s`", msg.RequestId)
@@ -50,7 +55,12 @@ func (p *processor) handleDeleteUserAction(msg data.ModulePayload) error {
 	}
 
 	for _, permission := range permissions {
-		item = p.addFunctionInPqueue(any(p.telegramClient.GetChatUserFromApi), []any{any(msg.Username), any(msg.Phone), any(permission.Link)}, 10)
+		item, err = p.addFunctionInPqueue(any(p.telegramClient.GetChatUserFromApi), []any{any(msg.Username), any(msg.Phone), any(permission.Link)}, 10)
+		if err != nil {
+			p.log.WithError(err).Errorf("failed to add function in pqueue for message action with id `%s`", msg.RequestId)
+			return errors.Wrap(err, "failed to add function in pqueue")
+		}
+
 		err = item.Response.Error
 		if err != nil {
 			p.log.WithError(err).Errorf("failed to get chat user from API for message action with id `%s`", msg.RequestId)
@@ -63,7 +73,12 @@ func (p *processor) handleDeleteUserAction(msg data.ModulePayload) error {
 		}
 
 		if chatUser != nil {
-			item = p.addFunctionInPqueue(any(p.telegramClient.DeleteFromChatFromApi), []any{any(msg.Username), any(msg.Phone), any(permission.Link)}, 10)
+			item, err = p.addFunctionInPqueue(any(p.telegramClient.DeleteFromChatFromApi), []any{any(msg.Username), any(msg.Phone), any(permission.Link)}, 10)
+			if err != nil {
+				p.log.WithError(err).Errorf("failed to add function in pqueue for message action with id `%s`", msg.RequestId)
+				return errors.Wrap(err, "failed to add function in pqueue")
+			}
+
 			err = item.Response.Error
 			if err != nil {
 				p.log.WithError(err).Errorf("failed to remove user from API for message action with id `%s`", msg.RequestId)
