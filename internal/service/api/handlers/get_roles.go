@@ -65,7 +65,7 @@ func GetRoles(w http.ResponseWriter, r *http.Request) {
 		Uuid:     newUuid,
 		Func:     tg.NewTg(Params(r), Log(r)).GetChatUserFromApi,
 		Args:     []any{any(request.Username), any(request.Phone), any(*request.Link)},
-		Priority: 10,
+		Priority: pqueue.HighPriority,
 	}
 	heap.Push(PQueue(r.Context()), queueItem)
 	item, err := PQueue(r.Context()).WaitUntilInvoked(newUuid)

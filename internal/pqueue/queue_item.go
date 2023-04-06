@@ -12,6 +12,10 @@ type ItemStatus string
 const (
 	PROCESSING ItemStatus = "in progress"
 	INVOKED    ItemStatus = "invoked"
+
+	HighPriority   = 10
+	NormalPriority = 5
+	LowPriority    = 0
 )
 
 type Response struct {

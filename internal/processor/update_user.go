@@ -3,6 +3,7 @@ package processor
 import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
+	"gitlab.com/distributed_lab/acs/telegram-module/internal/pqueue"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 )
 
@@ -28,7 +29,7 @@ func (p *processor) handleUpdateUserAction(msg data.ModulePayload) error {
 	}
 
 	arguments := []any{any(msg.Username), any(msg.Phone), any(msg.Link)}
-	item, err := p.addFunctionInPqueue(any(p.telegramClient.GetChatUserFromApi), arguments, 10)
+	item, err := p.addFunctionInPqueue(any(p.telegramClient.GetChatUserFromApi), arguments, pqueue.NormalPriority)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to add function in pqueue for message action with id `%s`", msg.RequestId)
 		return errors.Wrap(err, "failed to add function in pqueue")
@@ -51,7 +52,7 @@ func (p *processor) handleUpdateUserAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to get user from")
 	}
 
-	item, err = p.addFunctionInPqueue(any(p.telegramClient.UpdateUserInChatFromApi), arguments, 10)
+	item, err = p.addFunctionInPqueue(any(p.telegramClient.UpdateUserInChatFromApi), arguments, pqueue.NormalPriority)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to add function in pqueue for message action with id `%s`", msg.RequestId)
 		return errors.Wrap(err, "failed to add function in pqueue")
