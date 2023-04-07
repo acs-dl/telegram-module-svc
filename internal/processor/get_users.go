@@ -5,6 +5,7 @@ import (
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
+	"gitlab.com/distributed_lab/acs/telegram-module/internal/pqueue"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 )
 
@@ -23,10 +24,22 @@ func (p *processor) handleGetUsersAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to validate fields")
 	}
 
-	users, err := p.telegramClient.GetUsersFromApi(msg.Link)
+	item, err := p.addFunctionInPqueue(any(p.telegramClient.GetUsersFromApi), []any{any(msg.Link)}, pqueue.LowPriority)
+	if err != nil {
+		p.log.WithError(err).Errorf("failed to add function in pqueue for message action with id `%s`", msg.RequestId)
+		return errors.Wrap(err, "failed to add function in pqueue")
+	}
+
+	err = item.Response.Error
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to get users from API for message action with id `%s`", msg.RequestId)
 		return errors.Wrap(err, "some error while getting users from api")
+	}
+
+	users, ok := item.Response.Value.([]data.User)
+	if !ok {
+		p.log.WithError(err).Errorf("wrong response type for message action with id `%s`", msg.RequestId)
+		return errors.Wrap(err, "wrong response type while getting users from api")
 	}
 
 	if len(users) == 0 {

@@ -3,6 +3,7 @@ package processor
 import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
+	"gitlab.com/distributed_lab/acs/telegram-module/internal/pqueue"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 )
 
@@ -25,10 +26,21 @@ func (p *processor) handleDeleteUserAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to validate fields")
 	}
 
-	user, err := p.telegramClient.GetUserFromApi(msg.Username, msg.Phone)
+	item, err := p.addFunctionInPqueue(any(p.telegramClient.GetUserFromApi), []any{any(msg.Username), any(msg.Phone)}, pqueue.NormalPriority)
+	if err != nil {
+		p.log.WithError(err).Errorf("failed to add function in pqueue for message action with id `%s`", msg.RequestId)
+		return errors.Wrap(err, "failed to add function in pqueue")
+	}
+
+	err = item.Response.Error
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to get user from API for message action with id `%s`", msg.RequestId)
 		return errors.Wrap(err, "failed to get user from api")
+	}
+	user, err := p.convertUserFromInterfaceAndCheck(item.Response.Value)
+	if err != nil {
+		p.log.WithError(err).Errorf("something wrong with user for message action with id `%s`", msg.RequestId)
+		return errors.Errorf("something wrong with user from api")
 	}
 
 	dbUser, err := p.getUserFromDbByTelegramId(user.TelegramId)
@@ -44,27 +56,44 @@ func (p *processor) handleDeleteUserAction(msg data.ModulePayload) error {
 	}
 
 	for _, permission := range permissions {
-		chatUser, err := p.telegramClient.GetChatUserFromApi(msg.Username, msg.Phone, permission.Link)
+		item, err = p.addFunctionInPqueue(any(p.telegramClient.GetChatUserFromApi), []any{any(msg.Username), any(msg.Phone), any(permission.Link)}, pqueue.NormalPriority)
+		if err != nil {
+			p.log.WithError(err).Errorf("failed to add function in pqueue for message action with id `%s`", msg.RequestId)
+			return errors.Wrap(err, "failed to add function in pqueue")
+		}
+
+		err = item.Response.Error
 		if err != nil {
 			p.log.WithError(err).Errorf("failed to get chat user from API for message action with id `%s`", msg.RequestId)
 			return errors.Wrap(err, "some error while checking user from api")
 		}
+		chatUser, ok := item.Response.Value.(*data.User)
+		if !ok {
+			p.log.WithError(err).Errorf("failed to convert interface to user for message action with id `%s`", msg.RequestId)
+			return errors.Errorf("wrong response type while getting users from api")
+		}
 
 		if chatUser != nil {
-			err = p.telegramClient.DeleteFromChatFromApi(msg.Username, msg.Phone, permission.Link)
+			item, err = p.addFunctionInPqueue(any(p.telegramClient.DeleteFromChatFromApi), []any{any(msg.Username), any(msg.Phone), any(permission.Link)}, pqueue.NormalPriority)
+			if err != nil {
+				p.log.WithError(err).Errorf("failed to add function in pqueue for message action with id `%s`", msg.RequestId)
+				return errors.Wrap(err, "failed to add function in pqueue")
+			}
+
+			err = item.Response.Error
 			if err != nil {
 				p.log.WithError(err).Errorf("failed to remove user from API for message action with id `%s`", msg.RequestId)
 				return errors.Wrap(err, "some error while removing user from api")
 			}
 		}
 
-		if err = p.permissionsQ.Delete(permission.TelegramId, permission.Link); err != nil {
+		if err = p.permissionsQ.FilterByTelegramIds(permission.TelegramId).FilterByLinks(permission.Link).Delete(); err != nil {
 			p.log.WithError(err).Errorf("failed to delete permission from db for message action with id `%s`", msg.RequestId)
 			return errors.Wrap(err, "failed to delete permission")
 		}
 	}
 
-	err = p.usersQ.Delete(user.TelegramId)
+	err = p.usersQ.FilterByTelegramIds(user.TelegramId).Delete()
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to delete user by telegram id `%d` for message action with id `%s`", user.TelegramId, msg.RequestId)
 		return errors.Wrap(err, "failed to delete user")

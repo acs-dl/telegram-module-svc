@@ -11,7 +11,7 @@ import (
 	"gitlab.com/distributed_lab/logan/v3/errors"
 )
 
-func (t *tg) GetChatFromApi(title string) (*int32, *int64, error) {
+func (t *tg) GetChatFromApi(title string) (*Chat, error) {
 	id, accessHash, err := t.getChatFlow(title)
 	if err != nil {
 		if pkgErrors.Is(err, syscall.EPIPE) {
@@ -23,21 +23,24 @@ func (t *tg) GetChatFromApi(title string) (*int32, *int64, error) {
 		errResponse := &mtproto.ErrResponseCode{}
 		if !pkgErrors.As(err, &errResponse) {
 			t.log.WithError(err).Errorf("failed to get chat, some strange error")
-			return nil, nil, errors.Wrap(err, "failed to get chat, some strange error")
+			return nil, errors.Wrap(err, "failed to get chat, some strange error")
 		}
 		if errResponse.Message == "FLOOD_WAIT_X" {
 			timeoutDuration := time.Second * time.Duration(errResponse.AdditionalInfo.(int))
 			t.log.Warnf("we need to wait `%s`", timeoutDuration.String())
 			time.Sleep(timeoutDuration)
-			return t.getChatFlow(title)
+			return t.GetChatFromApi(title)
 		}
 
 		t.log.WithError(err).Errorf("failed to get chat")
-		return nil, nil, errors.Wrap(err, fmt.Sprintf("failed to get chat"))
+		return nil, errors.Wrap(err, fmt.Sprintf("failed to get chat"))
 	}
 
 	t.log.Infof("successfully got chat")
-	return id, accessHash, nil
+	return &Chat{
+		id:         id,
+		accessHash: accessHash,
+	}, nil
 }
 
 func (t *tg) getChatFlow(title string) (*int32, *int64, error) {

@@ -3,6 +3,7 @@ package processor
 import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
+	"gitlab.com/distributed_lab/acs/telegram-module/internal/pqueue"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 )
 
@@ -27,14 +28,22 @@ func (p *processor) handleUpdateUserAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to validate fields")
 	}
 
-	user, err := p.telegramClient.GetChatUserFromApi(msg.Username, msg.Phone, msg.Link)
+	arguments := []any{any(msg.Username), any(msg.Phone), any(msg.Link)}
+	item, err := p.addFunctionInPqueue(any(p.telegramClient.GetChatUserFromApi), arguments, pqueue.NormalPriority)
+	if err != nil {
+		p.log.WithError(err).Errorf("failed to add function in pqueue for message action with id `%s`", msg.RequestId)
+		return errors.Wrap(err, "failed to add function in pqueue")
+	}
+
+	err = item.Response.Error
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to get user from API for message action with id `%s`", msg.RequestId)
 		return errors.Wrap(err, "some error while getting user from api")
 	}
-	if user == nil {
-		p.log.Errorf("user is not in chat for message action with id `%s`", msg.RequestId)
-		return errors.Errorf("user is not in chat")
+	user, err := p.convertUserFromInterfaceAndCheck(item.Response.Value)
+	if err != nil {
+		p.log.WithError(err).Errorf("something wrong with user for message action with id `%s`", msg.RequestId)
+		return errors.Errorf("something wrong with user from api")
 	}
 
 	_, err = p.getUserFromDbByTelegramId(user.TelegramId)
@@ -43,7 +52,13 @@ func (p *processor) handleUpdateUserAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to get user from")
 	}
 
-	err = p.telegramClient.UpdateUserInChatFromApi(msg.Username, msg.Phone, msg.Link)
+	item, err = p.addFunctionInPqueue(any(p.telegramClient.UpdateUserInChatFromApi), arguments, pqueue.NormalPriority)
+	if err != nil {
+		p.log.WithError(err).Errorf("failed to add function in pqueue for message action with id `%s`", msg.RequestId)
+		return errors.Wrap(err, "failed to add function in pqueue")
+	}
+
+	err = item.Response.Error
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to update user from API for message action with id `%s`", msg.RequestId)
 		return errors.Wrap(err, "failed to update user from api")

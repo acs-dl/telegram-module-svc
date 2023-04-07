@@ -10,8 +10,7 @@ type Users interface {
 	New() Users
 
 	Upsert(user User) error
-	Delete(telegramId int64) error
-
+	Delete() error
 	Select() ([]User, error)
 	Get() (*User, error)
 

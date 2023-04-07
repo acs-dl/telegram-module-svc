@@ -60,7 +60,7 @@ func (s *Sender) processMessages(ctx context.Context) error {
 			return errors.Wrap(err, "failed to process response: "+response.ID)
 		}
 
-		err = s.responsesQ.Delete(response.ID)
+		err = s.responsesQ.FilterByIds(response.ID).Delete()
 		if err != nil {
 			s.log.WithError(err).Errorf("failed to delete processed response `%s", response.ID)
 			return errors.Wrap(err, "failed to delete processed response: "+response.ID)

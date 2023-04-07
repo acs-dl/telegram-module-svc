@@ -41,7 +41,7 @@ func (t *tg) GetChatUserFromApi(username, phone *string, title string) (*data.Us
 }
 
 func (t *tg) getChatUserFlow(username, phone *string, title string) (*data.User, error) {
-	id, accessHash, err := t.GetChatFromApi(title)
+	chatInfo, err := t.GetChatFromApi(title)
 	if err != nil {
 		t.log.WithError(err).Errorf("failed to find chat %s", title)
 		return nil, err
@@ -53,7 +53,7 @@ func (t *tg) getChatUserFlow(username, phone *string, title string) (*data.User,
 		return nil, err
 	}
 
-	return t.checkUserInChat(*id, accessHash, user.TelegramId)
+	return t.checkUserInChat(*chatInfo.id, chatInfo.accessHash, user.TelegramId)
 }
 
 func (t *tg) checkUserInChat(id int32, hashID *int64, userId int64) (*data.User, error) {

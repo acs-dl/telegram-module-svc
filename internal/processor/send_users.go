@@ -67,8 +67,8 @@ func (p *processor) SendDeleteUser(uuid string, user data.User) error {
 
 	err = p.sender.SendMessageToCustomChannel(data.UnverifiedService, p.buildMessage(uuid, marshaledPayload))
 	if err != nil {
-		p.log.WithError(err).Errorf("failed to publish users to `telegram-module`")
-		return errors.Wrap(err, "failed to publish users to `telegram-module`")
+		p.log.WithError(err).Errorf("failed to publish users to `unverified-svc`")
+		return errors.Wrap(err, "failed to publish users to `unverified-svc`")
 	}
 
 	p.resetFilters()
