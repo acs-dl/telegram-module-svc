@@ -19,20 +19,22 @@ import (
 const serviceName = data.ModuleName + "-receiver"
 
 type Receiver struct {
-	subscriber *amqp.Subscriber
-	topic      string
-	log        *logan.Entry
-	processor  processor.Processor
-	responseQ  data.Responses
+	subscriber  *amqp.Subscriber
+	topic       string
+	log         *logan.Entry
+	processor   processor.Processor
+	responseQ   data.Responses
+	runnerDelay time.Duration
 }
 
 func NewReceiver(cfg config.Config, ctx context.Context) *Receiver {
 	return &Receiver{
-		subscriber: cfg.Amqp().Subscriber,
-		topic:      cfg.Amqp().Topic,
-		log:        logan.New().WithField("service", serviceName),
-		processor:  processor.NewProcessor(cfg, ctx),
-		responseQ:  postgres.NewResponsesQ(cfg.DB()),
+		subscriber:  cfg.Amqp().Subscriber,
+		topic:       cfg.Amqp().Topic,
+		log:         logan.New().WithField("service", serviceName),
+		processor:   processor.NewProcessor(cfg, ctx),
+		responseQ:   postgres.NewResponsesQ(cfg.DB()),
+		runnerDelay: cfg.Runners().Receiver,
 	}
 }
 
@@ -40,9 +42,9 @@ func (r *Receiver) Run(ctx context.Context) {
 	go running.WithBackOff(ctx, r.log,
 		serviceName,
 		r.listenMessages,
-		30*time.Second,
-		30*time.Second,
-		30*time.Second,
+		r.runnerDelay,
+		r.runnerDelay,
+		r.runnerDelay,
 	)
 }
 

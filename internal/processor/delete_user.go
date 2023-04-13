@@ -3,6 +3,7 @@ package processor
 import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
+	"gitlab.com/distributed_lab/acs/telegram-module/internal/helpers"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/pqueue"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 )
@@ -26,7 +27,7 @@ func (p *processor) handleDeleteUserAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to validate fields")
 	}
 
-	item, err := p.addFunctionInPqueue(any(p.telegramClient.GetUserFromApi), []any{any(msg.Username), any(msg.Phone)}, pqueue.NormalPriority)
+	item, err := helpers.AddFunctionInPQueue(p.pqueues.SuperPQueue, any(p.telegramClient.GetUserFromApi), []any{any(msg.Username), any(msg.Phone)}, pqueue.NormalPriority)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to add function in pqueue for message action with id `%s`", msg.RequestId)
 		return errors.Wrap(err, "failed to add function in pqueue")
@@ -56,7 +57,7 @@ func (p *processor) handleDeleteUserAction(msg data.ModulePayload) error {
 	}
 
 	for _, permission := range permissions {
-		item, err = p.addFunctionInPqueue(any(p.telegramClient.GetChatUserFromApi), []any{any(msg.Username), any(msg.Phone), any(permission.Link)}, pqueue.NormalPriority)
+		item, err = helpers.AddFunctionInPQueue(p.pqueues.SuperPQueue, any(p.telegramClient.GetChatUserFromApi), []any{any(msg.Username), any(msg.Phone), any(permission.Link)}, pqueue.NormalPriority)
 		if err != nil {
 			p.log.WithError(err).Errorf("failed to add function in pqueue for message action with id `%s`", msg.RequestId)
 			return errors.Wrap(err, "failed to add function in pqueue")
@@ -74,7 +75,7 @@ func (p *processor) handleDeleteUserAction(msg data.ModulePayload) error {
 		}
 
 		if chatUser != nil {
-			item, err = p.addFunctionInPqueue(any(p.telegramClient.DeleteFromChatFromApi), []any{any(msg.Username), any(msg.Phone), any(permission.Link)}, pqueue.NormalPriority)
+			item, err = helpers.AddFunctionInPQueue(p.pqueues.SuperPQueue, any(p.telegramClient.DeleteFromChatFromApi), []any{any(msg.Username), any(msg.Phone), any(permission.Link)}, pqueue.NormalPriority)
 			if err != nil {
 				p.log.WithError(err).Errorf("failed to add function in pqueue for message action with id `%s`", msg.RequestId)
 				return errors.Wrap(err, "failed to add function in pqueue")

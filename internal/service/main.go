@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"sync"
-	"time"
 
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/pqueue"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/receiver"
@@ -36,9 +35,10 @@ func Run(cfg config.Config) {
 	//tgClient := tg.NewTg(cfg.Telegram(), cfg.Log())
 
 	stopProcessQueue := make(chan struct{})
-	newPqueue := pqueue.NewPriorityQueue()
-	go newPqueue.ProcessQueue(2, 80*time.Second, stopProcessQueue)
-	ctx = handlers.CtxPQueue(newPqueue.(*pqueue.PriorityQueue), ctx)
+	pqueues := pqueue.NewPQueues()
+	go pqueues.SuperPQueue.ProcessQueue(cfg.RateLimit().RequestsAmount, cfg.RateLimit().TimeLimit, stopProcessQueue)
+	go pqueues.UsualPQueue.ProcessQueue(cfg.RateLimit().RequestsAmount, cfg.RateLimit().TimeLimit, stopProcessQueue)
+	ctx = handlers.CtxPQueues(&pqueues, ctx)
 
 	for serviceName, service := range availableServices {
 		wg.Add(1)

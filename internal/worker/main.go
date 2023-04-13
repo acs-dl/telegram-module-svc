@@ -26,6 +26,7 @@ type worker struct {
 	linksQ       data.Links
 	permissionsQ data.Permissions
 	usersQ       data.Users
+	runnerDelay  time.Duration
 }
 
 func NewWorker(cfg config.Config, ctx context.Context) Worker {
@@ -35,6 +36,7 @@ func NewWorker(cfg config.Config, ctx context.Context) Worker {
 		linksQ:       postgres.NewLinksQ(cfg.DB()),
 		permissionsQ: postgres.NewPermissionsQ(cfg.DB()),
 		usersQ:       postgres.NewUsersQ(cfg.DB()),
+		runnerDelay:  cfg.Runners().Worker,
 	}
 }
 
@@ -44,9 +46,9 @@ func (w *worker) Run(ctx context.Context) {
 		w.logger,
 		serviceName,
 		w.processPermissions,
-		15*time.Minute,
-		15*time.Minute,
-		15*time.Minute,
+		w.runnerDelay,
+		w.runnerDelay,
+		w.runnerDelay,
 	)
 }
 

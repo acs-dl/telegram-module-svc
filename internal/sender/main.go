@@ -18,18 +18,20 @@ import (
 const serviceName = data.ModuleName + "-sender"
 
 type Sender struct {
-	publisher  *amqp.Publisher
-	responsesQ data.Responses
-	log        *logan.Entry
-	topic      string
+	publisher   *amqp.Publisher
+	responsesQ  data.Responses
+	log         *logan.Entry
+	topic       string
+	runnerDelay time.Duration
 }
 
 func NewSender(cfg config.Config) *Sender {
 	return &Sender{
-		publisher:  cfg.Amqp().Publisher,
-		responsesQ: postgres.NewResponsesQ(cfg.DB()),
-		log:        logan.New().WithField("service", serviceName),
-		topic:      "orchestrator",
+		publisher:   cfg.Amqp().Publisher,
+		responsesQ:  postgres.NewResponsesQ(cfg.DB()),
+		log:         logan.New().WithField("service", serviceName),
+		topic:       "orchestrator",
+		runnerDelay: cfg.Runners().Sender,
 	}
 }
 
@@ -37,9 +39,9 @@ func (s *Sender) Run(ctx context.Context) {
 	go running.WithBackOff(ctx, s.log,
 		serviceName,
 		s.processMessages,
-		30*time.Second,
-		30*time.Second,
-		30*time.Second,
+		s.runnerDelay,
+		s.runnerDelay,
+		s.runnerDelay,
 	)
 }
 

@@ -21,6 +21,8 @@ type Config interface {
 	Telegram() *TelegramCfg
 	Amqp() *AmqpData
 	JwtParams() *JwtCfg
+	RateLimit() *RateLimitCfg
+	Runners() *RunnersCfg
 
 	// Registrator config
 	Registrator() RegistratorConfig
@@ -41,6 +43,8 @@ type config struct {
 	amqp        comfig.Once
 	registrator comfig.Once
 	jwtCfg      comfig.Once
+	rateLimit   comfig.Once
+	runners     comfig.Once
 }
 
 func New(getter kv.Getter) Config {

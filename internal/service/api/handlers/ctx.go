@@ -20,6 +20,7 @@ const (
 	linksCtxKey
 	paramsCtxKey
 	pqueueCtxKey
+	parentContextCtxKey
 )
 
 func CtxLog(entry *logan.Entry) func(context.Context) context.Context {
@@ -72,10 +73,20 @@ func CtxLinksQ(entry data.Links) func(context.Context) context.Context {
 	}
 }
 
-func PQueue(ctx context.Context) *pqueue.PriorityQueue {
-	return ctx.Value(pqueueCtxKey).(*pqueue.PriorityQueue)
+func PQueues(ctx context.Context) *pqueue.PQueues {
+	return ctx.Value(pqueueCtxKey).(*pqueue.PQueues)
 }
 
-func CtxPQueue(entry *pqueue.PriorityQueue, ctx context.Context) context.Context {
+func CtxPQueues(entry *pqueue.PQueues, ctx context.Context) context.Context {
 	return context.WithValue(ctx, pqueueCtxKey, entry)
+}
+
+func ParentContext(ctx context.Context) context.Context {
+	return ctx.Value(parentContextCtxKey).(context.Context)
+}
+
+func CtxParentContext(entry context.Context) func(context.Context) context.Context {
+	return func(ctx context.Context) context.Context {
+		return context.WithValue(ctx, parentContextCtxKey, entry)
+	}
 }

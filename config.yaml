@@ -16,6 +16,16 @@ telegram:
   phone_number: "+380685379725"
   host: "149.154.167.50:443"
 
+runners:
+  registrar: 10m
+  worker: 2h
+  receiver: 30s
+  sender: 30s
+
+rate_limit:
+  requests_amount: 1
+  time_limit: 40s
+
 listener:
   addr: :9000
 

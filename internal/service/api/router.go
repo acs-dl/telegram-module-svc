@@ -12,7 +12,7 @@ import (
 	"gitlab.com/distributed_lab/ape"
 )
 
-func (r *apiRouter) apiRouter() chi.Router {
+func (r *Router) apiRouter() chi.Router {
 	router := chi.NewRouter()
 
 	logger := r.cfg.Log().WithField("service", fmt.Sprintf("%s-api", data.ModuleName))
@@ -35,6 +35,7 @@ func (r *apiRouter) apiRouter() chi.Router {
 
 			// other configs
 			handlers.CtxParams(r.cfg.Telegram()),
+			handlers.CtxParentContext(r.ctx),
 		),
 	)
 

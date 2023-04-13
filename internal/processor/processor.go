@@ -47,7 +47,7 @@ type processor struct {
 	usersQ         data.Users
 	managerQ       *manager.Manager
 	sender         *sender.Sender
-	pqueue         *pqueue.PriorityQueue
+	pqueues        *pqueue.PQueues
 }
 
 var handleActions = map[string]func(proc *processor, msg data.ModulePayload) error{
@@ -67,7 +67,7 @@ func NewProcessor(cfg config.Config, ctx context.Context) Processor {
 		usersQ:         postgres.NewUsersQ(cfg.DB()),
 		managerQ:       manager.NewManager(cfg.DB()),
 		sender:         sender.NewSender(cfg),
-		pqueue:         handlers.PQueue(ctx),
+		pqueues:        handlers.PQueues(ctx),
 	}
 }
 

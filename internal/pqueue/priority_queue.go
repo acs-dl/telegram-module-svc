@@ -4,75 +4,116 @@ import (
 	"errors"
 	"log"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type PriorityQueueInterface interface {
-	WaitUntilInvoked(uuid uuid.UUID) (*QueueItem, error)
+	WaitUntilInvoked(id string) (*QueueItem, error)
 	ProcessQueue(requestLimit int64, timeLimit time.Duration, stop chan struct{})
 }
 
-type PriorityQueue []*QueueItem
-
-func NewPriorityQueue() PriorityQueueInterface {
-	newPqueue := make(PriorityQueue, 0)
-	return &newPqueue
+type PQueues struct {
+	SuperPQueue *PriorityQueue
+	UsualPQueue *PriorityQueue
 }
 
-func (pq *PriorityQueue) Len() int { return len(*pq) }
+type PriorityQueue struct {
+	queueArray []*QueueItem
+	queueMap   map[string]*QueueItem
+}
+
+func NewPQueues() PQueues {
+	return PQueues{
+		SuperPQueue: NewPriorityQueue().(*PriorityQueue),
+		UsualPQueue: NewPriorityQueue().(*PriorityQueue),
+	}
+}
+
+func NewPriorityQueue() PriorityQueueInterface {
+	return &PriorityQueue{
+		queueArray: make([]*QueueItem, 0),
+		queueMap:   make(map[string]*QueueItem),
+	}
+}
+
+func (pq *PriorityQueue) Len() int { return len(pq.queueArray) }
 
 func (pq *PriorityQueue) Less(i, j int) bool {
-	return (*pq)[i].Priority > (*pq)[j].Priority
+	return (*pq).queueArray[i].Priority > (*pq).queueArray[j].Priority
 }
 
 func (pq *PriorityQueue) Swap(i, j int) {
-	(*pq)[i], (*pq)[j] = (*pq)[j], (*pq)[i]
-	(*pq)[i].index = i
-	(*pq)[j].index = j
+	(*pq).queueArray[i], (*pq).queueArray[j] = (*pq).queueArray[j], (*pq).queueArray[i]
+	(*pq).queueArray[i].index = i
+	(*pq).queueArray[j].index = j
 }
 
 func (pq *PriorityQueue) Push(x interface{}) {
-	n := len(*pq)
 	item := x.(*QueueItem)
+
+	pqItem, exists := pq.queueMap[item.Id]
+	if exists {
+		pqItem.Amount++
+		return
+	}
+
+	n := len(pq.queueArray)
 	item.index = n
 	item.invoked = PROCESSING
-	*pq = append(*pq, item)
+	item.Amount++
+	pq.queueArray = append(pq.queueArray, item)
+	pq.queueMap[item.Id] = item
 }
 
 func (pq *PriorityQueue) Pop() interface{} {
-	old := *pq
+	old := pq.queueArray
 	n := len(old)
 	item := old[n-1]
 	old[n-1] = nil
 	item.index = -1
-	*pq = old[0 : n-1]
+	pq.queueArray = old[0 : n-1]
+	delete(pq.queueMap, item.Id)
+
 	return item
 }
 
-func (pq *PriorityQueue) RemoveByUUID(uuid uuid.UUID) error {
-	item, err := pq.getElement(uuid)
+func (pq *PriorityQueue) RemoveById(id string) error {
+	item, err := pq.getElement(id)
 	if err != nil {
 		return err
 	}
-	*pq = append((*pq)[:item.index], (*pq)[item.index+1:]...)
+
+	if item.Amount > 1 {
+		item.Amount--
+		return nil
+	}
+
+	pq.queueArray = append(pq.queueArray[:item.index], pq.queueArray[item.index+1:]...)
+	delete(pq.queueMap, item.Id)
+	pq.FixIndexesInPQueue()
 	return nil
 }
 
-func (pq *PriorityQueue) getElement(uuid uuid.UUID) (*QueueItem, error) {
-	for i := range *pq {
-		if (*pq)[i].Uuid.String() == uuid.String() {
-			return (*pq)[i], nil
+func (pq *PriorityQueue) FixIndexesInPQueue() {
+	for i, queueItem := range pq.queueArray {
+		if queueItem.index != i {
+			queueItem.index = i
 		}
 	}
-
-	return nil, errors.New("element not found")
 }
 
-func (pq *PriorityQueue) WaitUntilInvoked(uuid uuid.UUID) (*QueueItem, error) {
-	log.Printf("waiting until invoked for `%s`", uuid.String())
+func (pq *PriorityQueue) getElement(id string) (*QueueItem, error) {
+	item, exists := pq.queueMap[id]
+	if !exists {
+		return nil, errors.New("element not found")
+	}
 
-	item, err := pq.getElement(uuid)
+	return item, nil
+}
+
+func (pq *PriorityQueue) WaitUntilInvoked(id string) (*QueueItem, error) {
+	log.Printf("waiting until invoked for `%s`", id)
+
+	item, err := pq.getElement(id)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +139,7 @@ func (pq *PriorityQueue) ProcessQueue(requestLimit int64, timeLimit time.Duratio
 
 func (pq *PriorityQueue) processNextItem() {
 	for i := 0; i < pq.Len(); i++ {
-		item := (*pq)[i]
+		item := pq.queueArray[i]
 		if item == nil {
 			continue
 		}

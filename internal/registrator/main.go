@@ -18,14 +18,16 @@ type Registrar interface {
 }
 
 type registrar struct {
-	logger *logan.Entry
-	config config.RegistratorConfig
+	logger      *logan.Entry
+	config      config.RegistratorConfig
+	runnerDelay time.Duration
 }
 
 func NewRegistrar(cfg config.Config) Registrar {
 	return &registrar{
-		logger: cfg.Log().WithField("runner", serviceName),
-		config: cfg.Registrator(),
+		logger:      cfg.Log().WithField("runner", serviceName),
+		config:      cfg.Registrator(),
+		runnerDelay: cfg.Runners().Registrar,
 	}
 }
 
@@ -35,8 +37,8 @@ func (r *registrar) Run(ctx context.Context) {
 		r.logger,
 		serviceName,
 		r.registerModule,
-		10*time.Minute,
-		10*time.Minute,
-		10*time.Minute,
+		r.runnerDelay,
+		r.runnerDelay,
+		r.runnerDelay,
 	)
 }
