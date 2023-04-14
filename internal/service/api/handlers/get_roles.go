@@ -61,7 +61,7 @@ func GetRoles(w http.ResponseWriter, r *http.Request) {
 	pq := PQueues(ParentContext(r.Context())).SuperPQueue
 	tgClient := *TGClient(ParentContext(r.Context()))
 
-	user, err = helpers.GetUser(pq, tgClient.GetUserFromApi, []any{any(username), any(phone)}, pqueue.HighPriority)
+	user, err = helpers.GetUser(pq, tgClient.GetUserFromApi, []any{any(request.Username), any(&phone)}, pqueue.HighPriority)
 	if err != nil {
 		Log(r).WithError(err).Errorf("failed to get user from api")
 		ape.RenderErr(w, problems.InternalError())
