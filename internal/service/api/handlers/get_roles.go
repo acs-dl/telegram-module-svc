@@ -83,7 +83,7 @@ func GetRoles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	chatUser, err := helpers.GetUser(pq, tgClient.GetChatUserFromApi, []any{any(user), any(chat)}, pqueue.HighPriority)
+	chatUser, err := helpers.GetUser(pq, tgClient.GetChatUserFromApi, []any{any(*user), any(*chat)}, pqueue.HighPriority)
 	if err != nil {
 		Log(r).WithError(err).Errorf("failed to get chat user from api")
 		ape.RenderErr(w, problems.InternalError())
