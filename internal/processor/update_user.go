@@ -29,22 +29,32 @@ func (p *processor) handleUpdateUserAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to validate fields")
 	}
 
-	arguments := []any{any(msg.Username), any(msg.Phone), any(msg.Link)}
-	item, err := helpers.AddFunctionInPQueue(p.pqueues.SuperPQueue, any(p.telegramClient.GetChatUserFromApi), arguments, pqueue.NormalPriority)
+	user, err := helpers.GetUser(p.pqueues.SuperPQueue, any(p.telegramClient.GetUserFromApi), []any{any(msg.Username), any(msg.Phone)}, pqueue.NormalPriority)
 	if err != nil {
-		p.log.WithError(err).Errorf("failed to add function in pqueue for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "failed to add function in pqueue")
+		p.log.WithError(err).Errorf("failed to get user from api for message action with id `%s`", msg.RequestId)
+		return errors.Wrap(err, "failed to get user from api")
 	}
 
-	err = item.Response.Error
-	if err != nil {
-		p.log.WithError(err).Errorf("failed to get user from API for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "some error while getting user from api")
+	if user == nil {
+		p.log.Errorf("no user was found for message action with id `%s`", msg.RequestId)
+		return errors.New("no user was found")
 	}
-	user, err := p.convertUserFromInterfaceAndCheck(item.Response.Value)
+
+	chat, err := helpers.GetChat(p.pqueues.SuperPQueue, any(p.telegramClient.GetChatFromApi), []any{any(msg.Link)}, pqueue.NormalPriority)
 	if err != nil {
-		p.log.WithError(err).Errorf("something wrong with user for message action with id `%s`", msg.RequestId)
-		return errors.Errorf("something wrong with user from api")
+		p.log.WithError(err).Errorf("failed to get chat from api for message action with id `%s`", msg.RequestId)
+		return errors.Wrap(err, "failed to get chat from api")
+	}
+
+	if chat == nil {
+		p.log.Errorf("no chat `%s` was found for message action with id `%s`", msg.Link, msg.RequestId)
+		return errors.New("no chat was found")
+	}
+
+	user, err = helpers.GetUser(p.pqueues.SuperPQueue, any(p.telegramClient.GetChatUserFromApi), []any{any(*user), any(*chat)}, pqueue.NormalPriority)
+	if err != nil {
+		p.log.WithError(err).Errorf("failed to get user from api for message action with id `%s`", msg.RequestId)
+		return errors.Wrap(err, "failed to get user from api")
 	}
 
 	_, err = p.getUserFromDbByTelegramId(user.TelegramId)
@@ -53,13 +63,7 @@ func (p *processor) handleUpdateUserAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to get user from")
 	}
 
-	item, err = helpers.AddFunctionInPQueue(p.pqueues.SuperPQueue, any(p.telegramClient.UpdateUserInChatFromApi), arguments, pqueue.NormalPriority)
-	if err != nil {
-		p.log.WithError(err).Errorf("failed to add function in pqueue for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "failed to add function in pqueue")
-	}
-
-	err = item.Response.Error
+	err = helpers.GetRequestError(p.pqueues.SuperPQueue, any(p.telegramClient.UpdateUserInChatFromApi), []any{any(*user), any(*chat)}, pqueue.NormalPriority)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to update user from API for message action with id `%s`", msg.RequestId)
 		return errors.Wrap(err, "failed to update user from api")

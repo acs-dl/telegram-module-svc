@@ -27,21 +27,15 @@ func (p *processor) handleDeleteUserAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to validate fields")
 	}
 
-	item, err := helpers.AddFunctionInPQueue(p.pqueues.SuperPQueue, any(p.telegramClient.GetUserFromApi), []any{any(msg.Username), any(msg.Phone)}, pqueue.NormalPriority)
+	user, err := helpers.GetUser(p.pqueues.SuperPQueue, any(p.telegramClient.GetUserFromApi), []any{any(msg.Username), any(msg.Phone)}, pqueue.NormalPriority)
 	if err != nil {
-		p.log.WithError(err).Errorf("failed to add function in pqueue for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "failed to add function in pqueue")
-	}
-
-	err = item.Response.Error
-	if err != nil {
-		p.log.WithError(err).Errorf("failed to get user from API for message action with id `%s`", msg.RequestId)
+		p.log.WithError(err).Errorf("failed to get user from api for message action with id `%s`", msg.RequestId)
 		return errors.Wrap(err, "failed to get user from api")
 	}
-	user, err := p.convertUserFromInterfaceAndCheck(item.Response.Value)
-	if err != nil {
-		p.log.WithError(err).Errorf("something wrong with user for message action with id `%s`", msg.RequestId)
-		return errors.Errorf("something wrong with user from api")
+
+	if user == nil {
+		p.log.Errorf("no user was found for message action with id `%s`", msg.RequestId)
+		return errors.New("no user was found")
 	}
 
 	dbUser, err := p.getUserFromDbByTelegramId(user.TelegramId)
@@ -57,31 +51,25 @@ func (p *processor) handleDeleteUserAction(msg data.ModulePayload) error {
 	}
 
 	for _, permission := range permissions {
-		item, err = helpers.AddFunctionInPQueue(p.pqueues.SuperPQueue, any(p.telegramClient.GetChatUserFromApi), []any{any(msg.Username), any(msg.Phone), any(permission.Link)}, pqueue.NormalPriority)
+		chat, err := helpers.GetChat(p.pqueues.SuperPQueue, any(p.telegramClient.GetChatFromApi), []any{any(permission.Link)}, pqueue.NormalPriority)
 		if err != nil {
-			p.log.WithError(err).Errorf("failed to add function in pqueue for message action with id `%s`", msg.RequestId)
-			return errors.Wrap(err, "failed to add function in pqueue")
+			p.log.WithError(err).Errorf("failed to get chat from api for message action with id `%s`", msg.RequestId)
+			return errors.Wrap(err, "failed to get chat from api")
 		}
 
-		err = item.Response.Error
-		if err != nil {
-			p.log.WithError(err).Errorf("failed to get chat user from API for message action with id `%s`", msg.RequestId)
-			return errors.Wrap(err, "some error while checking user from api")
+		if chat == nil {
+			p.log.Errorf("no chat `%s` was found for message action with id `%s`", permission.Link, msg.RequestId)
+			return errors.New("no chat was found")
 		}
-		chatUser, ok := item.Response.Value.(*data.User)
-		if !ok {
-			p.log.WithError(err).Errorf("failed to convert interface to user for message action with id `%s`", msg.RequestId)
-			return errors.Errorf("wrong response type while getting users from api")
+
+		chatUser, err := helpers.GetUser(p.pqueues.SuperPQueue, any(p.telegramClient.GetChatUserFromApi), []any{any(*user), any(*chat)}, pqueue.NormalPriority)
+		if err != nil {
+			p.log.WithError(err).Errorf("failed to get user from api for message action with id `%s`", msg.RequestId)
+			return errors.Wrap(err, "failed to get user from api")
 		}
 
 		if chatUser != nil {
-			item, err = helpers.AddFunctionInPQueue(p.pqueues.SuperPQueue, any(p.telegramClient.DeleteFromChatFromApi), []any{any(msg.Username), any(msg.Phone), any(permission.Link)}, pqueue.NormalPriority)
-			if err != nil {
-				p.log.WithError(err).Errorf("failed to add function in pqueue for message action with id `%s`", msg.RequestId)
-				return errors.Wrap(err, "failed to add function in pqueue")
-			}
-
-			err = item.Response.Error
+			err = helpers.GetRequestError(p.pqueues.SuperPQueue, any(p.telegramClient.DeleteFromChatFromApi), []any{any(*user), any(*chat)}, pqueue.NormalPriority)
 			if err != nil {
 				p.log.WithError(err).Errorf("failed to remove user from API for message action with id `%s`", msg.RequestId)
 				return errors.Wrap(err, "some error while removing user from api")

@@ -25,22 +25,21 @@ func (p *processor) handleGetUsersAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to validate fields")
 	}
 
-	item, err := helpers.AddFunctionInPQueue(p.pqueues.SuperPQueue, any(p.telegramClient.GetUsersFromApi), []any{any(msg.Link)}, pqueue.LowPriority)
+	chat, err := helpers.GetChat(p.pqueues.SuperPQueue, any(p.telegramClient.GetChatFromApi), []any{any(msg.Link)}, pqueue.LowPriority)
 	if err != nil {
-		p.log.WithError(err).Errorf("failed to add function in pqueue for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "failed to add function in pqueue")
+		p.log.WithError(err).Errorf("failed to get chat from api for message action with id `%s`", msg.RequestId)
+		return errors.Wrap(err, "failed to get chat from api")
 	}
 
-	err = item.Response.Error
+	if chat == nil {
+		p.log.Errorf("no chat `%s` was found for message action with id `%s`", msg.Link, msg.RequestId)
+		return errors.New("no chat was found")
+	}
+
+	users, err := helpers.GetUsers(p.pqueues.SuperPQueue, any(p.telegramClient.GetChatUsersFromApi), []any{any(*chat)}, pqueue.LowPriority)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to get users from API for message action with id `%s`", msg.RequestId)
 		return errors.Wrap(err, "some error while getting users from api")
-	}
-
-	users, ok := item.Response.Value.([]data.User)
-	if !ok {
-		p.log.WithError(err).Errorf("wrong response type for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "wrong response type while getting users from api")
 	}
 
 	if len(users) == 0 {
@@ -95,18 +94,4 @@ func (p *processor) handleGetUsersAction(msg data.ModulePayload) error {
 	p.resetFilters()
 	p.log.Infof("finish handle message action with id `%s`", msg.RequestId)
 	return nil
-}
-
-func (p *processor) getUserFromDbByTelegramId(telegramId int64) (*data.User, error) {
-	usersQ := p.usersQ.New()
-	user, err := usersQ.FilterByTelegramIds(telegramId).Get()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to get user from db")
-	}
-
-	if user == nil {
-		return nil, errors.Errorf("no such user in module")
-	}
-
-	return user, nil
 }

@@ -1,7 +1,6 @@
 package tg
 
 import (
-	"fmt"
 	"syscall"
 	"time"
 
@@ -34,7 +33,7 @@ func (t *tg) GetUserFromApi(username, phone *string) (*data.User, error) {
 		}
 
 		t.log.WithError(err).Errorf("failed to get user")
-		return nil, errors.Wrap(err, fmt.Sprintf("failed to get user"))
+		return nil, errors.Wrap(err, "failed to get user")
 	}
 
 	t.log.Infof("successfully got user")
@@ -42,36 +41,28 @@ func (t *tg) GetUserFromApi(username, phone *string) (*data.User, error) {
 }
 
 func (t *tg) getUserFlow(username, phone *string) (*data.User, error) {
-	inputUser, err := t.getInputUser(username, phone)
+	var user *data.User = nil
+	var err error
+
+	if username != nil {
+		user, err = t.getUserByUsername(*username)
+	} else if phone != nil {
+		user, err = t.getUserByPhone(*phone)
+	}
 	if err != nil {
-		t.log.WithError(err).Errorf("failed to get input user")
+		t.log.Errorf("failed to get user")
 		return nil, err
 	}
 
-	tgFullUser, err := t.client.UsersGetFullUser(inputUser)
-	if err != nil {
-		t.log.WithError(err).Errorf("failed to get full user")
-		return nil, err
-	}
-
-	tgUser := tgFullUser.User.(*telegram.UserObj)
-
-	return &data.User{
-		Username:   &tgUser.Username,
-		Phone:      &tgUser.Phone,
-		FirstName:  tgUser.FirstName,
-		LastName:   tgUser.LastName,
-		TelegramId: int64(tgUser.ID),
-		AccessHash: tgUser.AccessHash,
-	}, nil
+	return user, nil
 }
 
-func (t *tg) getUserByPhone(phone string) (*telegram.InputUserObj, error) {
+func (t *tg) getUserByPhone(phone string) (*data.User, error) {
 	imported, err := t.client.ContactsImportContacts([]*telegram.InputPhoneContact{{
 		Phone: phone,
 	}})
 	if err != nil {
-		t.log.WithError(err).Errorf("failed to search contact by phone %s", phone)
+		t.log.Errorf("failed to search contact by phone %s", phone)
 		return nil, err
 	}
 
@@ -82,34 +73,42 @@ func (t *tg) getUserByPhone(phone string) (*telegram.InputUserObj, error) {
 	for _, user := range imported.Users {
 		converted := user.(*telegram.UserObj)
 		if converted.Phone == phone {
-			return &telegram.InputUserObj{
-				UserID:     converted.ID,
+			return &data.User{
+				Username:   &converted.Username,
+				Phone:      &converted.Phone,
+				FirstName:  converted.FirstName,
+				LastName:   converted.LastName,
+				TelegramId: int64(converted.ID),
 				AccessHash: converted.AccessHash,
 			}, nil
 		}
 	}
 
 	t.log.Errorf("no user was found with phone `%s`", phone)
-	return nil, errors.Errorf("no user was found with phone `%s`", phone)
+	return nil, nil
 }
 
-func (t *tg) getUserByUsername(username string) (*telegram.InputUserObj, error) {
+func (t *tg) getUserByUsername(username string) (*data.User, error) {
 	search, err := t.client.ContactsSearch(username, 100)
 	if err != nil {
-		t.log.WithError(err).Errorf("failed to search contact by username %s", username)
+		t.log.Errorf("failed to search contact by username %s", username)
 		return nil, err
 	}
 
 	for _, user := range search.Users {
 		converted := user.(*telegram.UserObj)
 		if converted.Username == username {
-			return &telegram.InputUserObj{
-				UserID:     converted.ID,
+			return &data.User{
+				Username:   &converted.Username,
+				Phone:      &converted.Phone,
+				FirstName:  converted.FirstName,
+				LastName:   converted.LastName,
+				TelegramId: int64(converted.ID),
 				AccessHash: converted.AccessHash,
 			}, nil
 		}
 	}
 
 	t.log.Errorf("no user was found with username `%s`", username)
-	return nil, errors.Errorf("no user was found with username `%s`", username)
+	return nil, nil
 }

@@ -12,7 +12,7 @@ import (
 )
 
 func (t *tg) GetChatFromApi(title string) (*Chat, error) {
-	id, accessHash, err := t.getChatFlow(title)
+	chat, err := t.getChatFlow(title)
 	if err != nil {
 		if pkgErrors.Is(err, syscall.EPIPE) {
 			cl := NewTg(t.tgCfg, t.log)
@@ -32,53 +32,52 @@ func (t *tg) GetChatFromApi(title string) (*Chat, error) {
 			return t.GetChatFromApi(title)
 		}
 
-		t.log.WithError(err).Errorf("failed to get chat")
-		return nil, errors.Wrap(err, fmt.Sprintf("failed to get chat"))
+		return nil, errors.Wrap(err, fmt.Sprintf("failed to get chat `%s`", title))
 	}
 
 	t.log.Infof("successfully got chat")
-	return &Chat{
-		id:         id,
-		accessHash: accessHash,
-	}, nil
+	return chat, nil
 }
 
-func (t *tg) getChatFlow(title string) (*int32, *int64, error) {
-	id, accessHash, err := t.findChatByTitle(title)
+func (t *tg) getChatFlow(title string) (*Chat, error) {
+	chat, err := t.findChatByTitle(title)
 	if err != nil {
-		t.log.WithError(err).Errorf("failed to find chat %s", title)
-		return nil, nil, err
+		return nil, err
 	}
 
-	return id, accessHash, nil
+	return chat, nil
 }
 
-func (t *tg) findChatByTitle(title string) (*int32, *int64, error) {
+func (t *tg) findChatByTitle(title string) (*Chat, error) {
 	discussion, err := t.client.MessagesGetAllChats(nil)
 	if err != nil {
-		t.log.WithError(err).Errorf("failed to get all chats")
-		return nil, nil, err
+		return nil, err
 	}
 
 	for _, chat := range discussion.(*telegram.MessagesChatsObj).Chats {
 		switch converted := chat.(type) {
-		default:
-			t.log.Errorf("unexpected chat type %T", converted)
-			return nil, nil, errors.Errorf("unexpected type %T", converted)
 		case *telegram.Channel:
 			if converted.Title == title {
-				return &converted.ID, &converted.AccessHash, nil
+				return &Chat{
+					converted.ID,
+					&converted.AccessHash,
+				}, nil
 			}
 		case *telegram.ChatObj:
 			if converted.MigratedTo != nil {
 				continue //it means that chat migrated to channel (supergroup)
 			}
 			if converted.Title == title {
-				return &converted.ID, nil, nil
+				return &Chat{
+					converted.ID,
+					nil,
+				}, nil
 			}
+		default:
+			return nil, errors.Errorf("unexpected type %T", converted)
 		}
 	}
 
 	t.log.Errorf("no chat `%s` was found", title)
-	return nil, nil, errors.Errorf("no chat `%s` was found", title)
+	return nil, nil
 }

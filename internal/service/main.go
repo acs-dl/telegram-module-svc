@@ -10,6 +10,7 @@ import (
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/sender"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/service/api"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/service/api/handlers"
+	"gitlab.com/distributed_lab/acs/telegram-module/internal/tg"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/worker"
 
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/config"
@@ -31,14 +32,15 @@ func Run(cfg config.Config) {
 
 	logger.Info("Starting all available services...")
 
-	// create new tg sessions better from this point
-	//tgClient := tg.NewTg(cfg.Telegram(), cfg.Log())
-
 	stopProcessQueue := make(chan struct{})
 	pqueues := pqueue.NewPQueues()
 	go pqueues.SuperPQueue.ProcessQueue(cfg.RateLimit().RequestsAmount, cfg.RateLimit().TimeLimit, stopProcessQueue)
 	go pqueues.UsualPQueue.ProcessQueue(cfg.RateLimit().RequestsAmount, cfg.RateLimit().TimeLimit, stopProcessQueue)
 	ctx = handlers.CtxPQueues(&pqueues, ctx)
+
+	// create new tg sessions better from this point
+	tgClient := tg.NewTg(cfg.Telegram(), cfg.Log())
+	ctx = handlers.CtxTGClient(&tgClient, ctx)
 
 	for serviceName, service := range availableServices {
 		wg.Add(1)

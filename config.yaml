@@ -24,7 +24,7 @@ runners:
 
 rate_limit:
   requests_amount: 1
-  time_limit: 40s
+  time_limit: 15s
 
 listener:
   addr: :9000

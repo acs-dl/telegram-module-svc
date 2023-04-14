@@ -1,23 +1,23 @@
 package tg
 
 import (
-	"fmt"
 	"syscall"
 	"time"
 
 	pkgErrors "github.com/pkg/errors"
 	"github.com/xelaj/mtproto"
 	"github.com/xelaj/mtproto/telegram"
+	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 )
 
-func (t *tg) AddUserInChatFromApi(username, phone *string, title string) error {
-	err := t.addUserFlow(username, phone, title)
+func (t *tg) AddUserInChatFromApi(user data.User, chat Chat) error {
+	err := t.addUserFlow(user, chat)
 	if err != nil {
 		if pkgErrors.Is(err, syscall.EPIPE) {
 			cl := NewTg(t.tgCfg, t.log)
 			t.client = cl.GetClient()
-			return t.AddUserInChatFromApi(username, phone, title)
+			return t.AddUserInChatFromApi(user, chat)
 		}
 
 		errResponse := &mtproto.ErrResponseCode{}
@@ -29,32 +29,21 @@ func (t *tg) AddUserInChatFromApi(username, phone *string, title string) error {
 			timeoutDuration := time.Second * time.Duration(errResponse.AdditionalInfo.(int))
 			t.log.Warnf("we need to wait `%s`", timeoutDuration.String())
 			time.Sleep(timeoutDuration)
-			return t.AddUserInChatFromApi(username, phone, title)
+			return t.AddUserInChatFromApi(user, chat)
 		}
 
-		t.log.WithError(err).Errorf("failed to add user in %s", title)
-		return errors.Wrap(err, fmt.Sprintf("failed to add userin %s", title))
+		return errors.Wrap(err, "failed to add user")
 	}
 
-	t.log.Infof("successfully add user in %s", title)
+	t.log.Infof("successfully add user in chat")
 	return nil
 }
 
-func (t *tg) addUserFlow(username, phone *string, title string) error {
-	id, accessHash, err := t.findChatByTitle(title)
-	if err != nil {
-		t.log.WithError(err).Errorf("failed to find chat %s", title)
-		return err
-	}
-
-	inputUser, err := t.getInputUser(username, phone)
-	if err != nil {
-		t.log.WithError(err).Errorf("failed to get input user")
-		return err
-	}
-
-	if err = t.addUser(inputUser, *id, accessHash); err != nil {
-		t.log.WithError(err).Errorf("failed to add user")
+func (t *tg) addUserFlow(user data.User, chat Chat) error {
+	if err := t.addUser(&telegram.InputUserObj{
+		UserID:     int32(user.TelegramId),
+		AccessHash: user.AccessHash,
+	}, chat.id, chat.accessHash); err != nil {
 		return err
 	}
 
@@ -68,13 +57,13 @@ func (t *tg) addUser(user *telegram.InputUserObj, id int32, hashID *int64) error
 			AccessHash: *hashID,
 		}, []telegram.InputUser{user})
 		if err != nil {
-			t.log.WithError(err).Errorf("failed to invite to channel")
+			t.log.Errorf("failed to invite to channel")
 			return err
 		}
 	} else {
 		_, err := t.client.MessagesAddChatUser(id, user, 0)
 		if err != nil {
-			t.log.WithError(err).Errorf("failed to add chat user")
+			t.log.Errorf("failed to add chat user")
 			return err
 		}
 	}

@@ -11,13 +11,13 @@ import (
 	"gitlab.com/distributed_lab/logan/v3/errors"
 )
 
-func (t *tg) GetUsersFromApi(title string) ([]data.User, error) {
-	users, err := t.getChatMembersByTitle(title)
+func (t *tg) GetChatUsersFromApi(chat Chat) ([]data.User, error) {
+	users, err := t.getChatMembers(chat)
 	if err != nil {
 		if pkgErrors.Is(err, syscall.EPIPE) {
 			cl := NewTg(t.tgCfg, t.log)
 			t.client = cl.GetClient()
-			return t.GetUsersFromApi(title)
+			return t.GetChatUsersFromApi(chat)
 		}
 
 		errResponse := &mtproto.ErrResponseCode{}
@@ -28,28 +28,20 @@ func (t *tg) GetUsersFromApi(title string) ([]data.User, error) {
 			timeoutDuration := time.Second * time.Duration(errResponse.AdditionalInfo.(int))
 			t.log.Warnf("we need to wait `%s`", timeoutDuration.String())
 			time.Sleep(timeoutDuration)
-			return t.GetUsersFromApi(title)
+			return t.GetChatUsersFromApi(chat)
 		}
 
-		t.log.WithError(err).Errorf("failed to get chat members")
+		t.log.Errorf("failed to get chat members")
 		return nil, errors.Wrap(err, "failed to get chat members")
 	}
 
 	return users, nil
 }
 
-func (t *tg) getChatMembersByTitle(title string) ([]data.User, error) {
-	var users []data.User
-
-	id, accessHash, err := t.findChatByTitle(title)
+func (t *tg) getChatMembers(chat Chat) ([]data.User, error) {
+	users, err := t.getAllUsers(chat.id, chat.accessHash)
 	if err != nil {
-		t.log.WithError(err).Errorf("failed to find chat %s", title)
-		return nil, err
-	}
-
-	users, err = t.getAllUsers(*id, accessHash)
-	if err != nil {
-		t.log.WithError(err).Errorf("failed to get all users")
+		t.log.Errorf("failed to get all users")
 		return nil, err
 	}
 
@@ -57,27 +49,21 @@ func (t *tg) getChatMembersByTitle(title string) ([]data.User, error) {
 }
 
 func (t *tg) getAllUsers(id int32, hashID *int64) ([]data.User, error) {
-	var users []data.User
+	users := make([]data.User, 0)
+	var err error = nil
 
 	if hashID != nil {
-		channelUsers, err := t.getAllUsersFromChannel(id, hashID)
+		users, err = t.getAllUsersFromChannel(id, hashID)
 		if err != nil {
-			t.log.WithError(err).Errorf("failed to get all users from channel")
+			t.log.Errorf("failed to get all users from channel")
 			return nil, err
 		}
-		users = channelUsers
 	} else {
-		chatUsers, err := t.getAllUsersFromChat(id)
+		users, err = t.getAllUsersFromChat(id)
 		if err != nil {
-			t.log.WithError(err).Errorf("failed to get all users from chat")
+			t.log.Errorf("failed to get all users from chat")
 			return nil, err
 		}
-		users = chatUsers
-	}
-
-	if len(users) == 0 {
-		t.log.Errorf("no users in chat with id `%d` and hash `%d`", id, hashID)
-		return nil, errors.Errorf("no users in chat with id `%d` and hash `%d`", id, hashID)
 	}
 
 	t.log.Infof("found `%d` users", len(users))
@@ -87,7 +73,7 @@ func (t *tg) getAllUsers(id int32, hashID *int64) ([]data.User, error) {
 func (t *tg) getAllUsersFromChat(chatId int32) ([]data.User, error) {
 	fullChat, err := t.client.MessagesGetFullChat(chatId)
 	if err != nil {
-		t.log.WithError(err).Errorf("failed to get full chat")
+		t.log.Errorf("failed to get full chat")
 		return nil, err
 	}
 
@@ -142,6 +128,7 @@ func (t *tg) getAllUsersFromChannel(id int32, hashID *int64) ([]data.User, error
 	var offset int32 = 0
 
 	for {
+		//TODO: think how to handle several api req for getting users (if chat has more than 1000 users). Do we need PQueue just for it? :'(
 		participants, err := t.client.ChannelsGetParticipants(&telegram.InputChannelObj{
 			ChannelID:  id,
 			AccessHash: *hashID}, &telegram.ChannelParticipantsSearch{}, offset, limit, 0)
@@ -171,7 +158,7 @@ func (t *tg) getAllUsersFromChannel(id int32, hashID *int64) ([]data.User, error
 
 		for _, participant := range participantsObject.Participants {
 			switch user := participant.(type) {
-			case *telegram.ChannelParticipantSelf: // myself - it exists in tg api, when user (whose acc we use) isn't admin, but can get participant list user's status is 'self'
+			case *telegram.ChannelParticipantSelf: // myself - it exists in tg api, when user (whose acc we use) isn't admin, but can get participant list, user's status is 'self'
 				userStatus[user.UserID] = data.Member
 			case *telegram.ChannelParticipantObj: // member
 				userStatus[user.UserID] = data.Member
@@ -205,6 +192,11 @@ func (t *tg) getAllUsersFromChannel(id int32, hashID *int64) ([]data.User, error
 				AccessHash:  tgUser.AccessHash,
 				AccessLevel: userStatus[tgUser.ID],
 			})
+		}
+
+		//if we got all users with one api request, so we don't need to make more requests
+		if int32(len(participantsObject.Users)) == participantsObject.Count {
+			break
 		}
 
 		offset += limit

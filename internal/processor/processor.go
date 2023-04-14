@@ -61,8 +61,9 @@ var handleActions = map[string]func(proc *processor, msg data.ModulePayload) err
 
 func NewProcessor(cfg config.Config, ctx context.Context) Processor {
 	return &processor{
-		log:            cfg.Log().WithField("service", serviceName),
-		telegramClient: tg.NewTg(cfg.Telegram(), cfg.Log()),
+		log: cfg.Log().WithField("service", serviceName),
+		//telegramClient: tg.NewTg(cfg.Telegram(), cfg.Log()),
+		telegramClient: *handlers.TGClient(ctx),
 		permissionsQ:   postgres.NewPermissionsQ(cfg.DB()),
 		usersQ:         postgres.NewUsersQ(cfg.DB()),
 		managerQ:       manager.NewManager(cfg.DB()),

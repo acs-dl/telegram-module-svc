@@ -1,7 +1,6 @@
 package tg
 
 import (
-	"fmt"
 	"syscall"
 	"time"
 
@@ -34,7 +33,7 @@ func (t *tg) SearchByFromApi(username, phone *string, amount int64) ([]data.User
 		}
 
 		t.log.WithError(err).Errorf("failed to search for users")
-		return nil, errors.Wrap(err, fmt.Sprintf("failed to search for users"))
+		return nil, errors.Wrap(err, "failed to search for users")
 	}
 
 	t.log.Infof("successfully searched users")
@@ -42,16 +41,16 @@ func (t *tg) SearchByFromApi(username, phone *string, amount int64) ([]data.User
 }
 
 func (t *tg) searchByFlow(username, phone *string, amount int64) ([]data.User, error) {
-	var users []data.User
+	users := make([]data.User, 0)
 	var err error
+
 	if username != nil {
 		users, err = t.searchUsersByUsername(*username, amount)
-	}
-	if phone != nil {
+	} else if phone != nil {
 		users, err = t.searchUsersByPhone(*phone, amount)
 	}
 	if err != nil {
-		t.log.WithError(err).Errorf("failed to search users")
+		t.log.Errorf("failed to search users")
 		return nil, err
 	}
 
@@ -65,7 +64,7 @@ func (t *tg) searchUsersByPhone(phone string, amount int64) ([]data.User, error)
 		Phone: phone,
 	}})
 	if err != nil {
-		t.log.WithError(err).Errorf("failed to search contact by phone %s", phone)
+		t.log.Errorf("failed to search contact by phone %s", phone)
 		return nil, err
 	}
 
@@ -97,7 +96,7 @@ func (t *tg) searchUsersByUsername(username string, amount int64) ([]data.User, 
 
 	search, err := t.client.ContactsSearch(username, int32(amount))
 	if err != nil {
-		t.log.WithError(err).Errorf("failed to search contact by username %s", username)
+		t.log.Errorf("failed to search contact by username %s", username)
 		return nil, err
 	}
 

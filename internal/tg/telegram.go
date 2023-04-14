@@ -15,16 +15,15 @@ import (
 )
 
 type TelegramClient interface {
-	GetUsersFromApi(title string) ([]data.User, error)
 	GetUserFromApi(username, phone *string) (*data.User, error)
-	GetChatUserFromApi(username, phone *string, title string) (*data.User, error)
+	GetChatUsersFromApi(chat Chat) ([]data.User, error)
+	GetChatUserFromApi(user data.User, chat Chat) (*data.User, error)
 	SearchByFromApi(username, phone *string, amount int64) ([]data.User, error)
 
 	GetChatFromApi(title string) (*Chat, error)
-
-	AddUserInChatFromApi(username, phone *string, title string) error
-	UpdateUserInChatFromApi(username, phone *string, title string) error
-	DeleteFromChatFromApi(username, phone *string, title string) error
+	AddUserInChatFromApi(user data.User, chat Chat) error
+	UpdateUserInChatFromApi(user data.User, chat Chat) error
+	DeleteFromChatFromApi(user data.User, chat Chat) error
 
 	GetClient() *telegram.Client
 }
@@ -36,7 +35,7 @@ type tg struct {
 }
 
 type Chat struct {
-	id         *int32
+	id         int32
 	accessHash *int64
 }
 

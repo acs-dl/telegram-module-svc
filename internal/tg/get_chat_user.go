@@ -1,7 +1,6 @@
 package tg
 
 import (
-	"fmt"
 	"syscall"
 	"time"
 
@@ -11,13 +10,13 @@ import (
 	"gitlab.com/distributed_lab/logan/v3/errors"
 )
 
-func (t *tg) GetChatUserFromApi(username, phone *string, title string) (*data.User, error) {
-	user, err := t.getChatUserFlow(username, phone, title)
+func (t *tg) GetChatUserFromApi(user data.User, chat Chat) (*data.User, error) {
+	chatUser, err := t.getChatUserFlow(user, chat)
 	if err != nil {
 		if pkgErrors.Is(err, syscall.EPIPE) {
 			cl := NewTg(t.tgCfg, t.log)
 			t.client = cl.GetClient()
-			return t.GetChatUserFromApi(username, phone, title)
+			return t.GetChatUserFromApi(user, chat)
 		}
 
 		errResponse := &mtproto.ErrResponseCode{}
@@ -29,43 +28,27 @@ func (t *tg) GetChatUserFromApi(username, phone *string, title string) (*data.Us
 			timeoutDuration := time.Second * time.Duration(errResponse.AdditionalInfo.(int))
 			t.log.Warnf("we need to wait `%s`", timeoutDuration.String())
 			time.Sleep(timeoutDuration)
-			return t.GetChatUserFromApi(username, phone, title)
+			return t.GetChatUserFromApi(user, chat)
 		}
 
 		t.log.WithError(err).Errorf("failed to get chat user")
-		return nil, errors.Wrap(err, fmt.Sprintf("failed to get chat user"))
+		return nil, errors.Wrap(err, "failed to get chat user")
 	}
 
 	t.log.Infof("successfully got chat user")
-	return user, nil
+	return chatUser, nil
 }
 
-func (t *tg) getChatUserFlow(username, phone *string, title string) (*data.User, error) {
-	chatInfo, err := t.GetChatFromApi(title)
+func (t *tg) getChatUserFlow(user data.User, chat Chat) (*data.User, error) {
+	var chatUsers, err = t.getAllUsers(chat.id, chat.accessHash)
 	if err != nil {
-		t.log.WithError(err).Errorf("failed to find chat %s", title)
+		t.log.Errorf("failed to get all users")
 		return nil, err
 	}
 
-	user, err := t.GetUserFromApi(username, phone)
-	if err != nil {
-		t.log.WithError(err).Errorf("failed to get user")
-		return nil, err
-	}
-
-	return t.checkUserInChat(*chatInfo.id, chatInfo.accessHash, user.TelegramId)
-}
-
-func (t *tg) checkUserInChat(id int32, hashID *int64, userId int64) (*data.User, error) {
-	var users, err = t.getAllUsers(id, hashID)
-	if err != nil {
-		t.log.WithError(err).Errorf("failed to get all users")
-		return nil, err
-	}
-
-	for _, user := range users {
-		if userId == user.TelegramId {
-			return &user, nil
+	for _, chatUser := range chatUsers {
+		if user.TelegramId == chatUser.TelegramId {
+			return &chatUser, nil
 		}
 	}
 

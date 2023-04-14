@@ -6,6 +6,7 @@ import (
 
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/config"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/pqueue"
+	"gitlab.com/distributed_lab/acs/telegram-module/internal/tg"
 	"gitlab.com/distributed_lab/logan/v3"
 
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
@@ -21,6 +22,7 @@ const (
 	paramsCtxKey
 	pqueueCtxKey
 	parentContextCtxKey
+	tgClientCtxKey
 )
 
 func CtxLog(entry *logan.Entry) func(context.Context) context.Context {
@@ -89,4 +91,12 @@ func CtxParentContext(entry context.Context) func(context.Context) context.Conte
 	return func(ctx context.Context) context.Context {
 		return context.WithValue(ctx, parentContextCtxKey, entry)
 	}
+}
+
+func TGClient(ctx context.Context) *tg.TelegramClient {
+	return ctx.Value(tgClientCtxKey).(*tg.TelegramClient)
+}
+
+func CtxTGClient(entry *tg.TelegramClient, ctx context.Context) context.Context {
+	return context.WithValue(ctx, tgClientCtxKey, entry)
 }
