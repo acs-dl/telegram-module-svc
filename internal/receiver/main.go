@@ -16,7 +16,7 @@ import (
 	"gitlab.com/distributed_lab/running"
 )
 
-const serviceName = data.ModuleName + "-receiver"
+const ServiceName = data.ModuleName + "-receiver"
 
 type Receiver struct {
 	subscriber  *amqp.Subscriber
@@ -27,20 +27,20 @@ type Receiver struct {
 	runnerDelay time.Duration
 }
 
-func NewReceiver(cfg config.Config, ctx context.Context) *Receiver {
-	return &Receiver{
+func NewReceiverAsInterface(cfg config.Config, ctx context.Context) interface{} {
+	return interface{}(&Receiver{
 		subscriber:  cfg.Amqp().Subscriber,
 		topic:       cfg.Amqp().Topic,
-		log:         logan.New().WithField("service", serviceName),
-		processor:   processor.NewProcessor(cfg, ctx),
+		log:         logan.New().WithField("service", ServiceName),
+		processor:   processor.ProcessorInstance(ctx),
 		responseQ:   postgres.NewResponsesQ(cfg.DB()),
 		runnerDelay: cfg.Runners().Receiver,
-	}
+	})
 }
 
 func (r *Receiver) Run(ctx context.Context) {
 	go running.WithBackOff(ctx, r.log,
-		serviceName,
+		ServiceName,
 		r.listenMessages,
 		r.runnerDelay,
 		r.runnerDelay,

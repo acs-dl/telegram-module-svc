@@ -10,7 +10,7 @@ import (
 	"gitlab.com/distributed_lab/running"
 )
 
-const serviceName = data.ModuleName + "-registrar"
+const ServiceName = data.ModuleName + "-registrar"
 
 type Registrar interface {
 	Run(ctx context.Context)
@@ -25,17 +25,25 @@ type registrar struct {
 
 func NewRegistrar(cfg config.Config) Registrar {
 	return &registrar{
-		logger:      cfg.Log().WithField("runner", serviceName),
+		logger:      cfg.Log().WithField("runner", ServiceName),
 		config:      cfg.Registrator(),
 		runnerDelay: cfg.Runners().Registrar,
 	}
+}
+
+func NewRegistrarAsInterface(cfg config.Config, _ context.Context) interface{} {
+	return interface{}(&registrar{
+		logger:      cfg.Log().WithField("runner", ServiceName),
+		config:      cfg.Registrator(),
+		runnerDelay: cfg.Runners().Registrar,
+	})
 }
 
 func (r *registrar) Run(ctx context.Context) {
 	running.WithBackOff(
 		ctx,
 		r.logger,
-		serviceName,
+		ServiceName,
 		r.registerModule,
 		r.runnerDelay,
 		r.runnerDelay,

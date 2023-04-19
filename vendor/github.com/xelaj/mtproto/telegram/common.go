@@ -1,4 +1,4 @@
-// Copyright (c) 2020 KHS Films
+// Copyright (c) 2020-2021 KHS Films
 //
 // This file is a part of mtproto package.
 // See https://github.com/xelaj/mtproto/blob/master/LICENSE for details
@@ -6,8 +6,10 @@
 package telegram
 
 import (
+	"net"
 	"reflect"
 	"runtime"
+	"strconv"
 
 	"github.com/pkg/errors"
 	"github.com/xelaj/errs"
@@ -46,7 +48,7 @@ func NewClient(c ClientConfig) (*Client, error) { //nolint: gocritic arg is not 
 		return nil, errs.NotFound("file", c.PublicKeysFile)
 	}
 
-	if !dry.PathIsWirtable(c.SessionFile) {
+	if !dry.PathIsWritable(c.SessionFile) {
 		return nil, errs.Permission(c.SessionFile).Scope("write")
 	}
 
@@ -119,10 +121,26 @@ func NewClient(c ClientConfig) (*Client, error) { //nolint: gocritic arg is not 
 			continue
 		}
 
-		dcList[int(dc.ID)] = dc.IpAddress
+		dcList[int(dc.ID)] = net.JoinHostPort(dc.IpAddress, strconv.Itoa(int(dc.Port)))
 	}
-	client.SetDCStorages(dcList)
+	client.SetDCList(dcList)
 	return client, nil
+}
+
+func (m *Client) IsSessionRegistred() (bool, error) {
+	_, err := m.UsersGetFullUser(&InputUserSelf{})
+	if err == nil {
+		return true, nil
+	}
+	var errCode *mtproto.ErrResponseCode
+	if errors.As(err, &errCode) {
+		if errCode.Message == "AUTH_KEY_UNREGISTERED" {
+			return false, nil
+		}
+		return false, err
+	} else {
+		return false, err
+	}
 }
 
 /*

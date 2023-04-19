@@ -34,7 +34,6 @@ func (r *Router) apiRouter() chi.Router {
 			// connectors
 
 			// other configs
-			handlers.CtxParams(r.cfg.Telegram()),
 			handlers.CtxParentContext(r.ctx),
 		),
 	)
@@ -54,6 +53,16 @@ func (r *Router) apiRouter() chi.Router {
 				Post("/", handlers.AddLink)
 			r.With(auth.Jwt(secret, data.ModuleName, []string{data.Roles[data.Admin], data.Roles[data.Owner]}...)).
 				Delete("/", handlers.RemoveLink)
+		})
+
+		r.Route("/refresh", func(r chi.Router) {
+			r.Post("/submodule", handlers.RefreshSubmodule)
+			r.Post("/module", handlers.RefreshModule)
+		})
+
+		r.Route("/estimate_refresh", func(r chi.Router) {
+			r.Post("/submodule", handlers.GetEstimatedRefreshSubmodule)
+			r.Post("/module", handlers.GetEstimatedRefreshModule)
 		})
 
 		r.With(auth.Jwt(secret, data.ModuleName, []string{data.Roles[data.Admin], data.Roles[data.Owner], data.Roles[data.Member]}...)).

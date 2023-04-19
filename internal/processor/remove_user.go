@@ -28,7 +28,7 @@ func (p *processor) handleRemoveUserAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to validate fields")
 	}
 
-	user, err := helpers.GetUser(p.pqueues.SuperPQueue, any(p.telegramClient.GetUserFromApi), []any{any(msg.Username), any(msg.Phone)}, pqueue.NormalPriority)
+	user, err := helpers.GetUser(p.pqueues.UsualPQueue, any(p.telegramClient.GetUserFromApi), []any{any(msg.Username), any(msg.Phone)}, pqueue.NormalPriority)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to get user from api for message action with id `%s`", msg.RequestId)
 		return errors.Wrap(err, "failed to get user from api")

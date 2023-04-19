@@ -45,11 +45,12 @@ type Dsn struct {
 	host      string
 	port      int
 	path      string
-	projectID int
+	projectID string
 }
 
-// NewDsn creates an instance of Dsn by parsing provided url in a string format.
-// If Dsn is not set the client is effectively disabled.
+// NewDsn creates a Dsn by parsing rawURL. Most users will never call this
+// function directly. It is provided for use in custom Transport
+// implementations.
 func NewDsn(rawURL string) (*Dsn, error) {
 	// Parse
 	parsedURL, err := url.Parse(rawURL)
@@ -99,13 +100,14 @@ func NewDsn(rawURL string) (*Dsn, error) {
 	}
 
 	// ProjectID
-	if len(parsedURL.Path) == 0 || parsedURL.Path == "/" {
+	if parsedURL.Path == "" || parsedURL.Path == "/" {
 		return nil, &DsnParseError{"empty project id"}
 	}
 	pathSegments := strings.Split(parsedURL.Path[1:], "/")
-	projectID, err := strconv.Atoi(pathSegments[len(pathSegments)-1])
-	if err != nil {
-		return nil, &DsnParseError{"invalid project id"}
+	projectID := pathSegments[len(pathSegments)-1]
+
+	if projectID == "" {
+		return nil, &DsnParseError{"empty project id"}
 	}
 
 	// Path
@@ -139,8 +141,43 @@ func (dsn Dsn) String() string {
 	if dsn.path != "" {
 		url += dsn.path
 	}
-	url += fmt.Sprintf("/%d", dsn.projectID)
+	url += fmt.Sprintf("/%s", dsn.projectID)
 	return url
+}
+
+// Get the scheme of the DSN.
+func (dsn Dsn) GetScheme() string {
+	return string(dsn.scheme)
+}
+
+// Get the public key of the DSN.
+func (dsn Dsn) GetPublicKey() string {
+	return dsn.publicKey
+}
+
+// Get the secret key of the DSN.
+func (dsn Dsn) GetSecretKey() string {
+	return dsn.secretKey
+}
+
+// Get the host of the DSN.
+func (dsn Dsn) GetHost() string {
+	return dsn.host
+}
+
+// Get the port of the DSN.
+func (dsn Dsn) GetPort() int {
+	return dsn.port
+}
+
+// Get the path of the DSN.
+func (dsn Dsn) GetPath() string {
+	return dsn.path
+}
+
+// Get the project ID of the DSN.
+func (dsn Dsn) GetProjectID() string {
+	return dsn.projectID
 }
 
 // StoreAPIURL returns the URL of the store endpoint of the project associated
@@ -164,7 +201,7 @@ func (dsn Dsn) getAPIURL(s string) *url.URL {
 	if dsn.path != "" {
 		rawURL += dsn.path
 	}
-	rawURL += fmt.Sprintf("/api/%d/%s/", dsn.projectID, s)
+	rawURL += fmt.Sprintf("/api/%s/%s/", dsn.projectID, s)
 	parsedURL, _ := url.Parse(rawURL)
 	return parsedURL
 }

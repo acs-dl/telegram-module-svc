@@ -15,9 +15,9 @@ const (
 
 // OffsetPageParams defines page params for offset-based pagination.
 type OffsetPageParams struct {
-	Limit      uint64 `page:"limit" default:"15"`
-	Order      string `page:"order" default:"desc"`
-	PageNumber uint64 `page:"number"`
+	Limit      uint64 `page:"limit" default:"15" json:"limit"`
+	Order      string `page:"order" default:"desc" json:"order"`
+	PageNumber uint64 `page:"number" json:"number"`
 }
 
 // ApplyTo returns a new SelectBuilder after applying the paging effects of  `p` to `sql`.
@@ -51,9 +51,9 @@ func (p *OffsetPageParams) ApplyTo(sql squirrel.SelectBuilder, cols ...string) s
 
 //CursorPageParams - page params of the db query
 type CursorPageParams struct {
-	Cursor uint64 `page:"cursor"`
-	Order  string `page:"order"`
-	Limit  uint64 `page:"limit"`
+	Cursor uint64 `page:"cursor" json:"cursor"`
+	Order  string `page:"order" json:"order"`
+	Limit  uint64 `page:"limit" json:"limit"`
 }
 
 // ApplyTo returns a new SelectBuilder after applying the paging effects of
