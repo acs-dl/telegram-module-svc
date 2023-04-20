@@ -55,15 +55,17 @@ func (r *Router) apiRouter() chi.Router {
 				Delete("/", handlers.RemoveLink)
 		})
 
-		r.Route("/refresh", func(r chi.Router) {
-			r.Post("/submodule", handlers.RefreshSubmodule)
-			r.Post("/module", handlers.RefreshModule)
-		})
+		r.With(auth.Jwt(secret, data.ModuleName, []string{data.Roles[data.Admin], data.Roles[data.Owner]}...)).
+			Route("/refresh", func(r chi.Router) {
+				r.Post("/submodule", handlers.RefreshSubmodule)
+				r.Post("/module", handlers.RefreshModule)
+			})
 
-		r.Route("/estimate_refresh", func(r chi.Router) {
-			r.Post("/submodule", handlers.GetEstimatedRefreshSubmodule)
-			r.Post("/module", handlers.GetEstimatedRefreshModule)
-		})
+		r.With(auth.Jwt(secret, data.ModuleName, []string{data.Roles[data.Admin], data.Roles[data.Owner], data.Roles[data.Member]}...)).
+			Route("/estimate_refresh", func(r chi.Router) {
+				r.Post("/submodule", handlers.GetEstimatedRefreshSubmodule)
+				r.Post("/module", handlers.GetEstimatedRefreshModule)
+			})
 
 		r.With(auth.Jwt(secret, data.ModuleName, []string{data.Roles[data.Admin], data.Roles[data.Owner], data.Roles[data.Member]}...)).
 			Get("/permissions", handlers.GetPermissions)
