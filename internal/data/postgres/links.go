@@ -1,6 +1,8 @@
 package postgres
 
 import (
+	"database/sql"
+
 	sq "github.com/Masterminds/squirrel"
 	"github.com/fatih/structs"
 	"github.com/pkg/errors"
@@ -34,10 +36,12 @@ func (r LinksQ) New() data.Links {
 func (r LinksQ) Get() (*data.Link, error) {
 	var result data.Link
 	err := r.db.Get(&result, r.selectBuilder)
-	if err != nil {
-		return nil, err
+
+	if err == sql.ErrNoRows {
+		return nil, nil
 	}
-	return &result, nil
+
+	return &result, err
 }
 
 func (r LinksQ) Select() ([]data.Link, error) {
