@@ -85,14 +85,15 @@ func (p *processor) buildMessage(uuid string, payload []byte) *message.Message {
 }
 
 func createUnverifiedUserFromModuleUser(user data.User, submodule string) data.UnverifiedUser {
+	fullName := user.FirstName + " " + user.LastName
 	return data.UnverifiedUser{
 		CreatedAt: user.CreatedAt,
 		Module:    data.ModuleName,
 		Submodule: submodule,
 		ModuleId:  fmt.Sprintf("%d", user.TelegramId),
 		Email:     nil,
-		Name:      nil,
-		Phone:     nil,
+		Name:      &fullName,
+		Phone:     user.Phone,
 		Username:  user.Username,
 	}
 }
