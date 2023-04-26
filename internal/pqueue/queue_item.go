@@ -3,8 +3,6 @@ package pqueue
 import (
 	"reflect"
 	"sync"
-
-	"github.com/google/uuid"
 )
 
 type ItemStatus string
@@ -23,13 +21,14 @@ type Response struct {
 	Error error
 }
 type QueueItem struct {
-	Uuid uuid.UUID
+	Id string
 
 	Func     interface{}
 	Args     []interface{}
 	Response Response
 
 	Priority int
+	Amount   int
 	index    int
 	invoked  ItemStatus
 

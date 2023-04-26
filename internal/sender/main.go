@@ -15,31 +15,33 @@ import (
 	"gitlab.com/distributed_lab/running"
 )
 
-const serviceName = data.ModuleName + "-sender"
+const ServiceName = data.ModuleName + "-sender"
 
 type Sender struct {
-	publisher  *amqp.Publisher
-	responsesQ data.Responses
-	log        *logan.Entry
-	topic      string
+	publisher   *amqp.Publisher
+	responsesQ  data.Responses
+	log         *logan.Entry
+	topic       string
+	runnerDelay time.Duration
 }
 
-func NewSender(cfg config.Config) *Sender {
-	return &Sender{
-		publisher:  cfg.Amqp().Publisher,
-		responsesQ: postgres.NewResponsesQ(cfg.DB()),
-		log:        logan.New().WithField("service", serviceName),
-		topic:      "orchestrator",
-	}
+func NewSenderAsInterface(cfg config.Config, _ context.Context) interface{} {
+	return interface{}(&Sender{
+		publisher:   cfg.Amqp().Publisher,
+		responsesQ:  postgres.NewResponsesQ(cfg.DB()),
+		log:         logan.New().WithField("service", ServiceName),
+		topic:       "orchestrator",
+		runnerDelay: cfg.Runners().Sender,
+	})
 }
 
 func (s *Sender) Run(ctx context.Context) {
 	go running.WithBackOff(ctx, s.log,
-		serviceName,
+		ServiceName,
 		s.processMessages,
-		30*time.Second,
-		30*time.Second,
-		30*time.Second,
+		s.runnerDelay,
+		s.runnerDelay,
+		s.runnerDelay,
 	)
 }
 

@@ -1,0 +1,14 @@
+allOf:
+  - $ref: "#/components/schemas/EstimatedTimeKey"
+  - type: object
+    required:
+      - attributes
+    properties:
+      attributes:
+        type: object
+        required:
+          - estimated_time
+        properties:
+          estimated_time:
+            type: string
+            example: "2h10m3s"

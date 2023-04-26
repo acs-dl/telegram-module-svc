@@ -1,10 +1,9 @@
 package processor
 
 import (
-	"fmt"
-
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
+	"gitlab.com/distributed_lab/acs/telegram-module/internal/helpers"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/pqueue"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 )
@@ -29,21 +28,40 @@ func (p *processor) handleRemoveUserAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to validate fields")
 	}
 
-	item, err := p.addFunctionInPqueue(any(p.telegramClient.GetChatUserFromApi), []any{any(msg.Username), any(msg.Phone), any(msg.Link)}, pqueue.NormalPriority)
+	user, err := helpers.GetUser(p.pqueues.UsualPQueue,
+		any(p.telegramClient.GetUserFromApi),
+		[]any{
+			any(p.telegramClient.GetSuperClient()),
+			any(msg.Username),
+			any(msg.Phone),
+		},
+		pqueue.NormalPriority,
+	)
 	if err != nil {
-		p.log.WithError(err).Errorf("failed to add function in pqueue for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "failed to add function in pqueue")
+		p.log.WithError(err).Errorf("failed to get user from api for message action with id `%s`", msg.RequestId)
+		return errors.Wrap(err, "failed to get user from api")
 	}
 
-	err = item.Response.Error
-	if err != nil {
-		p.log.WithError(err).Errorf("failed to get user from API for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "some error while getting user from api")
+	if user == nil {
+		p.log.Errorf("no user was found for message action with id `%s`", msg.RequestId)
+		return errors.New("no user was found")
 	}
-	user, err := p.convertUserFromInterfaceAndCheck(item.Response.Value)
+
+	chat, err := helpers.GetChat(p.pqueues.SuperPQueue, any(p.telegramClient.GetChatFromApi), []any{any(msg.Link)}, pqueue.NormalPriority)
 	if err != nil {
-		p.log.WithError(err).Errorf("something wrong with user for message action with id `%s`", msg.RequestId)
-		return errors.Errorf("something wrong with user from api")
+		p.log.WithError(err).Errorf("failed to get chat from api for message action with id `%s`", msg.RequestId)
+		return errors.Wrap(err, "failed to get chat from api")
+	}
+
+	if chat == nil {
+		p.log.Errorf("no chat `%s` was found for message action with id `%s`", msg.Link, msg.RequestId)
+		return errors.New("no chat was found")
+	}
+
+	user, err = helpers.GetUser(p.pqueues.SuperPQueue, any(p.telegramClient.GetChatUserFromApi), []any{any(*user), any(*chat)}, pqueue.NormalPriority)
+	if err != nil {
+		p.log.WithError(err).Errorf("failed to get user from api for message action with id `%s`", msg.RequestId)
+		return errors.Wrap(err, "failed to get user from api")
 	}
 
 	dbUser, err := p.getUserFromDbByTelegramId(user.TelegramId)
@@ -52,16 +70,10 @@ func (p *processor) handleRemoveUserAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to get user from")
 	}
 
-	item, err = p.addFunctionInPqueue(any(p.telegramClient.DeleteFromChatFromApi), []any{any(msg.Username), any(msg.Phone), any(msg.Link)}, pqueue.NormalPriority)
-	if err != nil {
-		p.log.WithError(err).Errorf("failed to add function in pqueue for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "failed to add function in pqueue")
-	}
-
-	err = item.Response.Error
+	err = helpers.GetRequestError(p.pqueues.SuperPQueue, any(p.telegramClient.DeleteFromChatFromApi), []any{any(*user), any(*chat)}, pqueue.NormalPriority)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to remove user from API for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "failed to remove user from api")
+		return errors.Wrap(err, "some error while removing user from api")
 	}
 
 	err = p.managerQ.Transaction(func() error {
@@ -100,25 +112,5 @@ func (p *processor) handleRemoveUserAction(msg data.ModulePayload) error {
 
 	p.resetFilters()
 	p.log.Infof("finish handle message action with id `%s`", msg.RequestId)
-	return nil
-}
-
-func (p *processor) sendDeleteInUnverifiedOrUpdateInIdentity(requestId string, user data.User) error {
-	if user.Id == nil {
-		err := p.SendDeleteUser(requestId, user)
-		if err != nil {
-			return errors.Wrap(err, "failed to publish delete telegram user in telegram-module")
-		}
-	} else {
-		err := p.sendUpdateUserTelegram(requestId, data.ModulePayload{
-			RequestId: requestId,
-			UserId:    fmt.Sprintf("%d", *user.Id),
-			Action:    RemoveTelegramAction,
-		})
-		if err != nil {
-			return errors.Wrap(err, "failed to publish update telegram user in identity-svc")
-		}
-	}
-
 	return nil
 }

@@ -2,10 +2,16 @@ package receiver
 
 import (
 	"context"
-
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/config"
 )
 
-func Run(ctx context.Context, cfg config.Config) {
-	NewReceiver(cfg, ctx).Run(ctx)
+func ReceiverInstance(ctx context.Context) *Receiver {
+	return ctx.Value(ServiceName).(*Receiver)
+}
+
+func CtxReceiverInstance(entry interface{}, ctx context.Context) context.Context {
+	return context.WithValue(ctx, ServiceName, entry)
+}
+
+func RunReceiverAsInterface(structure interface{}, ctx context.Context) {
+	(structure.(*Receiver)).Run(ctx)
 }

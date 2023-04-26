@@ -1,0 +1,17 @@
+allOf:
+  - $ref: "#/components/schemas/LinkKey"
+  - type: object
+    required:
+      - attributes
+    properties:
+      attributes:
+        type: object
+        required:
+          - links
+        properties:
+          links:
+            type: array
+            items:
+              type: string
+              description: link to repository or group
+              example: "distributed_lab/acs"

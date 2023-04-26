@@ -5,6 +5,7 @@ import (
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
+	"gitlab.com/distributed_lab/acs/telegram-module/internal/helpers"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/pqueue"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 )
@@ -35,22 +36,25 @@ func (p *processor) handleVerifyUserAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to parse user id")
 	}
 
-	item, err := p.addFunctionInPqueue(any(p.telegramClient.GetUserFromApi), []any{any(msg.Username), any(msg.Phone)}, pqueue.NormalPriority)
+	user, err := helpers.GetUser(p.pqueues.UsualPQueue,
+		any(p.telegramClient.GetUserFromApi),
+		[]any{
+			any(p.telegramClient.GetSuperClient()),
+			any(msg.Username),
+			any(msg.Phone),
+		},
+		pqueue.NormalPriority,
+	)
 	if err != nil {
-		p.log.WithError(err).Errorf("failed to add function in pqueue for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "failed to add function in pqueue")
+		p.log.WithError(err).Errorf("failed to get user from api for message action with id `%s`", msg.RequestId)
+		return errors.Wrap(err, "failed to get user from api")
 	}
 
-	err = item.Response.Error
-	if err != nil {
-		p.log.WithError(err).Errorf("failed to get user from API for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "some error while getting user from api")
+	if user == nil {
+		p.log.Errorf("no user was found for message action with id `%s`", msg.RequestId)
+		return errors.New("no user was found")
 	}
-	user, err := p.convertUserFromInterfaceAndCheck(item.Response.Value)
-	if err != nil {
-		p.log.WithError(err).Errorf("something wrong with user for message action with id `%s`", msg.RequestId)
-		return errors.Errorf("something wrong with user from api")
-	}
+
 	user.Id = &userId
 
 	if err = p.usersQ.Upsert(*user); err != nil {
