@@ -13,7 +13,7 @@ require (
 	github.com/go-ozzo/ozzo-validation/v4 v4.3.0
 	github.com/google/uuid v1.3.0
 	github.com/gotd/contrib v0.16.0
-	github.com/gotd/td v0.79.0
+	github.com/gotd/td v0.80.0
 	github.com/pkg/errors v0.9.1
 	github.com/rubenv/sql-migrate v1.4.0
 	github.com/xelaj/mtproto v1.0.1-0.20220603191734-d93f9ab1f9b4
@@ -30,7 +30,7 @@ require (
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751 // indirect
 	github.com/alecthomas/units v0.0.0-20211218093645-b94a6e3cc137 // indirect
 	github.com/cenkalti/backoff/v3 v3.2.2 // indirect
-	github.com/cenkalti/backoff/v4 v4.2.0 // indirect
+	github.com/cenkalti/backoff/v4 v4.2.1 // indirect
 	github.com/certifi/gocertifi v0.0.0-20210507211836-431795d63e8d // indirect
 	github.com/fatih/structtag v1.2.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
@@ -38,7 +38,7 @@ require (
 	github.com/getsentry/sentry-go v0.20.0 // indirect
 	github.com/go-faster/errors v0.6.1 // indirect
 	github.com/go-faster/jx v1.0.0 // indirect
-	github.com/go-faster/xor v0.3.0 // indirect
+	github.com/go-faster/xor v1.0.0 // indirect
 	github.com/go-gorp/gorp/v3 v3.1.0 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/google/jsonapi v1.0.0 // indirect
@@ -49,7 +49,7 @@ require (
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/jmoiron/sqlx v1.3.5 // indirect
 	github.com/k0kubun/pp v3.0.1+incompatible // indirect
-	github.com/klauspost/compress v1.16.0 // indirect
+	github.com/klauspost/compress v1.16.5 // indirect
 	github.com/lann/builder v0.0.0-20180802200727-47ae307949d0 // indirect
 	github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0 // indirect
 	github.com/lib/pq v1.10.8 // indirect

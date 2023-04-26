@@ -36,7 +36,10 @@ var (
 //
 // See https://core.telegram.org/constructor/messages.sponsoredMessages for reference.
 type MessagesSponsoredMessages struct {
-	// Flags field of MessagesSponsoredMessages.
+	// Flags, see TL conditional fields¹
+	//
+	// Links:
+	//  1) https://core.telegram.org/mtproto/TL-combinators#conditional-fields
 	Flags bin.Fields
 	// PostsBetween field of MessagesSponsoredMessages.
 	//
@@ -348,6 +351,7 @@ func (s *MessagesSponsoredMessages) MapUsers() (value UserClassArray) {
 }
 
 // MessagesSponsoredMessagesEmpty represents TL type `messages.sponsoredMessagesEmpty#1839490f`.
+// No sponsored messages are available.
 //
 // See https://core.telegram.org/constructor/messages.sponsoredMessagesEmpty for reference.
 type MessagesSponsoredMessagesEmpty struct {

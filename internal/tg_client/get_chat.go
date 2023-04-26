@@ -47,12 +47,17 @@ func (t *tgInfo) getChatFlow(title string) (*Chat, error) {
 }
 
 func (t *tgInfo) findChatByTitle(title string) (*Chat, error) {
-	discussion, err := t.superClient.API().MessagesGetAllChats(t.ctx, nil)
+	searched, err := t.superClient.API().ContactsSearch(t.ctx, &tg.ContactsSearchRequest{
+		Q:     title,
+		Limit: 10,
+	})
+	//discussion, err := t.superClient.API().MessagesGetAllChats(t.ctx, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, chat := range discussion.(*tg.MessagesChats).Chats {
+	//for _, chat := range discussion.(*tg.MessagesChats).Chats {
+	for _, chat := range searched.Chats {
 		switch converted := chat.(type) {
 		case *tg.Channel:
 			if converted.Title == title {

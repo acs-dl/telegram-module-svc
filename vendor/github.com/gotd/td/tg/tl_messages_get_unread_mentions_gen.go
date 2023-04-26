@@ -36,11 +36,17 @@ var (
 //
 // See https://core.telegram.org/method/messages.getUnreadMentions for reference.
 type MessagesGetUnreadMentionsRequest struct {
-	// Flags field of MessagesGetUnreadMentionsRequest.
+	// Flags, see TL conditional fields¹
+	//
+	// Links:
+	//  1) https://core.telegram.org/mtproto/TL-combinators#conditional-fields
 	Flags bin.Fields
 	// Peer where to look for mentions
 	Peer InputPeerClass
-	// TopMsgID field of MessagesGetUnreadMentionsRequest.
+	// If set, considers only messages within the specified forum topic¹
+	//
+	// Links:
+	//  1) https://core.telegram.org/api/forum#forum-topics
 	//
 	// Use SetTopMsgID and GetTopMsgID helpers.
 	TopMsgID int

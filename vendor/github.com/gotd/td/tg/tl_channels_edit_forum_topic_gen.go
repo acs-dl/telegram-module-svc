@@ -32,28 +32,44 @@ var (
 )
 
 // ChannelsEditForumTopicRequest represents TL type `channels.editForumTopic#f4dfa185`.
+// Edit forum topic¹; requires manage_topics rights².
+//
+// Links:
+//  1. https://core.telegram.org/api/forum
+//  2. https://core.telegram.org/api/rights
 //
 // See https://core.telegram.org/method/channels.editForumTopic for reference.
 type ChannelsEditForumTopicRequest struct {
-	// Flags field of ChannelsEditForumTopicRequest.
+	// Flags, see TL conditional fields¹
+	//
+	// Links:
+	//  1) https://core.telegram.org/mtproto/TL-combinators#conditional-fields
 	Flags bin.Fields
-	// Channel field of ChannelsEditForumTopicRequest.
+	// Supergroup
 	Channel InputChannelClass
-	// TopicID field of ChannelsEditForumTopicRequest.
+	// Topic ID
 	TopicID int
-	// Title field of ChannelsEditForumTopicRequest.
+	// If present, will update the topic title (maximum UTF-8 length: 128).
 	//
 	// Use SetTitle and GetTitle helpers.
 	Title string
-	// IconEmojiID field of ChannelsEditForumTopicRequest.
+	// If present, updates the custom emoji¹ used as topic icon. Telegram Premium² users
+	// can use any custom emoji, other users can only use the custom emojis contained in the
+	// inputStickerSetEmojiDefaultTopicIcons³ emoji pack. Pass 0 to switch to the fallback
+	// topic icon.
+	//
+	// Links:
+	//  1) https://core.telegram.org/api/custom-emoji
+	//  2) https://core.telegram.org/api/premium
+	//  3) https://core.telegram.org/constructor/inputStickerSetEmojiDefaultTopicIcons
 	//
 	// Use SetIconEmojiID and GetIconEmojiID helpers.
 	IconEmojiID int64
-	// Closed field of ChannelsEditForumTopicRequest.
+	// If present, will update the open/closed status of the topic.
 	//
 	// Use SetClosed and GetClosed helpers.
 	Closed bool
-	// Hidden field of ChannelsEditForumTopicRequest.
+	// If present, will hide/unhide the topic.
 	//
 	// Use SetHidden and GetHidden helpers.
 	Hidden bool
@@ -408,8 +424,19 @@ func (e *ChannelsEditForumTopicRequest) GetChannelAsNotEmpty() (NotEmptyInputCha
 }
 
 // ChannelsEditForumTopic invokes method channels.editForumTopic#f4dfa185 returning error if any.
+// Edit forum topic¹; requires manage_topics rights².
+//
+// Links:
+//  1. https://core.telegram.org/api/forum
+//  2. https://core.telegram.org/api/rights
+//
+// Possible errors:
+//
+//	400 TOPIC_ID_INVALID: The specified topic ID is invalid.
+//	400 TOPIC_NOT_MODIFIED: The updated topic info is equal to the current topic info, nothing was changed.
 //
 // See https://core.telegram.org/method/channels.editForumTopic for reference.
+// Can be used by bots.
 func (c *Client) ChannelsEditForumTopic(ctx context.Context, request *ChannelsEditForumTopicRequest) (UpdatesClass, error) {
 	var result UpdatesBox
 

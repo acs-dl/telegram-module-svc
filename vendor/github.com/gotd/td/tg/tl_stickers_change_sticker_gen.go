@@ -32,22 +32,33 @@ var (
 )
 
 // StickersChangeStickerRequest represents TL type `stickers.changeSticker#f5537ebc`.
+// Update the keywords, emojis or mask coordinates¹ of a sticker, bots only.
+//
+// Links:
+//  1. https://core.telegram.org/api/stickers#mask-stickers
 //
 // See https://core.telegram.org/method/stickers.changeSticker for reference.
 type StickersChangeStickerRequest struct {
-	// Flags field of StickersChangeStickerRequest.
+	// Flags, see TL conditional fields¹
+	//
+	// Links:
+	//  1) https://core.telegram.org/mtproto/TL-combinators#conditional-fields
 	Flags bin.Fields
-	// Sticker field of StickersChangeStickerRequest.
+	// The sticker
 	Sticker InputDocumentClass
-	// Emoji field of StickersChangeStickerRequest.
+	// If set, updates the emoji list associated to the sticker
 	//
 	// Use SetEmoji and GetEmoji helpers.
 	Emoji string
-	// MaskCoords field of StickersChangeStickerRequest.
+	// If set, updates the mask coordinates¹
+	//
+	// Links:
+	//  1) https://core.telegram.org/api/stickers#mask-stickers
 	//
 	// Use SetMaskCoords and GetMaskCoords helpers.
 	MaskCoords MaskCoords
-	// Keywords field of StickersChangeStickerRequest.
+	// If set, updates the sticker keywords (separated by commas). Can't be provided for mask
+	// stickers.
 	//
 	// Use SetKeywords and GetKeywords helpers.
 	Keywords string
@@ -333,8 +344,18 @@ func (c *StickersChangeStickerRequest) GetStickerAsNotEmpty() (*InputDocument, b
 }
 
 // StickersChangeSticker invokes method stickers.changeSticker#f5537ebc returning error if any.
+// Update the keywords, emojis or mask coordinates¹ of a sticker, bots only.
+//
+// Links:
+//  1. https://core.telegram.org/api/stickers#mask-stickers
+//
+// Possible errors:
+//
+//	400 BOT_MISSING: Only bots can call this method, please use @stickers if you're a user.
+//	400 STICKER_INVALID: The provided sticker is invalid.
 //
 // See https://core.telegram.org/method/stickers.changeSticker for reference.
+// Can be used by bots.
 func (c *Client) StickersChangeSticker(ctx context.Context, request *StickersChangeStickerRequest) (MessagesStickerSetClass, error) {
 	var result MessagesStickerSetBox
 

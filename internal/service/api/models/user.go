@@ -14,12 +14,13 @@ func NewUserModel(user data.User, id int) resources.User {
 			Type: resources.USER,
 		},
 		Attributes: resources.UserAttributes{
-			UserId:    user.Id,
-			Username:  user.Username,
-			Phone:     user.Phone,
-			Module:    data.ModuleName,
-			CreatedAt: &user.CreatedAt,
-			Submodule: user.Submodule,
+			UserId:      user.Id,
+			Username:    user.Username,
+			Phone:       user.Phone,
+			Module:      data.ModuleName,
+			CreatedAt:   &user.CreatedAt,
+			Submodule:   user.Submodule,
+			AccessLevel: &user.AccessLevel,
 		},
 	}
 

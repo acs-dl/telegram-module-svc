@@ -1294,7 +1294,7 @@ type UpdateUserName struct {
 	// Links:
 	//  1) https://core.telegram.org/constructor/userFull
 	LastName string
-	// Usernames field of UpdateUserName.
+	// Usernames.
 	Usernames []Username
 }
 
@@ -8735,11 +8735,17 @@ func (u *UpdateReadChannelOutbox) GetMaxID() (value int) {
 //
 // See https://core.telegram.org/constructor/updateDraftMessage for reference.
 type UpdateDraftMessage struct {
-	// Flags field of UpdateDraftMessage.
+	// Flags, see TL conditional fields¹
+	//
+	// Links:
+	//  1) https://core.telegram.org/mtproto/TL-combinators#conditional-fields
 	Flags bin.Fields
 	// The peer to which the draft is associated
 	Peer PeerClass
-	// TopMsgID field of UpdateDraftMessage.
+	// ID of the forum topic¹ to which the draft is associated
+	//
+	// Links:
+	//  1) https://core.telegram.org/api/forum#forum-topics
 	//
 	// Use SetTopMsgID and GetTopMsgID helpers.
 	TopMsgID int
@@ -11556,14 +11562,20 @@ func (u *UpdateFavedStickers) DecodeBare(b *bin.Buffer) error {
 //
 // See https://core.telegram.org/constructor/updateChannelReadMessagesContents for reference.
 type UpdateChannelReadMessagesContents struct {
-	// Flags field of UpdateChannelReadMessagesContents.
+	// Flags, see TL conditional fields¹
+	//
+	// Links:
+	//  1) https://core.telegram.org/mtproto/TL-combinators#conditional-fields
 	Flags bin.Fields
 	// Channel/supergroup¹ ID
 	//
 	// Links:
 	//  1) https://core.telegram.org/api/channel
 	ChannelID int64
-	// TopMsgID field of UpdateChannelReadMessagesContents.
+	// Forum topic ID¹.
+	//
+	// Links:
+	//  1) https://core.telegram.org/api/forum#forum-topics
 	//
 	// Use SetTopMsgID and GetTopMsgID helpers.
 	TopMsgID int
@@ -17734,6 +17746,8 @@ type UpdateChannelParticipant struct {
 	// Links:
 	//  1) https://core.telegram.org/mtproto/TL-combinators#conditional-fields
 	Flags bin.Fields
+	// ViaChatlist field of UpdateChannelParticipant.
+	ViaChatlist bool
 	// Channel ID
 	ChannelID int64
 	// Date of the event
@@ -17788,6 +17802,9 @@ func (u *UpdateChannelParticipant) Zero() bool {
 	if !(u.Flags.Zero()) {
 		return false
 	}
+	if !(u.ViaChatlist == false) {
+		return false
+	}
 	if !(u.ChannelID == 0) {
 		return false
 	}
@@ -17827,6 +17844,7 @@ func (u *UpdateChannelParticipant) String() string {
 
 // FillFrom fills UpdateChannelParticipant from given interface.
 func (u *UpdateChannelParticipant) FillFrom(from interface {
+	GetViaChatlist() (value bool)
 	GetChannelID() (value int64)
 	GetDate() (value int)
 	GetActorID() (value int64)
@@ -17836,6 +17854,7 @@ func (u *UpdateChannelParticipant) FillFrom(from interface {
 	GetInvite() (value ExportedChatInviteClass, ok bool)
 	GetQts() (value int)
 }) {
+	u.ViaChatlist = from.GetViaChatlist()
 	u.ChannelID = from.GetChannelID()
 	u.Date = from.GetDate()
 	u.ActorID = from.GetActorID()
@@ -17879,6 +17898,11 @@ func (u *UpdateChannelParticipant) TypeInfo() tdp.Type {
 	}
 	typ.Fields = []tdp.Field{
 		{
+			Name:       "ViaChatlist",
+			SchemaName: "via_chatlist",
+			Null:       !u.Flags.Has(3),
+		},
+		{
 			Name:       "ChannelID",
 			SchemaName: "channel_id",
 		},
@@ -17919,6 +17943,9 @@ func (u *UpdateChannelParticipant) TypeInfo() tdp.Type {
 
 // SetFlags sets flags for non-zero fields.
 func (u *UpdateChannelParticipant) SetFlags() {
+	if !(u.ViaChatlist == false) {
+		u.Flags.Set(3)
+	}
 	if !(u.PrevParticipant == nil) {
 		u.Flags.Set(0)
 	}
@@ -18001,6 +18028,7 @@ func (u *UpdateChannelParticipant) DecodeBare(b *bin.Buffer) error {
 			return fmt.Errorf("unable to decode updateChannelParticipant#985d3abb: field flags: %w", err)
 		}
 	}
+	u.ViaChatlist = u.Flags.Has(3)
 	{
 		value, err := b.Long()
 		if err != nil {
@@ -18058,6 +18086,25 @@ func (u *UpdateChannelParticipant) DecodeBare(b *bin.Buffer) error {
 		u.Qts = value
 	}
 	return nil
+}
+
+// SetViaChatlist sets value of ViaChatlist conditional field.
+func (u *UpdateChannelParticipant) SetViaChatlist(value bool) {
+	if value {
+		u.Flags.Set(3)
+		u.ViaChatlist = true
+	} else {
+		u.Flags.Unset(3)
+		u.ViaChatlist = false
+	}
+}
+
+// GetViaChatlist returns value of ViaChatlist conditional field.
+func (u *UpdateChannelParticipant) GetViaChatlist() (value bool) {
+	if u == nil {
+		return
+	}
+	return u.Flags.Has(3)
 }
 
 // GetChannelID returns value of ChannelID field.
@@ -19287,13 +19334,19 @@ func (u *UpdateBotChatInviteRequester) GetQts() (value int) {
 //
 // See https://core.telegram.org/constructor/updateMessageReactions for reference.
 type UpdateMessageReactions struct {
-	// Flags field of UpdateMessageReactions.
+	// Flags, see TL conditional fields¹
+	//
+	// Links:
+	//  1) https://core.telegram.org/mtproto/TL-combinators#conditional-fields
 	Flags bin.Fields
 	// Peer
 	Peer PeerClass
 	// Message ID
 	MsgID int
-	// TopMsgID field of UpdateMessageReactions.
+	// Forum topic ID¹
+	//
+	// Links:
+	//  1) https://core.telegram.org/api/forum#forum-topics
 	//
 	// Use SetTopMsgID and GetTopMsgID helpers.
 	TopMsgID int
@@ -21272,16 +21325,23 @@ func (u *UpdateMessageExtendedMedia) GetExtendedMedia() (value MessageExtendedMe
 }
 
 // UpdateChannelPinnedTopic represents TL type `updateChannelPinnedTopic#192efbe3`.
+// A forum topic »¹ was pinned or unpinned.
+//
+// Links:
+//  1. https://core.telegram.org/api/forum#forum-topics
 //
 // See https://core.telegram.org/constructor/updateChannelPinnedTopic for reference.
 type UpdateChannelPinnedTopic struct {
-	// Flags field of UpdateChannelPinnedTopic.
+	// Flags, see TL conditional fields¹
+	//
+	// Links:
+	//  1) https://core.telegram.org/mtproto/TL-combinators#conditional-fields
 	Flags bin.Fields
-	// Pinned field of UpdateChannelPinnedTopic.
+	// Whether the topic was pinned or unpinned
 	Pinned bool
-	// ChannelID field of UpdateChannelPinnedTopic.
+	// The forum ID
 	ChannelID int64
-	// TopicID field of UpdateChannelPinnedTopic.
+	// The topic ID
 	TopicID int
 }
 
@@ -21486,14 +21546,21 @@ func (u *UpdateChannelPinnedTopic) GetTopicID() (value int) {
 }
 
 // UpdateChannelPinnedTopics represents TL type `updateChannelPinnedTopics#fe198602`.
+// The pinned topics¹ of a forum have changed.
+//
+// Links:
+//  1. https://core.telegram.org/api/forum#forum-topics
 //
 // See https://core.telegram.org/constructor/updateChannelPinnedTopics for reference.
 type UpdateChannelPinnedTopics struct {
-	// Flags field of UpdateChannelPinnedTopics.
+	// Flags, see TL conditional fields¹
+	//
+	// Links:
+	//  1) https://core.telegram.org/mtproto/TL-combinators#conditional-fields
 	Flags bin.Fields
-	// ChannelID field of UpdateChannelPinnedTopics.
+	// Forum ID.
 	ChannelID int64
-	// Order field of UpdateChannelPinnedTopics.
+	// Ordered list containing the IDs of all pinned topics.
 	//
 	// Use SetOrder and GetOrder helpers.
 	Order []int
@@ -21699,10 +21766,14 @@ func (u *UpdateChannelPinnedTopics) GetOrder() (value []int, ok bool) {
 }
 
 // UpdateUser represents TL type `updateUser#20529438`.
+// User information was updated, it must be refetched using users.getFullUser¹.
+//
+// Links:
+//  1. https://core.telegram.org/method/users.getFullUser
 //
 // See https://core.telegram.org/constructor/updateUser for reference.
 type UpdateUser struct {
-	// UserID field of UpdateUser.
+	// User ID
 	UserID int64
 }
 
@@ -21833,6 +21904,11 @@ func (u *UpdateUser) GetUserID() (value int64) {
 }
 
 // UpdateAutoSaveSettings represents TL type `updateAutoSaveSettings#ec05b097`.
+// Media autosave settings have changed and must be refetched using account
+// getAutoSaveSettings¹.
+//
+// Links:
+//  1. https://core.telegram.org/method/account.getAutoSaveSettings
 //
 // See https://core.telegram.org/constructor/updateAutoSaveSettings for reference.
 type UpdateAutoSaveSettings struct {

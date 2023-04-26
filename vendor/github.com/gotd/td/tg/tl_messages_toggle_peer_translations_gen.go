@@ -32,14 +32,21 @@ var (
 )
 
 // MessagesTogglePeerTranslationsRequest represents TL type `messages.togglePeerTranslations#e47cb579`.
+// Toggle real-time chat translation¹ for a certain chat
+//
+// Links:
+//  1. https://core.telegram.org/api/translation
 //
 // See https://core.telegram.org/method/messages.togglePeerTranslations for reference.
 type MessagesTogglePeerTranslationsRequest struct {
-	// Flags field of MessagesTogglePeerTranslationsRequest.
+	// Flags, see TL conditional fields¹
+	//
+	// Links:
+	//  1) https://core.telegram.org/mtproto/TL-combinators#conditional-fields
 	Flags bin.Fields
-	// Disabled field of MessagesTogglePeerTranslationsRequest.
+	// Whether to disable or enable real-time chat translation
 	Disabled bool
-	// Peer field of MessagesTogglePeerTranslationsRequest.
+	// Peer where to enable or disable real-time chat translation
 	Peer InputPeerClass
 }
 
@@ -219,8 +226,13 @@ func (t *MessagesTogglePeerTranslationsRequest) GetPeer() (value InputPeerClass)
 }
 
 // MessagesTogglePeerTranslations invokes method messages.togglePeerTranslations#e47cb579 returning error if any.
+// Toggle real-time chat translation¹ for a certain chat
+//
+// Links:
+//  1. https://core.telegram.org/api/translation
 //
 // See https://core.telegram.org/method/messages.togglePeerTranslations for reference.
+// Can be used by bots.
 func (c *Client) MessagesTogglePeerTranslations(ctx context.Context, request *MessagesTogglePeerTranslationsRequest) (bool, error) {
 	var result BoolBox
 

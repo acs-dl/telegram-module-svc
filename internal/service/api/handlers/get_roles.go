@@ -62,7 +62,16 @@ func GetRoles(w http.ResponseWriter, r *http.Request) {
 	pqs := pqueue.PQueuesInstance(ParentContext(r.Context()))
 	tgClient := tg_client.TelegramClientInstance(ParentContext(r.Context()))
 
-	user, err = helpers.GetUser(pqs.UsualPQueue, tgClient.GetUserFromApi, []any{any(request.Username), any(&phone)}, pqueue.HighPriority)
+	user, err = helpers.GetUser(
+		pqs.UsualPQueue,
+		any(tgClient.GetUserFromApi),
+		[]any{
+			any(tgClient.GetUsualClient()),
+			any(request.Username),
+			any(&phone),
+		},
+		pqueue.HighPriority,
+	)
 	if err != nil {
 		Log(r).WithError(err).Errorf("failed to get user from api")
 		ape.RenderErr(w, problems.InternalError())

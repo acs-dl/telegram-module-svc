@@ -13,7 +13,7 @@ import (
 )
 
 type TelegramClient interface {
-	GetUserFromApi(username, phone *string) (*data.User, error)
+	GetUserFromApi(client *telegram.Client, username, phone *string) (*data.User, error)
 	GetChatUsersFromApi(chat Chat) ([]data.User, error)
 	GetChatUserFromApi(user data.User, chat Chat) (*data.User, error)
 	SearchByFromApi(username, phone *string, amount int) ([]data.User, error)
@@ -24,6 +24,8 @@ type TelegramClient interface {
 	DeleteFromChatFromApi(user data.User, chat Chat) error
 
 	GetTg() *tgInfo
+	GetSuperClient() *telegram.Client
+	GetUsualClient() *telegram.Client
 }
 
 type tgInfo struct {
