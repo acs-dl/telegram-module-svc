@@ -3,11 +3,11 @@ package helpers
 import (
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/pqueue"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/tg"
+	"gitlab.com/distributed_lab/acs/telegram-module/internal/tg_client"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 )
 
-func GetChat(queue *pqueue.PriorityQueue, function any, args []any, priority int) (*tg.Chat, error) {
+func GetChat(queue *pqueue.PriorityQueue, function any, args []any, priority int) (*tg_client.Chat, error) {
 	item, err := AddFunctionInPQueue(queue, function, args, priority)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to add function in pqueue")
@@ -18,7 +18,7 @@ func GetChat(queue *pqueue.PriorityQueue, function any, args []any, priority int
 		return nil, errors.Wrap(err, "some error while getting chat from api")
 	}
 
-	chat, ok := item.Response.Value.(*tg.Chat)
+	chat, ok := item.Response.Value.(*tg_client.Chat)
 	if !ok {
 		return nil, errors.Wrap(err, "wrong response type while getting chat from api")
 	}

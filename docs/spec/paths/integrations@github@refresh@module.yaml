@@ -1,0 +1,22 @@
+post:
+  tags:
+    - Refresh
+  summary: Refresh module
+  operationId: refreshSubmodule
+  description: Endpoint for refreshing module.
+  responses:
+    '202':
+      description: Accepted
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: object
+                $ref:  "#/components/schemas/EstimatedTime"
+
+    '400':
+      description: Bad request.
+    '500':
+      description: Internal server error.

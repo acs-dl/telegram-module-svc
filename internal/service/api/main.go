@@ -13,7 +13,7 @@ type Router struct {
 	ctx context.Context
 }
 
-func (r *Router) run() error {
+func (r *Router) Run() error {
 	router := r.apiRouter()
 
 	if err := r.cfg.Copus().RegisterChi(router); err != nil {
@@ -23,12 +23,16 @@ func (r *Router) run() error {
 	return http.Serve(r.cfg.Listener(), router)
 }
 
-func NewApiRouter(ctx context.Context, cfg config.Config) *Router {
-	return &Router{ctx: ctx, cfg: cfg}
+func NewRouterAsInterface(cfg config.Config, ctx context.Context) interface{} {
+	return interface{}(&Router{
+		cfg: cfg,
+		ctx: ctx,
+	})
 }
 
-func Run(ctx context.Context, cfg config.Config) {
-	if err := NewApiRouter(ctx, cfg).run(); err != nil {
+func RunRouterAsInterface(structure interface{}, _ context.Context) {
+	err := (structure.(*Router)).Run()
+	if err != nil {
 		panic(err)
 	}
 }

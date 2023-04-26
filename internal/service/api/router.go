@@ -34,7 +34,6 @@ func (r *Router) apiRouter() chi.Router {
 			// connectors
 
 			// other configs
-			handlers.CtxParams(r.cfg.Telegram()),
 			handlers.CtxParentContext(r.ctx),
 		),
 	)
@@ -49,12 +48,27 @@ func (r *Router) apiRouter() chi.Router {
 		r.Get("/roles", handlers.GetRolesMap)          // comes from orchestrator
 		r.Get("/user_roles", handlers.GetUserRolesMap) // comes from orchestrator
 
+		r.With(auth.Jwt(secret, data.ModuleName, []string{data.Roles[data.Admin], data.Roles[data.Owner], data.Roles[data.Member]}...)).
+			Get("/submodule", handlers.CheckSubmodule)
+
 		r.Route("/links", func(r chi.Router) {
 			r.With(auth.Jwt(secret, data.ModuleName, []string{data.Roles[data.Admin], data.Roles[data.Owner]}...)).
 				Post("/", handlers.AddLink)
 			r.With(auth.Jwt(secret, data.ModuleName, []string{data.Roles[data.Admin], data.Roles[data.Owner]}...)).
 				Delete("/", handlers.RemoveLink)
 		})
+
+		r.With(auth.Jwt(secret, data.ModuleName, []string{data.Roles[data.Admin], data.Roles[data.Owner]}...)).
+			Route("/refresh", func(r chi.Router) {
+				r.Post("/submodule", handlers.RefreshSubmodule)
+				r.Post("/module", handlers.RefreshModule)
+			})
+
+		r.With(auth.Jwt(secret, data.ModuleName, []string{data.Roles[data.Admin], data.Roles[data.Owner], data.Roles[data.Member]}...)).
+			Route("/estimate_refresh", func(r chi.Router) {
+				r.Post("/submodule", handlers.GetEstimatedRefreshSubmodule)
+				r.Post("/module", handlers.GetEstimatedRefreshModule)
+			})
 
 		r.With(auth.Jwt(secret, data.ModuleName, []string{data.Roles[data.Admin], data.Roles[data.Owner], data.Roles[data.Member]}...)).
 			Get("/permissions", handlers.GetPermissions)

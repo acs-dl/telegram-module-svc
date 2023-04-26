@@ -7,6 +7,7 @@ import (
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/pqueue"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/service/api/models"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/service/api/requests"
+	"gitlab.com/distributed_lab/acs/telegram-module/internal/tg_client"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
 )
@@ -36,8 +37,8 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pq := PQueues(ParentContext(r.Context())).SuperPQueue
-	tgClient := *TGClient(ParentContext(r.Context()))
+	pq := pqueue.PQueuesInstance(ParentContext(r.Context())).SuperPQueue
+	tgClient := tg_client.TelegramClientInstance(ParentContext(r.Context()))
 
 	users, err = helpers.GetUsers(pq, tgClient.SearchByFromApi, []any{any(request.Username), any(request.Phone), any(10)}, pqueue.HighPriority)
 	if err != nil {

@@ -73,39 +73,38 @@ func ExtractStacktrace(err error) *Stacktrace {
 }
 
 func extractReflectedStacktraceMethod(err error) reflect.Value {
-	var method reflect.Value
+	errValue := reflect.ValueOf(err)
+
+	// https://github.com/go-errors/errors
+	methodStackFrames := errValue.MethodByName("StackFrames")
+	if methodStackFrames.IsValid() {
+		return methodStackFrames
+	}
+
+	// https://github.com/pkg/errors
+	methodStackTrace := errValue.MethodByName("StackTrace")
+	if methodStackTrace.IsValid() {
+		return methodStackTrace
+	}
 
 	// https://github.com/pingcap/errors
-	methodGetStackTracer := reflect.ValueOf(err).MethodByName("GetStackTracer")
-	// https://github.com/pkg/errors
-	methodStackTrace := reflect.ValueOf(err).MethodByName("StackTrace")
-	// https://github.com/go-errors/errors
-	methodStackFrames := reflect.ValueOf(err).MethodByName("StackFrames")
-
+	methodGetStackTracer := errValue.MethodByName("GetStackTracer")
 	if methodGetStackTracer.IsValid() {
-		stacktracer := methodGetStackTracer.Call(make([]reflect.Value, 0))[0]
+		stacktracer := methodGetStackTracer.Call(nil)[0]
 		stacktracerStackTrace := reflect.ValueOf(stacktracer).MethodByName("StackTrace")
 
 		if stacktracerStackTrace.IsValid() {
-			method = stacktracerStackTrace
+			return stacktracerStackTrace
 		}
 	}
 
-	if methodStackTrace.IsValid() {
-		method = methodStackTrace
-	}
-
-	if methodStackFrames.IsValid() {
-		method = methodStackFrames
-	}
-
-	return method
+	return reflect.Value{}
 }
 
 func extractPcs(method reflect.Value) []uintptr {
 	var pcs []uintptr
 
-	stacktrace := method.Call(make([]reflect.Value, 0))[0]
+	stacktrace := method.Call(nil)[0]
 
 	if stacktrace.Kind() != reflect.Slice {
 		return nil
@@ -114,16 +113,19 @@ func extractPcs(method reflect.Value) []uintptr {
 	for i := 0; i < stacktrace.Len(); i++ {
 		pc := stacktrace.Index(i)
 
-		if pc.Kind() == reflect.Uintptr {
+		switch pc.Kind() {
+		case reflect.Uintptr:
 			pcs = append(pcs, uintptr(pc.Uint()))
-			continue
-		}
-
-		if pc.Kind() == reflect.Struct {
-			field := pc.FieldByName("ProgramCounter")
-			if field.IsValid() && field.Kind() == reflect.Uintptr {
-				pcs = append(pcs, uintptr(field.Uint()))
-				continue
+		case reflect.Struct:
+			for _, fieldName := range []string{"ProgramCounter", "PC"} {
+				field := pc.FieldByName(fieldName)
+				if !field.IsValid() {
+					continue
+				}
+				if field.Kind() == reflect.Uintptr {
+					pcs = append(pcs, uintptr(field.Uint()))
+					break
+				}
 			}
 		}
 	}
@@ -160,10 +162,11 @@ func extractXErrorsPC(err error) []uintptr {
 // Frame represents a function call and it's metadata. Frames are associated
 // with a Stacktrace.
 type Frame struct {
-	Function    string                 `json:"function,omitempty"`
-	Symbol      string                 `json:"symbol,omitempty"`
+	Function string `json:"function,omitempty"`
+	Symbol   string `json:"symbol,omitempty"`
+	// Module is, despite the name, the Sentry protocol equivalent of a Go
+	// package's import path.
 	Module      string                 `json:"module,omitempty"`
-	Package     string                 `json:"package,omitempty"`
 	Filename    string                 `json:"filename,omitempty"`
 	AbsPath     string                 `json:"abs_path,omitempty"`
 	Lineno      int                    `json:"lineno,omitempty"`
@@ -173,6 +176,18 @@ type Frame struct {
 	PostContext []string               `json:"post_context,omitempty"`
 	InApp       bool                   `json:"in_app,omitempty"`
 	Vars        map[string]interface{} `json:"vars,omitempty"`
+	// Package and the below are not used for Go stack trace frames.  In
+	// other platforms it refers to a container where the Module can be
+	// found.  For example, a Java JAR, a .NET Assembly, or a native
+	// dynamic library.  They exists for completeness, allowing the
+	// construction and reporting of custom event payloads.
+	Package         string `json:"package,omitempty"`
+	InstructionAddr string `json:"instruction_addr,omitempty"`
+	AddrMode        string `json:"addr_mode,omitempty"`
+	SymbolAddr      string `json:"symbol_addr,omitempty"`
+	ImageAddr       string `json:"image_addr,omitempty"`
+	Platform        string `json:"platform,omitempty"`
+	StackStart      bool   `json:"stack_start,omitempty"`
 }
 
 // NewFrame assembles a stacktrace frame out of runtime.Frame.
@@ -235,19 +250,22 @@ func splitQualifiedFunctionName(name string) (pkg string, fun string) {
 }
 
 func extractFrames(pcs []uintptr) []Frame {
-	var frames []Frame
+	var frames = make([]Frame, 0, len(pcs))
 	callersFrames := runtime.CallersFrames(pcs)
 
 	for {
 		callerFrame, more := callersFrames.Next()
 
-		frames = append([]Frame{
-			NewFrame(callerFrame),
-		}, frames...)
+		frames = append(frames, NewFrame(callerFrame))
 
 		if !more {
 			break
 		}
+	}
+
+	// reverse
+	for i, j := 0, len(frames)-1; i < j; i, j = i+1, j-1 {
+		frames[i], frames[j] = frames[j], frames[i]
 	}
 
 	return frames
@@ -260,7 +278,8 @@ func filterFrames(frames []Frame) []Frame {
 		return nil
 	}
 
-	filteredFrames := make([]Frame, 0, len(frames))
+	// reuse
+	filteredFrames := frames[:0]
 
 	for _, frame := range frames {
 		// Skip Go internal frames.

@@ -1,6 +1,7 @@
 package pqueue
 
 import (
+	"context"
 	"errors"
 	"log"
 	"time"
@@ -151,4 +152,12 @@ func (pq *PriorityQueue) processNextItem() {
 		item.callFunction()
 		return
 	}
+}
+
+func PQueuesInstance(ctx context.Context) *PQueues {
+	return ctx.Value("pqueues").(*PQueues)
+}
+
+func CtxPQueues(entry interface{}, ctx context.Context) context.Context {
+	return context.WithValue(ctx, "pqueues", entry)
 }
