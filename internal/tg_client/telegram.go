@@ -23,17 +23,20 @@ type TelegramClient interface {
 	UpdateUserInChatFromApi(user data.User, chat Chat) error
 	DeleteFromChatFromApi(user data.User, chat Chat) error
 
+	SendMessageFromApi(info data.MessageInfo) error
+	GenerateChatLinkFromApi(chat Chat) (string, error)
+
 	GetTg() *tgInfo
 	GetSuperClient() *telegram.Client
 	GetUsualClient() *telegram.Client
 }
 
 type tgInfo struct {
-	superClient *telegram.Client
-	usualClient *telegram.Client
-	log         *logan.Entry
-	cfg         config.Config
-	ctx         context.Context
+	superUserClient *telegram.Client
+	userClient      *telegram.Client
+	log             *logan.Entry
+	cfg             config.Config
+	ctx             context.Context
 }
 
 type Chat struct {
@@ -64,11 +67,11 @@ func NewTgAsInterface(cfg config.Config, ctx context.Context) interface{} {
 	}
 
 	return interface{}(&tgInfo{
-		superClient: superClient,
-		usualClient: usualClient,
-		log:         log,
-		cfg:         cfg,
-		ctx:         ctx,
+		superUserClient: superClient,
+		userClient:      usualClient,
+		log:             log,
+		cfg:             cfg,
+		ctx:             ctx,
 	})
 }
 

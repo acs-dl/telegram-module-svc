@@ -21,7 +21,7 @@ func (p *processor) validateVerifyUser(msg data.ModulePayload) error {
 	}.Filter()
 }
 
-func (p *processor) handleVerifyUserAction(msg data.ModulePayload) error {
+func (p *processor) HandleVerifyUserAction(msg data.ModulePayload) error {
 	p.log.Infof("start handle message action with id `%s`", msg.RequestId)
 
 	err := p.validateVerifyUser(msg)
@@ -36,7 +36,7 @@ func (p *processor) handleVerifyUserAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to parse user id")
 	}
 
-	user, err := helpers.GetUser(p.pqueues.UsualPQueue,
+	user, err := helpers.GetUser(p.pqueues.UserPQueue,
 		any(p.telegramClient.GetUserFromApi),
 		[]any{
 			any(p.telegramClient.GetSuperClient()),
@@ -80,7 +80,6 @@ func (p *processor) handleVerifyUserAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to publish delete user")
 	}
 
-	p.resetFilters()
 	p.log.Infof("finish handle message action with id `%s`", msg.RequestId)
 	return nil
 }

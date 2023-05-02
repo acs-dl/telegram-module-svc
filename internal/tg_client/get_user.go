@@ -17,15 +17,12 @@ func (t *tgInfo) GetUserFromApi(client *telegram.Client, username, phone *string
 	if err != nil {
 		if pkgErrors.Is(err, syscall.EPIPE) {
 			cl := NewTgAsInterface(t.cfg, t.ctx).(TelegramClient)
-			t.usualClient = cl.GetTg().usualClient
+			t.userClient = cl.GetTg().userClient
 			return t.GetUserFromApi(client, username, phone)
 		}
 
-		if tgerr.IsCode(err, 420) {
-			duration, ok := tgerr.AsFloodWait(err)
-			if !ok {
-				return nil, errors.New("failed to convert flood error")
-			}
+		duration, isFlood := tgerr.AsFloodWait(err)
+		if isFlood {
 			t.log.Warnf("we need to wait `%s`", duration)
 			time.Sleep(duration)
 			return t.GetUserFromApi(client, username, phone)
@@ -58,9 +55,7 @@ func (t *tgInfo) getUserFlow(client *telegram.Client, username, phone *string) (
 
 func (t *tgInfo) getUserByPhone(client *telegram.Client, phone string) (*data.User, error) {
 	imported, err := client.API().ContactsResolvePhone(t.ctx, phone)
-	//imported, err := t.usualClient.API().ContactsImportContacts(t.ctx, []tg.InputPhoneContact{
-	//	{Phone: phone},
-	//})
+
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +88,7 @@ func (t *tgInfo) getUserByPhone(client *telegram.Client, phone string) (*data.Us
 
 func (t *tgInfo) getUserByUsername(client *telegram.Client, username string) (*data.User, error) {
 	search, err := client.API().ContactsResolveUsername(t.ctx, username)
-	//search, err := t.usualClient.API().ContactsSearch(t.ctx, &tg.ContactsSearchRequest{Q: username, Limit: 10})
+	//search, err := t.userClient.API().ContactsSearch(t.ctx, &tg.ContactsSearchRequest{Q: username, Limit: 10})
 	if err != nil {
 		t.log.Errorf("failed to search contact by username %s", username)
 		return nil, err

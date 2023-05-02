@@ -37,7 +37,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pq := pqueue.PQueuesInstance(ParentContext(r.Context())).SuperPQueue
+	pq := pqueue.PQueuesInstance(ParentContext(r.Context())).SuperUserPQueue
 	tgClient := tg_client.TelegramClientInstance(ParentContext(r.Context()))
 
 	users, err = helpers.GetUsers(pq, tgClient.SearchByFromApi, []any{any(request.Username), any(request.Phone), any(10)}, pqueue.HighPriority)

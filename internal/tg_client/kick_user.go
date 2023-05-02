@@ -16,15 +16,12 @@ func (t *tgInfo) DeleteFromChatFromApi(user data.User, chat Chat) error {
 	if err != nil {
 		if pkgErrors.Is(err, syscall.EPIPE) {
 			cl := NewTgAsInterface(t.cfg, t.ctx).(TelegramClient)
-			t.superClient = cl.GetTg().superClient
+			t.superUserClient = cl.GetTg().superUserClient
 			return t.DeleteFromChatFromApi(user, chat)
 		}
 
-		if tgerr.IsCode(err, 420) {
-			duration, ok := tgerr.AsFloodWait(err)
-			if !ok {
-				return errors.New("failed to convert flood error")
-			}
+		duration, isFlood := tgerr.AsFloodWait(err)
+		if isFlood {
 			t.log.Warnf("we need to wait `%s`", duration)
 			time.Sleep(duration)
 			return t.DeleteFromChatFromApi(user, chat)
@@ -52,7 +49,7 @@ func (t *tgInfo) kickUserFlow(user data.User, chat Chat) error {
 
 func (t *tgInfo) kickUser(user *tg.InputUser, id int64, hashID *int64) error {
 	if hashID != nil {
-		_, err := t.superClient.API().ChannelsEditBanned(t.ctx, &tg.ChannelsEditBannedRequest{
+		_, err := t.superUserClient.API().ChannelsEditBanned(t.ctx, &tg.ChannelsEditBannedRequest{
 			Channel: &tg.InputChannel{ChannelID: id, AccessHash: *hashID},
 			//Participant: &tg.InputPeerUser{UserID: user.UserID, AccessHash: user.AccessHash},
 			Participant: &tg.InputPeerUser{UserID: 315738180, AccessHash: -6486138969659661879},
@@ -76,7 +73,7 @@ func (t *tgInfo) kickUser(user *tg.InputUser, id int64, hashID *int64) error {
 			return err
 		}
 	} else {
-		_, err := t.superClient.API().MessagesDeleteChatUser(t.ctx, &tg.MessagesDeleteChatUserRequest{ChatID: id, UserID: user})
+		_, err := t.superUserClient.API().MessagesDeleteChatUser(t.ctx, &tg.MessagesDeleteChatUserRequest{ChatID: id, UserID: user})
 		if err != nil {
 			t.log.Errorf("failed to delete chat user")
 			return err

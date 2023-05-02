@@ -16,15 +16,12 @@ func (t *tgInfo) GetChatFromApi(title string) (*Chat, error) {
 	if err != nil {
 		if pkgErrors.Is(err, syscall.EPIPE) {
 			cl := NewTgAsInterface(t.cfg, t.ctx).(TelegramClient)
-			t.superClient = cl.GetTg().superClient
+			t.superUserClient = cl.GetTg().superUserClient
 			return t.GetChatFromApi(title)
 		}
 
-		if tgerr.IsCode(err, 420) {
-			duration, ok := tgerr.AsFloodWait(err)
-			if !ok {
-				return nil, errors.New("failed to convert flood error")
-			}
+		duration, isFlood := tgerr.AsFloodWait(err)
+		if isFlood {
 			t.log.Warnf("we need to wait `%s`", duration)
 			time.Sleep(duration)
 			return t.GetChatFromApi(title)
@@ -47,16 +44,14 @@ func (t *tgInfo) getChatFlow(title string) (*Chat, error) {
 }
 
 func (t *tgInfo) findChatByTitle(title string) (*Chat, error) {
-	searched, err := t.superClient.API().ContactsSearch(t.ctx, &tg.ContactsSearchRequest{
+	searched, err := t.superUserClient.API().ContactsSearch(t.ctx, &tg.ContactsSearchRequest{
 		Q:     title,
 		Limit: 10,
 	})
-	//discussion, err := t.superClient.API().MessagesGetAllChats(t.ctx, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	//for _, chat := range discussion.(*tg.MessagesChats).Chats {
 	for _, chat := range searched.Chats {
 		switch converted := chat.(type) {
 		case *tg.Channel:

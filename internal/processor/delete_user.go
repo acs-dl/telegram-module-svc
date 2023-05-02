@@ -18,7 +18,7 @@ func (p *processor) validateDeleteUser(msg data.ModulePayload) error {
 	}.Filter()
 }
 
-func (p *processor) handleDeleteUserAction(msg data.ModulePayload) error {
+func (p *processor) HandleDeleteUserAction(msg data.ModulePayload) error {
 	p.log.Infof("start handle message action with id `%s`", msg.RequestId)
 
 	err := p.validateDeleteUser(msg)
@@ -27,29 +27,10 @@ func (p *processor) handleDeleteUserAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to validate fields")
 	}
 
-	user, err := helpers.GetUser(p.pqueues.UsualPQueue,
-		any(p.telegramClient.GetUserFromApi),
-		[]any{
-			any(p.telegramClient.GetSuperClient()),
-			any(msg.Username),
-			any(msg.Phone),
-		},
-		pqueue.NormalPriority,
-	)
+	user, err := p.checkUserExistence(msg.Username, msg.Phone)
 	if err != nil {
-		p.log.WithError(err).Errorf("failed to get user from api for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "failed to get user from api")
-	}
-
-	if user == nil {
-		p.log.Errorf("no user was found for message action with id `%s`", msg.RequestId)
-		return errors.New("no user was found")
-	}
-
-	dbUser, err := p.getUserFromDbByTelegramId(user.TelegramId)
-	if err != nil {
-		p.log.WithError(err).Errorf("failed to get user from db for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "failed to get user from")
+		p.log.WithError(err).Errorf("failed to get user for message action with id `%s`", msg.RequestId)
+		return errors.Wrap(err, "failed to get user")
 	}
 
 	permissions, err := p.permissionsQ.FilterByTelegramIds(user.TelegramId).Select()
@@ -59,29 +40,10 @@ func (p *processor) handleDeleteUserAction(msg data.ModulePayload) error {
 	}
 
 	for _, permission := range permissions {
-		chat, err := helpers.GetChat(p.pqueues.SuperPQueue, any(p.telegramClient.GetChatFromApi), []any{any(permission.Link)}, pqueue.NormalPriority)
+		err = p.deleteRemotePermission(permission.Link, *user)
 		if err != nil {
-			p.log.WithError(err).Errorf("failed to get chat from api for message action with id `%s`", msg.RequestId)
-			return errors.Wrap(err, "failed to get chat from api")
-		}
-
-		if chat == nil {
-			p.log.Errorf("no chat `%s` was found for message action with id `%s`", permission.Link, msg.RequestId)
-			return errors.New("no chat was found")
-		}
-
-		chatUser, err := helpers.GetUser(p.pqueues.SuperPQueue, any(p.telegramClient.GetChatUserFromApi), []any{any(*user), any(*chat)}, pqueue.NormalPriority)
-		if err != nil {
-			p.log.WithError(err).Errorf("failed to get user from api for message action with id `%s`", msg.RequestId)
-			return errors.Wrap(err, "failed to get user from api")
-		}
-
-		if chatUser != nil {
-			err = helpers.GetRequestError(p.pqueues.SuperPQueue, any(p.telegramClient.DeleteFromChatFromApi), []any{any(*user), any(*chat)}, pqueue.NormalPriority)
-			if err != nil {
-				p.log.WithError(err).Errorf("failed to remove user from API for message action with id `%s`", msg.RequestId)
-				return errors.Wrap(err, "some error while removing user from api")
-			}
+			p.log.WithError(err).Errorf("failed to remove permission from API for message action with id `%s`", msg.RequestId)
+			return errors.Wrap(err, "some error while removing permission from api")
 		}
 
 		if err = p.permissionsQ.FilterByTelegramIds(permission.TelegramId).FilterByLinks(permission.Link).Delete(); err != nil {
@@ -96,13 +58,52 @@ func (p *processor) handleDeleteUserAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to delete user")
 	}
 
-	err = p.sendDeleteInUnverifiedOrUpdateInIdentity(msg.RequestId, *dbUser)
+	err = p.sendDeleteInUnverifiedOrUpdateInIdentity(msg.RequestId, *user)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to send delete unverified or update identity for message action with id `%s`", msg.RequestId)
 		return errors.Wrap(err, "failed to send delete unverified or update identity")
 	}
 
-	p.resetFilters()
 	p.log.Infof("finish handle message action with id `%s`", msg.RequestId)
+	return nil
+}
+
+func (p *processor) checkUserExistence(username, phone *string) (*data.User, error) {
+	user, err := helpers.GetUser(p.pqueues.UserPQueue,
+		any(p.telegramClient.GetUserFromApi),
+		[]any{
+			any(p.telegramClient.GetSuperClient()),
+			any(username),
+			any(phone),
+		},
+		pqueue.NormalPriority,
+	)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get user from api")
+	}
+
+	if user == nil {
+		return nil, errors.New("no user was found")
+	}
+
+	dbUser, err := p.getUserFromDbByTelegramId(user.TelegramId)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get user from service")
+	}
+
+	return dbUser, nil
+}
+
+func (p *processor) deleteRemotePermission(link string, user data.User) error {
+	chat, err := p.getChatForUser(link, user)
+	if err != nil {
+		return errors.Wrap(err, "failed to get chat for user from api")
+	}
+
+	err = helpers.GetRequestError(p.pqueues.SuperUserPQueue, any(p.telegramClient.DeleteFromChatFromApi), []any{any(user), any(*chat)}, pqueue.NormalPriority)
+	if err != nil {
+		return errors.Wrap(err, "some error while removing user from api")
+	}
+
 	return nil
 }

@@ -5,9 +5,12 @@ import (
 	"time"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
+	"github.com/gotd/td/tg"
+	"github.com/gotd/td/tgerr"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/helpers"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/pqueue"
+	"gitlab.com/distributed_lab/acs/telegram-module/internal/tg_client"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 )
 
@@ -23,7 +26,7 @@ func (p *processor) validateAddUser(msg data.ModulePayload) error {
 	}.Filter()
 }
 
-func (p *processor) handleAddUserAction(msg data.ModulePayload) error {
+func (p *processor) HandleAddUserAction(msg data.ModulePayload) error {
 	p.log.Infof("start handle message action with id `%s`", msg.RequestId)
 
 	err := p.validateAddUser(msg)
@@ -38,40 +41,10 @@ func (p *processor) handleAddUserAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to parse user id")
 	}
 
-	user, err := helpers.GetUser(p.pqueues.UsualPQueue,
-		any(p.telegramClient.GetUserFromApi),
-		[]any{
-			any(p.telegramClient.GetSuperClient()),
-			any(msg.Username),
-			any(msg.Phone),
-		},
-		pqueue.NormalPriority,
-	)
+	user, err := p.addUser(msg.Username, msg.Phone, msg.Link)
 	if err != nil {
-		p.log.WithError(err).Errorf("failed to get user from api for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "failed to get user from api")
-	}
-
-	if user == nil {
-		p.log.Errorf("no user was found for message action with id `%s`", msg.RequestId)
-		return errors.New("no user was found")
-	}
-
-	chat, err := helpers.GetChat(p.pqueues.SuperPQueue, any(p.telegramClient.GetChatFromApi), []any{any(msg.Link)}, pqueue.NormalPriority)
-	if err != nil {
-		p.log.WithError(err).Errorf("failed to get chat from api for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "failed to get chat from api")
-	}
-
-	if chat == nil {
-		p.log.Errorf("no chat `%s` was found for message action with id `%s`", msg.Link, msg.RequestId)
-		return errors.New("no chat was found")
-	}
-
-	err = helpers.GetRequestError(p.pqueues.SuperPQueue, any(p.telegramClient.AddUserInChatFromApi), []any{any(*user), any(*chat)}, pqueue.NormalPriority)
-	if err != nil {
-		p.log.WithError(err).Errorf("failed to add user in chat from API for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "failed to add user in chat from api")
+		p.log.WithError(err).Errorf("failed to add user for message action with id `%s`", msg.RequestId)
+		return errors.Wrap(err, "failed to add user")
 	}
 
 	//when we add user is always member
@@ -121,7 +94,90 @@ func (p *processor) handleAddUserAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to publish users")
 	}
 
-	p.resetFilters()
 	p.log.Infof("finish handle message action with id `%s`", msg.RequestId)
+	return nil
+}
+
+func (p *processor) addUser(username, phone *string, link string) (*data.User, error) {
+	user, err := helpers.GetUser(p.pqueues.UserPQueue,
+		any(p.telegramClient.GetUserFromApi),
+		[]any{
+			any(p.telegramClient.GetSuperClient()),
+			any(username),
+			any(phone),
+		},
+		pqueue.NormalPriority,
+	)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get user from api")
+	}
+
+	if user == nil {
+		return nil, errors.New("no user was found")
+	}
+
+	chat, err := helpers.GetChat(p.pqueues.SuperUserPQueue, any(p.telegramClient.GetChatFromApi), []any{any(link)}, pqueue.NormalPriority)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get chat from api")
+	}
+
+	if chat == nil {
+		return nil, errors.New("no chat was found")
+	}
+
+	err = helpers.GetRequestError(p.pqueues.SuperUserPQueue, any(p.telegramClient.AddUserInChatFromApi), []any{any(*user), any(*chat)}, pqueue.NormalPriority)
+	if err == nil {
+		return user, nil
+	}
+
+	if !tgerr.Is(err, tg.ErrUserNotMutualContact, tg.ErrUserPrivacyRestricted) {
+		return nil, errors.Wrap(err, "failed to add user in chat from api")
+	}
+
+	err = p.sendInviteMessage(link, *user, *chat)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to send invite in chat from api")
+	}
+
+	return user, nil
+}
+func (p *processor) sendInviteMessage(link string, user data.User, chat tg_client.Chat) error {
+	inviteLink, err := helpers.GetString(
+		p.pqueues.SuperUserPQueue,
+		any(p.telegramClient.GenerateChatLinkFromApi),
+		[]any{any(chat)}, pqueue.NormalPriority)
+	if err != nil {
+		return err
+	}
+
+	var userName string
+	switch {
+	case len(user.FirstName+user.LastName) != 0:
+		userName = user.FirstName + " " + user.LastName
+	case user.Username != nil:
+		userName = *user.Username
+	case user.Phone != nil:
+		userName = *user.Phone
+	default:
+		p.log.Warnf("failed to get user name")
+		userName = "from ACS"
+	}
+
+	err = helpers.GetRequestError(p.pqueues.SuperUserPQueue, any(p.telegramClient.SendMessageFromApi),
+		[]any{
+			any(data.MessageInfo{
+				Data: map[string]interface{}{
+					"Name":       userName,
+					"GroupName":  link,
+					"InviteLink": inviteLink,
+				},
+				MessageTemplate: data.InviteMessageTemplate,
+				User:            user,
+			}),
+		}, pqueue.NormalPriority)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

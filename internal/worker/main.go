@@ -16,14 +16,14 @@ import (
 
 const ServiceName = data.ModuleName + "-worker"
 
-type Worker interface {
+type IWorker interface {
 	Run(ctx context.Context)
 	ProcessPermissions(_ context.Context) error
-	CreatePermissions(link string) error
+	createPermissions(link string) error
 	GetEstimatedTime() time.Duration
 }
 
-type worker struct {
+type Worker struct {
 	logger        *logan.Entry
 	processor     processor.Processor
 	linksQ        data.Links
@@ -34,7 +34,7 @@ type worker struct {
 }
 
 func NewWorkerAsInterface(cfg config.Config, ctx context.Context) interface{} {
-	return interface{}(&worker{
+	return interface{}(&Worker{
 		logger:        cfg.Log().WithField("runner", ServiceName),
 		processor:     processor.ProcessorInstance(ctx),
 		linksQ:        postgres.NewLinksQ(cfg.DB()),
@@ -45,7 +45,7 @@ func NewWorkerAsInterface(cfg config.Config, ctx context.Context) interface{} {
 	})
 }
 
-func (w *worker) Run(ctx context.Context) {
+func (w *Worker) Run(ctx context.Context) {
 	running.WithBackOff(
 		ctx,
 		w.logger,
@@ -57,7 +57,7 @@ func (w *worker) Run(ctx context.Context) {
 	)
 }
 
-func (w *worker) ProcessPermissions(_ context.Context) error {
+func (w *Worker) ProcessPermissions(_ context.Context) error {
 	w.logger.Info("fetching links")
 
 	startTime := time.Now()
@@ -78,7 +78,7 @@ func (w *worker) ProcessPermissions(_ context.Context) error {
 	for _, link := range links {
 		w.logger.Infof("processing link `%s`", link.Link)
 
-		err = w.CreatePermissions(link.Link)
+		err = w.createPermissions(link.Link)
 		if err != nil {
 			w.logger.Infof("failed to create permissions for chat")
 			return errors.Wrap(err, "failed to create permissions for chat")
@@ -103,7 +103,7 @@ func (w *worker) ProcessPermissions(_ context.Context) error {
 	return nil
 }
 
-func (w *worker) removeOldUsers(borderTime time.Time) error {
+func (w *Worker) removeOldUsers(borderTime time.Time) error {
 	w.logger.Infof("started removing old users")
 
 	users, err := w.usersQ.FilterByLowerTime(borderTime).Select()
@@ -134,7 +134,7 @@ func (w *worker) removeOldUsers(borderTime time.Time) error {
 	return nil
 }
 
-func (w *worker) removeOldPermissions(borderTime time.Time) error {
+func (w *Worker) removeOldPermissions(borderTime time.Time) error {
 	w.logger.Infof("started removing old permissions")
 
 	permissions, err := w.permissionsQ.FilterByLowerTime(borderTime).Select()
@@ -157,10 +157,27 @@ func (w *worker) removeOldPermissions(borderTime time.Time) error {
 	return nil
 }
 
-func (w *worker) CreatePermissions(link string) error {
-	if err := w.processor.HandleNewMessage(data.ModulePayload{
+func (w *Worker) RefreshSubmodules(msg data.ModulePayload) error {
+	w.logger.Infof("started refresh submodules")
+
+	for _, link := range msg.Links {
+		w.logger.Infof("started refreshing `%s`", link)
+
+		err := w.createPermissions(link)
+		if err != nil {
+			w.logger.Infof("failed to create subs for link `%s", link)
+			return errors.Wrap(err, "failed to create subs")
+		}
+		w.logger.Infof("finished refreshing `%s`", link)
+	}
+
+	w.logger.Infof("finished refresh submodules")
+	return nil
+}
+
+func (w *Worker) createPermissions(link string) error {
+	if err := w.processor.HandleGetUsersAction(data.ModulePayload{
 		RequestId: "from-worker",
-		Action:    processor.GetUsersAction,
 		Link:      link,
 	}); err != nil {
 		w.logger.Infof("failed to get users for link `%s`", link)
@@ -170,6 +187,6 @@ func (w *worker) CreatePermissions(link string) error {
 	return nil
 }
 
-func (w *worker) GetEstimatedTime() time.Duration {
+func (w *Worker) GetEstimatedTime() time.Duration {
 	return w.estimatedTime
 }

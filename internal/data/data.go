@@ -10,6 +10,14 @@ const (
 	IdentityService   = "identity"
 )
 
+const InviteMessageTemplate = `Hello, <b>{{.Name}}</b> !
+
+We have tried to add you in <i>{{.GroupName}}</i> group, but can't.
+
+Here is your invite link: <a href={{.InviteLink}}>CLICK HERE</a>
+
+Note that link is only for <b>you</b> and valid for <b>1 hour</b>`
+
 type ModuleRequest struct {
 	ID            string    `db:"id" structs:"id"`
 	UserID        int64     `db:"user_id" structs:"user_id"`
@@ -26,10 +34,11 @@ type ModulePayload struct {
 	Action    string `json:"action"`
 
 	//other fields that are required for module
-	Link        string  `json:"link"`
-	Username    *string `json:"username"`
-	Phone       *string `json:"phone"`
-	AccessLevel string  `json:"access_level"`
+	Link        string   `json:"link"`
+	Links       []string `json:"links"`
+	Username    *string  `json:"username"`
+	Phone       *string  `json:"phone"`
+	AccessLevel string   `json:"access_level"`
 }
 
 type UnverifiedPayload struct {
@@ -45,4 +54,10 @@ var Roles = map[string]string{
 	Self:   "Self",
 	Left:   "Left",
 	Banned: "Banned",
+}
+
+type MessageInfo struct {
+	Data            map[string]interface{}
+	MessageTemplate string
+	User            User
 }

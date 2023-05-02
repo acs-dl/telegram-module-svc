@@ -3,6 +3,7 @@ package tg_client
 import (
 	"bufio"
 	"fmt"
+	"html/template"
 	"os"
 	"strings"
 
@@ -27,4 +28,16 @@ func removeDuplicateUser(arr []tg.UserClass) []tg.User {
 		}
 	}
 	return list
+}
+
+func GenerateStringFromTemplate(info map[string]interface{}, myTemplate string) (string, error) {
+	tmpl := template.Must(template.New("template").Parse(myTemplate))
+
+	builder := &strings.Builder{}
+	err := tmpl.Execute(builder, info)
+	if err != nil {
+		return "", err
+	}
+
+	return builder.String(), nil
 }

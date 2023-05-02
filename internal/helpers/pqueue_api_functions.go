@@ -53,7 +53,7 @@ func GetUsers(queue *pqueue.PriorityQueue, function any, args []any, priority in
 
 	err = item.Response.Error
 	if err != nil {
-		return nil, errors.Wrap(err, "some error while getting chat users from api")
+		return nil, errors.Wrap(err, "some error while getting users from api")
 	}
 
 	users, ok := item.Response.Value.([]data.User)
@@ -72,8 +72,27 @@ func GetRequestError(queue *pqueue.PriorityQueue, function any, args []any, prio
 
 	err = item.Response.Error
 	if err != nil {
-		return errors.Wrap(err, "some error while making request chat from api")
+		return err
 	}
 
 	return nil
+}
+
+func GetString(queue *pqueue.PriorityQueue, function any, args []any, priority int) (string, error) {
+	item, err := AddFunctionInPQueue(queue, function, args, priority)
+	if err != nil {
+		return "", errors.Wrap(err, "failed to add function in pqueue")
+	}
+
+	err = item.Response.Error
+	if err != nil {
+		return "", err
+	}
+
+	myString, ok := item.Response.Value.(string)
+	if !ok {
+		return "", errors.Wrap(err, "wrong response type while getting chat users from api")
+	}
+
+	return myString, nil
 }

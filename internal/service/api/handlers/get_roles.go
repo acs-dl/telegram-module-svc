@@ -42,7 +42,7 @@ func GetRoles(w http.ResponseWriter, r *http.Request) {
 	user, err := UsersQ(r).FilterByUsername(username).FilterByPhone(phone).Get()
 	if err != nil {
 		Log(r).WithError(err).Infof("failed to get user with `%s` username and `%s` phone", username, phone)
-		ape.RenderErr(w, problems.InternalError())
+		ape.RenderErr(w, problems.BadRequest(err)...)
 		return
 	}
 	if user != nil {
@@ -63,7 +63,7 @@ func GetRoles(w http.ResponseWriter, r *http.Request) {
 	tgClient := tg_client.TelegramClientInstance(ParentContext(r.Context()))
 
 	user, err = helpers.GetUser(
-		pqs.UsualPQueue,
+		pqs.UserPQueue,
 		any(tgClient.GetUserFromApi),
 		[]any{
 			any(tgClient.GetUsualClient()),
@@ -82,7 +82,7 @@ func GetRoles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	chat, err := helpers.GetChat(pqs.SuperPQueue, tgClient.GetChatFromApi, []any{any(*request.Link)}, pqueue.HighPriority)
+	chat, err := helpers.GetChat(pqs.SuperUserPQueue, tgClient.GetChatFromApi, []any{any(*request.Link)}, pqueue.HighPriority)
 	if err != nil {
 		Log(r).WithError(err).Errorf("failed to get chat from api")
 		ape.RenderErr(w, problems.InternalError())
@@ -93,7 +93,7 @@ func GetRoles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	chatUser, err := helpers.GetUser(pqs.SuperPQueue, tgClient.GetChatUserFromApi, []any{any(*user), any(*chat)}, pqueue.HighPriority)
+	chatUser, err := helpers.GetUser(pqs.SuperUserPQueue, tgClient.GetChatUserFromApi, []any{any(*user), any(*chat)}, pqueue.HighPriority)
 	if err != nil {
 		Log(r).WithError(err).Errorf("failed to get chat user from api")
 		ape.RenderErr(w, problems.InternalError())

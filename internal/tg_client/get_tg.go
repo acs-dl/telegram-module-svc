@@ -7,9 +7,9 @@ func (t *tgInfo) GetTg() *tgInfo {
 }
 
 func (t *tgInfo) GetSuperClient() *telegram.Client {
-	return t.superClient
+	return t.superUserClient
 }
 
 func (t *tgInfo) GetUsualClient() *telegram.Client {
-	return t.usualClient
+	return t.userClient
 }

@@ -21,11 +21,6 @@ func (p *processor) getUserFromDbByTelegramId(telegramId int64) (*data.User, err
 	return user, nil
 }
 
-func (p *processor) resetFilters() {
-	p.usersQ = p.usersQ.New()
-	p.permissionsQ = p.permissionsQ.New()
-}
-
 func (p *processor) sendDeleteInUnverifiedOrUpdateInIdentity(requestId string, user data.User) error {
 	if user.Id == nil {
 		err := p.SendDeleteUser(requestId, user)

@@ -29,7 +29,7 @@ func GetEstimatedRefreshSubmodule(w http.ResponseWriter, r *http.Request) {
 
 	parentContext := ParentContext(r.Context())
 
-	pqueueRequestsAmount := int64(pqueue.PQueuesInstance(parentContext).SuperPQueue.Len() + pqueue.PQueuesInstance(parentContext).UsualPQueue.Len())
+	pqueueRequestsAmount := int64(pqueue.PQueuesInstance(parentContext).SuperUserPQueue.Len() + pqueue.PQueuesInstance(parentContext).UserPQueue.Len())
 
 	requestsTimeLimit := Config(parentContext).RateLimit().TimeLimit
 	requestsAmountLimit := Config(parentContext).RateLimit().RequestsAmount

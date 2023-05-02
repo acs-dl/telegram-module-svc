@@ -17,15 +17,12 @@ func (t *tgInfo) GetChatUsersFromApi(chat Chat) ([]data.User, error) {
 	if err != nil {
 		if pkgErrors.Is(err, syscall.EPIPE) {
 			cl := NewTgAsInterface(t.cfg, t.ctx).(TelegramClient)
-			t.superClient = cl.GetTg().superClient
+			t.superUserClient = cl.GetTg().superUserClient
 			return t.GetChatUsersFromApi(chat)
 		}
 
-		if tgerr.IsCode(err, 420) {
-			duration, ok := tgerr.AsFloodWait(err)
-			if !ok {
-				return nil, errors.New("failed to convert flood error")
-			}
+		duration, isFlood := tgerr.AsFloodWait(err)
+		if isFlood {
 			t.log.Warnf("we need to wait `%s`", duration)
 			time.Sleep(duration)
 			return t.GetChatUsersFromApi(chat)
@@ -71,7 +68,7 @@ func (t *tgInfo) getAllUsers(id int64, hashID *int64) ([]data.User, error) {
 }
 
 func (t *tgInfo) getAllUsersFromChat(chatId int64) ([]data.User, error) {
-	fullChat, err := t.superClient.API().MessagesGetFullChat(t.ctx, chatId)
+	fullChat, err := t.superUserClient.API().MessagesGetFullChat(t.ctx, chatId)
 	if err != nil {
 		t.log.Errorf("failed to get full chat")
 		return nil, err
@@ -129,7 +126,7 @@ func (t *tgInfo) getAllUsersFromChannel(id int64, hashID *int64) ([]data.User, e
 
 	for {
 		//TODO: think how to handle several api req for getting users (if chat has more than 1000 users). Do we need PQueue just for it? :'(
-		participants, err := t.superClient.API().ChannelsGetParticipants(t.ctx,
+		participants, err := t.superUserClient.API().ChannelsGetParticipants(t.ctx,
 			&tg.ChannelsGetParticipantsRequest{
 				Channel: &tg.InputChannel{ChannelID: id, AccessHash: *hashID},
 				Filter:  &tg.ChannelParticipantsSearch{},

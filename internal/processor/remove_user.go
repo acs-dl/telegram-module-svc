@@ -3,8 +3,6 @@ package processor
 import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/helpers"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/pqueue"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 )
 
@@ -19,7 +17,7 @@ func (p *processor) validateRemoveUser(msg data.ModulePayload) error {
 	}.Filter()
 }
 
-func (p *processor) handleRemoveUserAction(msg data.ModulePayload) error {
+func (p *processor) HandleRemoveUserAction(msg data.ModulePayload) error {
 	p.log.Infof("start handle message action with id `%s`", msg.RequestId)
 
 	err := p.validateRemoveUser(msg)
@@ -28,52 +26,16 @@ func (p *processor) handleRemoveUserAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to validate fields")
 	}
 
-	user, err := helpers.GetUser(p.pqueues.UsualPQueue,
-		any(p.telegramClient.GetUserFromApi),
-		[]any{
-			any(p.telegramClient.GetSuperClient()),
-			any(msg.Username),
-			any(msg.Phone),
-		},
-		pqueue.NormalPriority,
-	)
+	user, err := p.checkUserExistence(msg.Username, msg.Phone)
 	if err != nil {
-		p.log.WithError(err).Errorf("failed to get user from api for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "failed to get user from api")
+		p.log.WithError(err).Errorf("failed to get user for message action with id `%s`", msg.RequestId)
+		return errors.Wrap(err, "failed to get user")
 	}
 
-	if user == nil {
-		p.log.Errorf("no user was found for message action with id `%s`", msg.RequestId)
-		return errors.New("no user was found")
-	}
-
-	chat, err := helpers.GetChat(p.pqueues.SuperPQueue, any(p.telegramClient.GetChatFromApi), []any{any(msg.Link)}, pqueue.NormalPriority)
+	err = p.deleteRemotePermission(msg.Link, *user)
 	if err != nil {
-		p.log.WithError(err).Errorf("failed to get chat from api for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "failed to get chat from api")
-	}
-
-	if chat == nil {
-		p.log.Errorf("no chat `%s` was found for message action with id `%s`", msg.Link, msg.RequestId)
-		return errors.New("no chat was found")
-	}
-
-	user, err = helpers.GetUser(p.pqueues.SuperPQueue, any(p.telegramClient.GetChatUserFromApi), []any{any(*user), any(*chat)}, pqueue.NormalPriority)
-	if err != nil {
-		p.log.WithError(err).Errorf("failed to get user from api for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "failed to get user from api")
-	}
-
-	dbUser, err := p.getUserFromDbByTelegramId(user.TelegramId)
-	if err != nil {
-		p.log.WithError(err).Errorf("failed to get user from db for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "failed to get user from")
-	}
-
-	err = helpers.GetRequestError(p.pqueues.SuperPQueue, any(p.telegramClient.DeleteFromChatFromApi), []any{any(*user), any(*chat)}, pqueue.NormalPriority)
-	if err != nil {
-		p.log.WithError(err).Errorf("failed to remove user from API for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "some error while removing user from api")
+		p.log.WithError(err).Errorf("failed to remove permission from API for message action with id `%s`", msg.RequestId)
+		return errors.Wrap(err, "some error while removing permission from api")
 	}
 
 	err = p.managerQ.Transaction(func() error {
@@ -96,7 +58,7 @@ func (p *processor) handleRemoveUserAction(msg data.ModulePayload) error {
 				return errors.Wrap(err, "failed to delete user")
 			}
 
-			err = p.sendDeleteInUnverifiedOrUpdateInIdentity(msg.RequestId, *dbUser)
+			err = p.sendDeleteInUnverifiedOrUpdateInIdentity(msg.RequestId, *user)
 			if err != nil {
 				p.log.WithError(err).Errorf("failed to send delete unverified or update identity for message action with id `%s`", msg.RequestId)
 				return errors.Wrap(err, "failed to send delete unverified or update identity")
@@ -110,7 +72,6 @@ func (p *processor) handleRemoveUserAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to make remove user transaction")
 	}
 
-	p.resetFilters()
 	p.log.Infof("finish handle message action with id `%s`", msg.RequestId)
 	return nil
 }
