@@ -41,20 +41,21 @@ func GetRoles(w http.ResponseWriter, r *http.Request) {
 
 	user, err := UsersQ(r).FilterByUsername(username).FilterByPhone(phone).Get()
 	if err != nil {
-		Log(r).WithError(err).Infof("failed to get user with `%s` username and `%s` phone", username, phone)
+		Log(r).WithError(err).Errorf("failed to get user with `%s` username and `%s` phone", username, phone)
 		ape.RenderErr(w, problems.BadRequest(err)...)
 		return
 	}
 	if user != nil {
 		permission, err := PermissionsQ(r).FilterByTelegramIds(user.TelegramId).FilterByLinks(*request.Link).Get()
 		if err != nil {
-			Log(r).WithError(err).Infof("failed to get permission from `%s` to `%s`/`%s`", *request.Link, username, phone)
+			Log(r).WithError(err).Errorf("failed to get permission from `%s` to `%s`/`%s`", *request.Link, username, phone)
 			ape.RenderErr(w, problems.BadRequest(err)...)
 			return
 		}
 
 		if permission != nil {
-			ape.Render(w, models.NewRolesResponse(true, permission.AccessLevel))
+			Log(r).Warnf("user `%s`/`%s` is already in `%s`", username, phone, *request.Link)
+			ape.RenderErr(w, problems.NotFound())
 			return
 		}
 	}
@@ -78,7 +79,7 @@ func GetRoles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if user == nil {
-		ape.Render(w, models.NewRolesResponse(false, ""))
+		ape.RenderErr(w, problems.NotFound())
 		return
 	}
 
@@ -89,7 +90,7 @@ func GetRoles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if chat == nil {
-		ape.Render(w, models.NewRolesResponse(false, ""))
+		ape.RenderErr(w, problems.NotFound())
 		return
 	}
 
@@ -101,7 +102,7 @@ func GetRoles(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if chatUser != nil {
-		ape.Render(w, models.NewRolesResponse(true, chatUser.AccessLevel))
+		ape.RenderErr(w, problems.NotFound())
 		return
 	}
 
