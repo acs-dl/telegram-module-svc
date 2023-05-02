@@ -19,7 +19,6 @@ const ServiceName = data.ModuleName + "-worker"
 type IWorker interface {
 	Run(ctx context.Context)
 	ProcessPermissions(_ context.Context) error
-	createPermissions(link string) error
 	GetEstimatedTime() time.Duration
 }
 
