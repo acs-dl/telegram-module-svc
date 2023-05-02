@@ -3,7 +3,6 @@ package handlers
 import (
 	"net/http"
 
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/helpers"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/pqueue"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/service/api/models"
@@ -22,7 +21,7 @@ func GetRoles(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if request.Link == nil {
-		ape.Render(w, models.NewRolesResponse(false, ""))
+		ape.Render(w, models.NewRolesResponse(false))
 		return
 	}
 
@@ -107,5 +106,5 @@ func GetRoles(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// when we add user ALWAYS member
-	ape.Render(w, models.NewRolesResponse(true, data.Admin))
+	ape.Render(w, models.NewRolesResponse(true))
 }
