@@ -11,10 +11,24 @@ amqp:
   subscriber: "amqp://guest:guest@localhost:5672/" #telegram_receiver
 
 telegram:
-  api_id: 15842525
-  api_hash: "bbaf56dbfc0be20c6c2ed6dfa38ade8d"
-  phone_number: "+380685379725"
-  host: "149.154.167.50:443"
+  super_user:
+    api_id: 15842525
+    api_hash: "bbaf56dbfc0be20c6c2ed6dfa38ade8d"
+    phone_number: "+380685379725"
+  user:
+    api_id: 28261557
+    api_hash: "2314a5ce3b04fc6d2a108f6a90a5b6e9"
+    phone_number: "+380962332757"
+
+runners:
+  registrar: 10m
+  worker: 2h
+  receiver: 30s
+  sender: 30s
+
+rate_limit:
+  requests_amount: 1
+  time_limit: 18s
 
 listener:
   addr: :9000

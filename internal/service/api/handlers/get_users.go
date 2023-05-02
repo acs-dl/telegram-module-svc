@@ -1,15 +1,13 @@
 package handlers
 
 import (
-	"container/heap"
 	"net/http"
 
-	"github.com/google/uuid"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
+	"gitlab.com/distributed_lab/acs/telegram-module/internal/helpers"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/pqueue"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/service/api/models"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/service/api/requests"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/tg"
+	"gitlab.com/distributed_lab/acs/telegram-module/internal/tg_client"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
 )
@@ -39,38 +37,12 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newUuid := uuid.New()
-	queueItem := &pqueue.QueueItem{
-		Uuid:     newUuid,
-		Func:     tg.NewTg(Params(r), Log(r)).SearchByFromApi,
-		Args:     []any{any(request.Username), any(request.Phone), any(10)},
-		Priority: pqueue.HighPriority,
-	}
-	heap.Push(PQueue(r.Context()), queueItem)
-	item, err := PQueue(r.Context()).WaitUntilInvoked(newUuid)
-	if err != nil {
-		Log(r).WithError(err).Info("failed to wait until invoked")
-		ape.RenderErr(w, problems.InternalError())
-		return
-	}
+	pq := pqueue.PQueuesInstance(ParentContext(r.Context())).SuperPQueue
+	tgClient := tg_client.TelegramClientInstance(ParentContext(r.Context()))
 
-	err = PQueue(r.Context()).RemoveByUUID(newUuid)
+	users, err = helpers.GetUsers(pq, tgClient.SearchByFromApi, []any{any(request.Username), any(request.Phone), any(10)}, pqueue.HighPriority)
 	if err != nil {
-		Log(r).WithError(err).Info("failed to remove by uuid")
-		ape.RenderErr(w, problems.InternalError())
-		return
-	}
-
-	err = item.Response.Error
-	if err != nil {
-		Log(r).WithError(err).Infof("failed to get users from api by `%s`", username)
-		ape.RenderErr(w, problems.InternalError())
-		return
-	}
-
-	users, ok := item.Response.Value.([]data.User)
-	if !ok {
-		Log(r).WithError(err).Infof("wrong users type in response")
+		Log(r).WithError(err).Errorf("failed to get chat user from api")
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}

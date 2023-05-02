@@ -290,3 +290,40 @@ func runSafelyWithSuccess(ctx context.Context, runnerName string, runner func(co
 
 	return runner(ctx)
 }
+
+//RunEachMonth - runs `runner` right after the call and then at the begging of the next month at utc.
+// In case of error or panic uses same logic as `UntilSuccess`.
+func RunEachMonth(
+	ctx context.Context,
+	log Logger,
+	runnerName string,
+	runner func(context.Context) error,
+	minRetryPeriod,
+	maxRetryPeriod time.Duration) {
+
+	UntilSuccess(ctx, log, runnerName, func(ctx context.Context) (bool, error) {
+		for {
+			if ctx.Err() != nil {
+				return false, ctx.Err()
+			}
+			err := runner(ctx)
+			if err != nil {
+				return false, err
+			}
+			waitUntilNextMonthFirstDayMidnightUTC(ctx)
+		}
+	}, minRetryPeriod, maxRetryPeriod)
+}
+
+
+func waitUntilNextMonthFirstDayMidnightUTC(ctx context.Context) {
+	now := time.Now().UTC()
+	// time.Date automatically normalizes months
+	firstDayOfNextMonth := time.Date(now.Year(), now.Month()+1, 1, 0, 0, 10, 0, time.UTC)
+	timer := time.NewTimer(time.Until(firstDayOfNextMonth))
+	select {
+	case <-timer.C:
+	case <-ctx.Done():
+	}
+	timer.Stop()
+}
