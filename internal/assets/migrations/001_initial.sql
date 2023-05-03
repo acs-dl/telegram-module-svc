@@ -31,10 +31,6 @@ create table if not exists links (
     link text not null,
     unique(link)
 );
-insert into links (link) values ('HELP TG API');
-insert into links (link) values ('WE vs. ACS');
-insert into links (link) values ('Messenger Internal');
-insert into links (link) values ('DL / Make TokenE even better');
 
 create index if not exists links_link_idx on links(link);
 
