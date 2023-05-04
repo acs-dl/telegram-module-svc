@@ -50,9 +50,8 @@ func (t *tgInfo) kickUserFlow(user data.User, chat Chat) error {
 func (t *tgInfo) kickUser(user *tg.InputUser, id int64, hashID *int64) error {
 	if hashID != nil {
 		_, err := t.superUserClient.API().ChannelsEditBanned(t.ctx, &tg.ChannelsEditBannedRequest{
-			Channel: &tg.InputChannel{ChannelID: id, AccessHash: *hashID},
-			//Participant: &tg.InputPeerUser{UserID: user.UserID, AccessHash: user.AccessHash},
-			Participant: &tg.InputPeerUser{UserID: 315738180, AccessHash: -6486138969659661879},
+			Channel:     &tg.InputChannel{ChannelID: id, AccessHash: *hashID},
+			Participant: &tg.InputPeerUser{UserID: user.UserID, AccessHash: user.AccessHash},
 			BannedRights: tg.ChatBannedRights{
 				ViewMessages: true,
 				SendMessages: true,
@@ -66,7 +65,7 @@ func (t *tgInfo) kickUser(user *tg.InputUser, id int64, hashID *int64) error {
 				ChangeInfo:   true,
 				InviteUsers:  true,
 				PinMessages:  true,
-				UntilDate:    0,
+				UntilDate:    int(time.Now().Add(40 * time.Second).Unix()),
 			}})
 		if err != nil {
 			t.log.Errorf("failed to ban channel user")

@@ -46,7 +46,7 @@ func (p *processor) sendUsers(uuid string, users []data.User) error {
 		return errors.Wrap(err, "failed to publish users to `telegram-module`")
 	}
 
-	p.log.Infof("successfully published users to `telegram-module`")
+	p.log.Infof("successfully published users to `unverified-svc`")
 	return nil
 }
 
@@ -70,7 +70,7 @@ func (p *processor) SendDeleteUser(uuid string, user data.User) error {
 		return errors.Wrap(err, "failed to publish users to `unverified-svc`")
 	}
 
-	p.log.Infof("successfully published users to `telegram-module`")
+	p.log.Infof("successfully published users to `unverified-svc`")
 	return nil
 }
 

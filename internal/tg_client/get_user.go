@@ -54,7 +54,9 @@ func (t *tgInfo) getUserFlow(client *telegram.Client, username, phone *string) (
 }
 
 func (t *tgInfo) getUserByPhone(client *telegram.Client, phone string) (*data.User, error) {
-	imported, err := client.API().ContactsResolvePhone(t.ctx, phone)
+	imported, err := client.API().ContactsImportContacts(t.ctx, []tg.InputPhoneContact{
+		{Phone: phone},
+	})
 
 	if err != nil {
 		return nil, err
