@@ -83,7 +83,7 @@ func (p *processor) getChatForUser(link string, user data.User) (*tg_client.Chat
 		return nil, errors.Wrap(err, "failed to get user from api")
 	}
 
-	if chatUser != nil {
+	if chatUser == nil {
 		return nil, errors.New("user is not in chat")
 	}
 
