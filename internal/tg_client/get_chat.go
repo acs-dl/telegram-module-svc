@@ -79,3 +79,34 @@ func (t *tgInfo) findChatByTitle(title string) (*Chat, error) {
 	t.log.Errorf("no chat `%s` was found", title)
 	return nil, nil
 }
+
+func (t *tgInfo) handlePhoto(chat tg.InputPeerClass, photo tg.ChatPhotoClass) error {
+	switch converted := photo.(type) {
+	case *tg.ChatPhotoEmpty:
+		fmt.Println(converted)
+		return nil
+	case *tg.ChatPhoto:
+		converted.TypeInfo()
+		file, err := t.superUserClient.API().UploadGetFile(t.ctx, &tg.UploadGetFileRequest{
+			Location: &tg.InputPeerPhotoFileLocation{
+				PhotoID: converted.PhotoID,
+				Flags:   converted.Flags,
+				Peer:    chat,
+				Big:     false,
+			}})
+		if err != nil {
+			return err
+		}
+		switch v := file.(type) {
+		case *tg.UploadFile: // upload.file#96a18d5
+			fmt.Println(v.Bytes)
+		case *tg.UploadFileCDNRedirect: // upload.fileCdnRedirect#f18cda44
+			return errors.New("please, no")
+		default:
+			panic(v)
+		}
+		return nil
+	default:
+		return nil
+	}
+}

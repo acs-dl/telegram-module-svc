@@ -26,11 +26,11 @@ const (
 
 type Processor interface {
 	HandleGetUsersAction(msg data.ModulePayload) error
-	HandleAddUserAction(msg data.ModulePayload) error
-	HandleUpdateUserAction(msg data.ModulePayload) error
-	HandleRemoveUserAction(msg data.ModulePayload) error
-	HandleDeleteUserAction(msg data.ModulePayload) error
-	HandleVerifyUserAction(msg data.ModulePayload) error
+	HandleAddUserAction(msg data.ModulePayload) (string, error)
+	HandleUpdateUserAction(msg data.ModulePayload) (string, error)
+	HandleRemoveUserAction(msg data.ModulePayload) (string, error)
+	HandleDeleteUserAction(msg data.ModulePayload) (string, error)
+	HandleVerifyUserAction(msg data.ModulePayload) (string, error)
 	SendDeleteUser(uuid string, user data.User) error
 }
 

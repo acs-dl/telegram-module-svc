@@ -6,6 +6,7 @@ create table if not exists responses (
     id uuid primary key,
     status text not null,
     error text,
+    description text,
     payload jsonb,
     created_at timestamp without time zone not null default current_timestamp
 );

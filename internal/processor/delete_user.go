@@ -18,54 +18,54 @@ func (p *processor) validateDeleteUser(msg data.ModulePayload) error {
 	}.Filter()
 }
 
-func (p *processor) HandleDeleteUserAction(msg data.ModulePayload) error {
+func (p *processor) HandleDeleteUserAction(msg data.ModulePayload) (string, error) {
 	p.log.Infof("start handle message action with id `%s`", msg.RequestId)
 
 	err := p.validateDeleteUser(msg)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to validate fields for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "failed to validate fields")
+		return data.FAILURE, errors.Wrap(err, "failed to validate fields")
 	}
 
 	user, err := p.checkUserExistence(msg.Username, msg.Phone)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to get user for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "failed to get user")
+		return data.FAILURE, errors.Wrap(err, "failed to get user")
 	}
 
 	permissions, err := p.permissionsQ.FilterByTelegramIds(user.TelegramId).Select()
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to select permissions by telegram id `%d` for message action with id `%s`", user.TelegramId, msg.RequestId)
-		return errors.Wrap(err, "failed to select permissions")
+		return data.FAILURE, errors.Wrap(err, "failed to select permissions")
 	}
 
 	for _, permission := range permissions {
 		err = p.deleteRemotePermission(permission.Link, *user)
 		if err != nil {
 			p.log.WithError(err).Errorf("failed to remove permission from API for message action with id `%s`", msg.RequestId)
-			return errors.Wrap(err, "some error while removing permission from api")
+			return data.FAILURE, errors.Wrap(err, "some error while removing permission from api")
 		}
 
 		if err = p.permissionsQ.FilterByTelegramIds(permission.TelegramId).FilterByLinks(permission.Link).Delete(); err != nil {
 			p.log.WithError(err).Errorf("failed to delete permission from db for message action with id `%s`", msg.RequestId)
-			return errors.Wrap(err, "failed to delete permission")
+			return data.FAILURE, errors.Wrap(err, "failed to delete permission")
 		}
 	}
 
 	err = p.usersQ.FilterByTelegramIds(user.TelegramId).Delete()
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to delete user by telegram id `%d` for message action with id `%s`", user.TelegramId, msg.RequestId)
-		return errors.Wrap(err, "failed to delete user")
+		return data.FAILURE, errors.Wrap(err, "failed to delete user")
 	}
 
 	err = p.sendDeleteInUnverifiedOrUpdateInIdentity(msg.RequestId, *user)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to send delete unverified or update identity for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "failed to send delete unverified or update identity")
+		return data.FAILURE, errors.Wrap(err, "failed to send delete unverified or update identity")
 	}
 
 	p.log.Infof("finish handle message action with id `%s`", msg.RequestId)
-	return nil
+	return data.SUCCESS, nil
 }
 
 func (p *processor) checkUserExistence(username, phone *string) (*data.User, error) {

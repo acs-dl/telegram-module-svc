@@ -17,25 +17,25 @@ func (p *processor) validateRemoveUser(msg data.ModulePayload) error {
 	}.Filter()
 }
 
-func (p *processor) HandleRemoveUserAction(msg data.ModulePayload) error {
+func (p *processor) HandleRemoveUserAction(msg data.ModulePayload) (string, error) {
 	p.log.Infof("start handle message action with id `%s`", msg.RequestId)
 
 	err := p.validateRemoveUser(msg)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to validate fields for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "failed to validate fields")
+		return data.FAILURE, errors.Wrap(err, "failed to validate fields")
 	}
 
 	user, err := p.checkUserExistence(msg.Username, msg.Phone)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to get user for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "failed to get user")
+		return data.FAILURE, errors.Wrap(err, "failed to get user")
 	}
 
 	err = p.deleteRemotePermission(msg.Link, *user)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to remove permission from API for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "some error while removing permission from api")
+		return data.FAILURE, errors.Wrap(err, "some error while removing permission from api")
 	}
 
 	err = p.managerQ.Transaction(func() error {
@@ -69,9 +69,9 @@ func (p *processor) HandleRemoveUserAction(msg data.ModulePayload) error {
 	})
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to make remove user transaction for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "failed to make remove user transaction")
+		return data.FAILURE, errors.Wrap(err, "failed to make remove user transaction")
 	}
 
 	p.log.Infof("finish handle message action with id `%s`", msg.RequestId)
-	return nil
+	return data.SUCCESS, nil
 }

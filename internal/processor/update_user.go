@@ -21,24 +21,24 @@ func (p *processor) validateUpdateUser(msg data.ModulePayload) error {
 	}.Filter()
 }
 
-func (p *processor) HandleUpdateUserAction(msg data.ModulePayload) error {
+func (p *processor) HandleUpdateUserAction(msg data.ModulePayload) (string, error) {
 	p.log.Infof("start handle message action with id `%s`", msg.RequestId)
 
 	err := p.validateUpdateUser(msg)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to validate fields for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "failed to validate fields")
+		return data.FAILURE, errors.Wrap(err, "failed to validate fields")
 	}
 	user, err := p.checkUserExistence(msg.Username, msg.Phone)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to get user for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "failed to get user")
+		return data.FAILURE, errors.Wrap(err, "failed to get user")
 	}
 
 	err = p.updateRemotePermission(msg.Link, *user)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to update permission from API for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "failed to update permission from api")
+		return data.FAILURE, errors.Wrap(err, "failed to update permission from api")
 	}
 
 	if err = p.permissionsQ.UpdateAccessLevel(data.Permission{
@@ -47,11 +47,11 @@ func (p *processor) HandleUpdateUserAction(msg data.ModulePayload) error {
 		Link:        msg.Link,
 	}); err != nil {
 		p.log.WithError(err).Errorf("failed to update user in db for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "failed to update user in db")
+		return data.FAILURE, errors.Wrap(err, "failed to update user in db")
 	}
 
 	p.log.Infof("finish handle message action with id `%s`", msg.RequestId)
-	return nil
+	return data.SUCCESS, nil
 }
 
 func (p *processor) updateRemotePermission(link string, user data.User) error {

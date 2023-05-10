@@ -41,26 +41,26 @@ type Receiver struct {
 	runnerDelay time.Duration
 }
 
-var handleActions = map[string]func(r *Receiver, msg data.ModulePayload) error{
-	AddUserAction: func(r *Receiver, msg data.ModulePayload) error {
+var handleActions = map[string]func(r *Receiver, msg data.ModulePayload) (string, error){
+	AddUserAction: func(r *Receiver, msg data.ModulePayload) (string, error) {
 		return r.processor.HandleAddUserAction(msg)
 	},
-	UpdateUserAction: func(r *Receiver, msg data.ModulePayload) error {
+	UpdateUserAction: func(r *Receiver, msg data.ModulePayload) (string, error) {
 		return r.processor.HandleUpdateUserAction(msg)
 	},
-	RemoveUserAction: func(r *Receiver, msg data.ModulePayload) error {
+	RemoveUserAction: func(r *Receiver, msg data.ModulePayload) (string, error) {
 		return r.processor.HandleRemoveUserAction(msg)
 	},
-	DeleteUserAction: func(r *Receiver, msg data.ModulePayload) error {
+	DeleteUserAction: func(r *Receiver, msg data.ModulePayload) (string, error) {
 		return r.processor.HandleDeleteUserAction(msg)
 	},
-	VerifyUserAction: func(r *Receiver, msg data.ModulePayload) error {
+	VerifyUserAction: func(r *Receiver, msg data.ModulePayload) (string, error) {
 		return r.processor.HandleVerifyUserAction(msg)
 	},
-	RefreshModuleAction: func(r *Receiver, msg data.ModulePayload) error {
-		return r.worker.ProcessPermissions(context.Background())
+	RefreshModuleAction: func(r *Receiver, msg data.ModulePayload) (string, error) {
+		return r.worker.RefreshModule()
 	},
-	RefreshSubmoduleAction: func(r *Receiver, msg data.ModulePayload) error {
+	RefreshSubmoduleAction: func(r *Receiver, msg data.ModulePayload) (string, error) {
 		return r.worker.RefreshSubmodules(msg)
 	},
 }
@@ -115,7 +115,7 @@ func (r *Receiver) subscribeForTopic(ctx context.Context, topic string) error {
 	}
 }
 
-func (r *Receiver) HandleNewMessage(msg data.ModulePayload) error {
+func (r *Receiver) HandleNewMessage(msg data.ModulePayload) (string, error) {
 	r.log.Infof("handling message with id `%s`", msg.RequestId)
 
 	err := validation.Errors{
@@ -123,17 +123,18 @@ func (r *Receiver) HandleNewMessage(msg data.ModulePayload) error {
 	}.Filter()
 	if err != nil {
 		r.log.WithError(err).Error("no such action to handle for message with id `%s`", msg.RequestId)
-		return errors.New("no such action " + msg.Action + " to handle for message with id " + msg.RequestId)
+		return data.FAILURE, errors.New("no such action " + msg.Action + " to handle for message with id " + msg.RequestId)
 	}
 
 	requestHandler := handleActions[msg.Action]
-	if err = requestHandler(r, msg); err != nil {
+	requestStatus, err := requestHandler(r, msg)
+	if err != nil {
 		r.log.WithError(err).Errorf("failed to handle message with id `%s`", msg.RequestId)
-		return err
+		return requestStatus, err
 	}
 
 	r.log.Infof("finish handling message with id `%s`", msg.RequestId)
-	return nil
+	return requestStatus, nil
 }
 
 func (r *Receiver) processMessage(msg *message.Message) error {
@@ -147,20 +148,20 @@ func (r *Receiver) processMessage(msg *message.Message) error {
 	}
 	queueOutput.RequestId = msg.UUID
 
-	var responseStatus = "success"
-	var errMsg = ""
-	err = r.HandleNewMessage(queueOutput)
+	var errMsg *string = nil
+	requestStatus, err := r.HandleNewMessage(queueOutput)
 	if err != nil {
-		responseStatus = "failure"
-		errMsg = err.Error()
+		requestError := err.Error()
+		errMsg = &requestError
 		r.log.WithError(err).Error("failed to process message ", msg.UUID)
 	}
 
 	err = r.responseQ.Insert(data.Response{
-		ID:      msg.UUID,
-		Status:  responseStatus,
-		Error:   errMsg,
-		Payload: json.RawMessage(msg.Payload),
+		ID:          msg.UUID,
+		Status:      requestStatus,
+		Error:       errMsg,
+		Description: getDescription(requestStatus),
+		Payload:     json.RawMessage(msg.Payload),
 	})
 	if err != nil {
 		r.log.WithError(err).Errorf("failed to create response", msg.UUID)
@@ -169,4 +170,18 @@ func (r *Receiver) processMessage(msg *message.Message) error {
 
 	r.log.Info("finished processing message ", msg.UUID)
 	return nil
+}
+
+func getDescription(status string) *string {
+	switch status {
+	case data.FAILURE:
+		return nil
+	case data.SUCCESS:
+		return nil
+	case data.INVITED:
+		description := "Message with invite link was sent to user"
+		return &description
+	default:
+		return nil
+	}
 }

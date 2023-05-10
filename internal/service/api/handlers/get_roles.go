@@ -54,7 +54,7 @@ func GetRoles(w http.ResponseWriter, r *http.Request) {
 
 		if permission != nil {
 			Log(r).Warnf("user `%s`/`%s` is already in `%s`", username, phone, *request.Link)
-			ape.RenderErr(w, problems.NotFound())
+			ape.RenderErr(w, problems.Conflict())
 			return
 		}
 	}
@@ -101,7 +101,7 @@ func GetRoles(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if chatUser != nil {
-		ape.RenderErr(w, problems.NotFound())
+		ape.RenderErr(w, problems.Conflict())
 		return
 	}
 

@@ -156,7 +156,19 @@ func (w *Worker) removeOldPermissions(borderTime time.Time) error {
 	return nil
 }
 
-func (w *Worker) RefreshSubmodules(msg data.ModulePayload) error {
+func (w *Worker) RefreshModule() (string, error) {
+	w.logger.Infof("started refresh module")
+
+	err := w.ProcessPermissions(context.Background())
+	if err != nil {
+		return data.FAILURE, err
+	}
+
+	w.logger.Infof("finished refresh module")
+	return data.SUCCESS, nil
+}
+
+func (w *Worker) RefreshSubmodules(msg data.ModulePayload) (string, error) {
 	w.logger.Infof("started refresh submodules")
 
 	for _, link := range msg.Links {
@@ -165,13 +177,13 @@ func (w *Worker) RefreshSubmodules(msg data.ModulePayload) error {
 		err := w.createPermissions(link)
 		if err != nil {
 			w.logger.Infof("failed to create subs for link `%s", link)
-			return errors.Wrap(err, "failed to create subs")
+			return data.FAILURE, errors.Wrap(err, "failed to create subs")
 		}
 		w.logger.Infof("finished refreshing `%s`", link)
 	}
 
 	w.logger.Infof("finished refresh submodules")
-	return nil
+	return data.SUCCESS, nil
 }
 
 func (w *Worker) createPermissions(link string) error {
