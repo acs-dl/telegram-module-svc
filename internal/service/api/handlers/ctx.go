@@ -17,8 +17,8 @@ const (
 	permissionsCtxKey
 	usersCtxKey
 	linksCtxKey
-	paramsCtxKey
-	tgCtxKey
+	configCtxKey
+	parentContextCtxKey
 )
 
 func CtxLog(entry *logan.Entry) func(context.Context) context.Context {
@@ -29,16 +29,6 @@ func CtxLog(entry *logan.Entry) func(context.Context) context.Context {
 
 func Log(r *http.Request) *logan.Entry {
 	return r.Context().Value(logCtxKey).(*logan.Entry)
-}
-
-func CtxParams(entry *config.TelegramCfg) func(context.Context) context.Context {
-	return func(ctx context.Context) context.Context {
-		return context.WithValue(ctx, paramsCtxKey, entry)
-	}
-}
-
-func Params(r *http.Request) *config.TelegramCfg {
-	return r.Context().Value(paramsCtxKey).(*config.TelegramCfg)
 }
 
 func PermissionsQ(r *http.Request) data.Permissions {
@@ -68,5 +58,23 @@ func LinksQ(r *http.Request) data.Links {
 func CtxLinksQ(entry data.Links) func(context.Context) context.Context {
 	return func(ctx context.Context) context.Context {
 		return context.WithValue(ctx, linksCtxKey, entry)
+	}
+}
+
+func Config(ctx context.Context) config.Config {
+	return ctx.Value(configCtxKey).(config.Config)
+}
+
+func CtxConfig(entry config.Config, ctx context.Context) context.Context {
+	return context.WithValue(ctx, configCtxKey, entry)
+}
+
+func ParentContext(ctx context.Context) context.Context {
+	return ctx.Value(parentContextCtxKey).(context.Context)
+}
+
+func CtxParentContext(entry context.Context) func(context.Context) context.Context {
+	return func(ctx context.Context) context.Context {
+		return context.WithValue(ctx, parentContextCtxKey, entry)
 	}
 }

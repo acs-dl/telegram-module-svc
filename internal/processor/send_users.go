@@ -23,7 +23,6 @@ func (p *processor) sendUsers(uuid string, users []data.User) error {
 			p.log.WithError(err).Errorf("failed to select permissions by date `%s`", users[i].CreatedAt.String())
 			return errors.Wrap(err, "failed to select permissions by date")
 		}
-		p.resetFilters()
 
 		if permission == nil {
 			continue
@@ -47,7 +46,7 @@ func (p *processor) sendUsers(uuid string, users []data.User) error {
 		return errors.Wrap(err, "failed to publish users to `telegram-module`")
 	}
 
-	p.log.Infof("successfully published users to `telegram-module`")
+	p.log.Infof("successfully published users to `unverified-svc`")
 	return nil
 }
 
@@ -67,12 +66,11 @@ func (p *processor) SendDeleteUser(uuid string, user data.User) error {
 
 	err = p.sender.SendMessageToCustomChannel(data.UnverifiedService, p.buildMessage(uuid, marshaledPayload))
 	if err != nil {
-		p.log.WithError(err).Errorf("failed to publish users to `telegram-module`")
-		return errors.Wrap(err, "failed to publish users to `telegram-module`")
+		p.log.WithError(err).Errorf("failed to publish users to `unverified-svc`")
+		return errors.Wrap(err, "failed to publish users to `unverified-svc`")
 	}
 
-	p.resetFilters()
-	p.log.Infof("successfully published users to `telegram-module`")
+	p.log.Infof("successfully published users to `unverified-svc`")
 	return nil
 }
 
@@ -85,14 +83,15 @@ func (p *processor) buildMessage(uuid string, payload []byte) *message.Message {
 }
 
 func createUnverifiedUserFromModuleUser(user data.User, submodule string) data.UnverifiedUser {
+	fullName := user.FirstName + " " + user.LastName
 	return data.UnverifiedUser{
 		CreatedAt: user.CreatedAt,
 		Module:    data.ModuleName,
 		Submodule: submodule,
 		ModuleId:  fmt.Sprintf("%d", user.TelegramId),
 		Email:     nil,
-		Name:      nil,
-		Phone:     nil,
+		Name:      &fullName,
+		Phone:     user.Phone,
 		Username:  user.Username,
 	}
 }

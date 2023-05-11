@@ -8,18 +8,20 @@ import (
 )
 
 func NewUserModel(user data.User, id int) resources.User {
+	userAccessLevel := data.Roles[user.AccessLevel]
 	result := resources.User{
 		Key: resources.Key{
 			ID:   strconv.Itoa(id),
 			Type: resources.USER,
 		},
 		Attributes: resources.UserAttributes{
-			UserId:    user.Id,
-			Username:  user.Username,
-			Phone:     user.Phone,
-			Module:    data.ModuleName,
-			CreatedAt: &user.CreatedAt,
-			Submodule: user.Submodule,
+			UserId:      user.Id,
+			Username:    user.Username,
+			Phone:       user.Phone,
+			Module:      data.ModuleName,
+			CreatedAt:   &user.CreatedAt,
+			Submodule:   user.Submodule,
+			AccessLevel: &userAccessLevel,
 		},
 	}
 

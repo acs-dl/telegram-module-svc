@@ -2,10 +2,16 @@ package sender
 
 import (
 	"context"
-
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/config"
 )
 
-func Run(ctx context.Context, cfg config.Config) {
-	NewSender(cfg).Run(ctx)
+func SenderInstance(ctx context.Context) *Sender {
+	return ctx.Value(ServiceName).(*Sender)
+}
+
+func CtxSenderInstance(entry interface{}, ctx context.Context) context.Context {
+	return context.WithValue(ctx, ServiceName, entry)
+}
+
+func RunSenderAsInterface(structure interface{}, ctx context.Context) {
+	(structure.(*Sender)).Run(ctx)
 }

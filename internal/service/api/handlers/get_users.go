@@ -3,9 +3,11 @@ package handlers
 import (
 	"net/http"
 
+	"gitlab.com/distributed_lab/acs/telegram-module/internal/helpers"
+	"gitlab.com/distributed_lab/acs/telegram-module/internal/pqueue"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/service/api/models"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/service/api/requests"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/tg"
+	"gitlab.com/distributed_lab/acs/telegram-module/internal/tg_client"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
 )
@@ -35,9 +37,12 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	users, err = tg.NewTg(Params(r), Log(r)).SearchByFromApi(request.Username, request.Phone, 10)
+	pq := pqueue.PQueuesInstance(ParentContext(r.Context())).SuperUserPQueue
+	tgClient := tg_client.TelegramClientInstance(ParentContext(r.Context()))
+
+	users, err = helpers.GetUsers(pq, tgClient.SearchByFromApi, []any{any(request.Username), any(request.Phone), any(10)}, pqueue.HighPriority)
 	if err != nil {
-		Log(r).WithError(err).Infof("failed to get users from api by `%s`", username)
+		Log(r).WithError(err).Errorf("failed to get chat user from api")
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}

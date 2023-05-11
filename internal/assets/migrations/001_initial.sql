@@ -6,6 +6,7 @@ create table if not exists responses (
     id uuid primary key,
     status text not null,
     error text,
+    description text,
     payload jsonb,
     created_at timestamp without time zone not null default current_timestamp
 );
@@ -19,7 +20,7 @@ create table if not exists users (
     last_name text not null,
     phone text unique,
     updated_at timestamp with time zone not null default current_timestamp,
-    created_at timestamp with time zone default current_timestamp
+    created_at timestamp with time zone not null default current_timestamp
 );
 
 create index if not exists users_id_idx on users(id);
@@ -31,20 +32,16 @@ create table if not exists links (
     link text not null,
     unique(link)
 );
-insert into links (link) values ('HELP TG API');
-insert into links (link) values ('WE vs. ACS');
-insert into links (link) values ('Messenger Internal');
-insert into links (link) values ('DL / Make TokenE even better');
 
 create index if not exists links_link_idx on links(link);
 
 create table if not exists permissions (
     request_id text not null,
-    telegram_id int not null,
+    telegram_id bigint not null,
     link text not null,
     access_level telegram_access_levels_enum not null,
-    created_at timestamp without time zone not null,
-    updated_at timestamp without time zone not null default current_timestamp,
+    created_at timestamp with time zone not null default current_timestamp,
+    updated_at timestamp with time zone not null default current_timestamp,
 
     unique (telegram_id, link),
     foreign key(telegram_id) references users(telegram_id) on delete cascade on update cascade,

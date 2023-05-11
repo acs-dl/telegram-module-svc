@@ -5,7 +5,12 @@ import (
 	"time"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
+	"github.com/gotd/td/tg"
+	"github.com/gotd/td/tgerr"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
+	"gitlab.com/distributed_lab/acs/telegram-module/internal/helpers"
+	"gitlab.com/distributed_lab/acs/telegram-module/internal/pqueue"
+	"gitlab.com/distributed_lab/acs/telegram-module/internal/tg_client"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 )
 
@@ -21,36 +26,29 @@ func (p *processor) validateAddUser(msg data.ModulePayload) error {
 	}.Filter()
 }
 
-func (p *processor) handleAddUserAction(msg data.ModulePayload) error {
+func (p *processor) HandleAddUserAction(msg data.ModulePayload) (string, error) {
 	p.log.Infof("start handle message action with id `%s`", msg.RequestId)
 
 	err := p.validateAddUser(msg)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to validate fields for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "failed to validate fields")
+		return data.FAILURE, errors.Wrap(err, "failed to validate fields")
 	}
 
 	userId, err := strconv.ParseInt(msg.UserId, 10, 64)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to parse user id `%s` for message action with id `%s`", msg.UserId, msg.RequestId)
-		return errors.Wrap(err, "failed to parse user id")
+		return data.FAILURE, errors.Wrap(err, "failed to parse user id")
 	}
 
-	err = p.telegramClient.AddUserInChatFromApi(msg.Username, msg.Phone, msg.Link)
+	requestStatus, user, err := p.addUser(msg.Username, msg.Phone, msg.Link)
 	if err != nil {
-		p.log.WithError(err).Errorf("failed to add user from API for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "failed to add user from api")
+		p.log.WithError(err).Errorf("failed to add user for message action with id `%s`", msg.RequestId)
+		return data.FAILURE, errors.Wrap(err, "failed to add user")
 	}
 
-	user, err := p.telegramClient.GetChatUserFromApi(msg.Username, msg.Phone, msg.Link)
-	if err != nil {
-		p.log.WithError(err).Errorf("failed to get chat user from API for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "failed to get chat user from api")
-	}
-	if user == nil {
-		p.log.WithError(err).Errorf("something wrong with user from api for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "something wrong with user from api")
-	}
+	//when we add user is always member
+	user.AccessLevel = data.Member
 	user.CreatedAt = time.Now()
 	user.Id = &userId
 
@@ -75,7 +73,7 @@ func (p *processor) handleAddUserAction(msg data.ModulePayload) error {
 	})
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to make add user transaction for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "failed to make add user transaction")
+		return data.FAILURE, errors.Wrap(err, "failed to make add user transaction")
 	}
 
 	err = p.sendUpdateUserTelegram(msg.RequestId, data.ModulePayload{
@@ -87,21 +85,99 @@ func (p *processor) handleAddUserAction(msg data.ModulePayload) error {
 	})
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to publish users for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "failed to publish users")
+		return data.FAILURE, errors.Wrap(err, "failed to publish users")
 	}
 
 	err = p.SendDeleteUser(msg.RequestId, *user)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to publish users for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "failed to publish users")
+		return data.FAILURE, errors.Wrap(err, "failed to publish users")
 	}
 
-	p.resetFilters()
 	p.log.Infof("finish handle message action with id `%s`", msg.RequestId)
-	return nil
+	return requestStatus, nil
 }
 
-func (p *processor) resetFilters() {
-	p.usersQ = p.usersQ.New()
-	p.permissionsQ = p.permissionsQ.New()
+func (p *processor) addUser(username, phone *string, link string) (string, *data.User, error) {
+	user, err := helpers.GetUser(p.pqueues.UserPQueue,
+		any(p.telegramClient.GetUserFromApi),
+		[]any{
+			any(p.telegramClient.GetSuperClient()),
+			any(username),
+			any(phone),
+		},
+		pqueue.NormalPriority,
+	)
+	if err != nil {
+		return data.FAILURE, nil, errors.Wrap(err, "failed to get user from api")
+	}
+
+	if user == nil {
+		return data.FAILURE, nil, errors.New("no user was found")
+	}
+
+	chat, err := helpers.GetChat(p.pqueues.SuperUserPQueue, any(p.telegramClient.GetChatFromApi), []any{any(link)}, pqueue.NormalPriority)
+	if err != nil {
+		return data.FAILURE, nil, errors.Wrap(err, "failed to get chat from api")
+	}
+
+	if chat == nil {
+		return data.FAILURE, nil, errors.New("no chat was found")
+	}
+
+	err = helpers.GetRequestError(p.pqueues.SuperUserPQueue, any(p.telegramClient.AddUserInChatFromApi), []any{any(*user), any(*chat)}, pqueue.NormalPriority)
+	if err == nil {
+		return data.SUCCESS, user, nil
+	}
+
+	if !tgerr.Is(err, tg.ErrUserNotMutualContact, tg.ErrUserPrivacyRestricted) {
+		return data.FAILURE, nil, errors.Wrap(err, "failed to add user in chat from api")
+	}
+
+	err = p.sendInviteMessage(link, *user, *chat)
+	if err != nil {
+		return data.FAILURE, nil, errors.Wrap(err, "failed to send invite in chat from api")
+	}
+
+	return data.INVITED, user, nil
+}
+func (p *processor) sendInviteMessage(link string, user data.User, chat tg_client.Chat) error {
+	inviteLink, err := helpers.GetString(
+		p.pqueues.SuperUserPQueue,
+		any(p.telegramClient.GenerateChatLinkFromApi),
+		[]any{any(chat)}, pqueue.NormalPriority)
+	if err != nil {
+		return err
+	}
+
+	var userName string
+	switch {
+	case len(user.FirstName+user.LastName) != 0:
+		userName = user.FirstName + " " + user.LastName
+	case user.Username != nil:
+		userName = *user.Username
+	case user.Phone != nil:
+		userName = *user.Phone
+	default:
+		p.log.Warnf("failed to get user name")
+		userName = "from ACS"
+	}
+
+	err = helpers.GetRequestError(p.pqueues.SuperUserPQueue, any(p.telegramClient.SendMessageFromApi),
+		[]any{
+			any(data.MessageInfo{
+				Data: map[string]interface{}{
+					"Name":       userName,
+					"GroupName":  link,
+					"InviteLink": inviteLink,
+				},
+				MessageTemplate: data.InviteMessageTemplate,
+				User:            user,
+			}),
+		}, pqueue.NormalPriority)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

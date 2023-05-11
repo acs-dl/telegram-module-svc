@@ -2,10 +2,16 @@ package worker
 
 import (
 	"context"
-
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/config"
 )
 
-func Run(ctx context.Context, cfg config.Config) {
-	NewWorker(cfg, ctx).Run(ctx)
+func WorkerInstance(ctx context.Context) *Worker {
+	return ctx.Value(ServiceName).(*Worker)
+}
+
+func CtxWorkerInstance(entry interface{}, ctx context.Context) context.Context {
+	return context.WithValue(ctx, ServiceName, entry)
+}
+
+func RunWorkerAsInterface(structure interface{}, ctx context.Context) {
+	(structure.(IWorker)).Run(ctx)
 }

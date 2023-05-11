@@ -33,3 +33,7 @@ allOf:
             type: string
             description: submodule name
             example: "WE vs. ACS"
+          access_level:
+            type: string
+            description: submodule access level
+            example: "push"

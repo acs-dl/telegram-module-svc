@@ -9,6 +9,8 @@ import (
 )
 
 type UserAttributes struct {
+	// submodule access level
+	AccessLevel *string `json:"access_level,omitempty"`
 	// timestamp without timezone when user was created
 	CreatedAt *time.Time `json:"created_at,omitempty"`
 	// module name

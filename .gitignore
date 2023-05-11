@@ -6,4 +6,5 @@ docs/web_deploy
 docker-compose.yml
 telegram-module
 /public
-session.json
+super_session.json
+usual_session.json

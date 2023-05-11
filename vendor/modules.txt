@@ -1,4 +1,4 @@
-# github.com/Masterminds/squirrel v1.5.3
+# github.com/Masterminds/squirrel v1.5.4
 ## explicit; go 1.14
 github.com/Masterminds/squirrel
 # github.com/ThreeDotsLabs/watermill v1.2.0
@@ -23,7 +23,10 @@ github.com/alecthomas/units
 # github.com/cenkalti/backoff/v3 v3.2.2
 ## explicit; go 1.12
 github.com/cenkalti/backoff/v3
-# github.com/certifi/gocertifi v0.0.0-20200211180108-c7c1fbc02894
+# github.com/cenkalti/backoff/v4 v4.2.1
+## explicit; go 1.18
+github.com/cenkalti/backoff/v4
+# github.com/certifi/gocertifi v0.0.0-20210507211836-431795d63e8d
 ## explicit; go 1.12
 github.com/certifi/gocertifi
 # github.com/fatih/structs v1.1.0
@@ -32,37 +35,111 @@ github.com/fatih/structs
 # github.com/fatih/structtag v1.2.0
 ## explicit; go 1.12
 github.com/fatih/structtag
-# github.com/fsnotify/fsnotify v1.4.9
-## explicit; go 1.13
+# github.com/fsnotify/fsnotify v1.6.0
+## explicit; go 1.16
 github.com/fsnotify/fsnotify
 # github.com/getsentry/raven-go v0.2.0
 ## explicit
 github.com/getsentry/raven-go
-# github.com/getsentry/sentry-go v0.7.0
-## explicit; go 1.12
+# github.com/getsentry/sentry-go v0.20.0
+## explicit; go 1.18
 github.com/getsentry/sentry-go
+github.com/getsentry/sentry-go/internal/debug
+github.com/getsentry/sentry-go/internal/otel/baggage
+github.com/getsentry/sentry-go/internal/otel/baggage/internal/baggage
+github.com/getsentry/sentry-go/internal/ratelimit
 # github.com/go-chi/chi v4.1.2+incompatible
 ## explicit
 github.com/go-chi/chi
 github.com/go-chi/chi/middleware
-# github.com/go-gorp/gorp/v3 v3.0.5
+# github.com/go-faster/errors v0.6.1
+## explicit; go 1.18
+github.com/go-faster/errors
+# github.com/go-faster/jx v1.0.0
+## explicit; go 1.18
+github.com/go-faster/jx
+github.com/go-faster/jx/internal/byteseq
+# github.com/go-faster/xor v1.0.0
+## explicit; go 1.15
+github.com/go-faster/xor
+# github.com/go-gorp/gorp/v3 v3.1.0
 ## explicit; go 1.18
 github.com/go-gorp/gorp/v3
 # github.com/go-ozzo/ozzo-validation v3.6.0+incompatible
 ## explicit
 github.com/go-ozzo/ozzo-validation
-# github.com/go-ozzo/ozzo-validation/v4 v4.2.1
+# github.com/go-ozzo/ozzo-validation/v4 v4.3.0
 ## explicit; go 1.13
 github.com/go-ozzo/ozzo-validation/v4
 # github.com/golang-jwt/jwt v3.2.2+incompatible
 ## explicit
 github.com/golang-jwt/jwt
-# github.com/google/jsonapi v0.0.0-20200226002910-c8283f632fb7
+# github.com/google/jsonapi v1.0.0
 ## explicit
 github.com/google/jsonapi
 # github.com/google/uuid v1.3.0
 ## explicit
 github.com/google/uuid
+# github.com/gotd/contrib v0.16.0
+## explicit; go 1.20
+github.com/gotd/contrib/bg
+# github.com/gotd/ige v0.2.2
+## explicit; go 1.15
+github.com/gotd/ige
+# github.com/gotd/neo v0.1.5
+## explicit; go 1.12
+github.com/gotd/neo
+# github.com/gotd/td v0.80.0
+## explicit; go 1.19
+github.com/gotd/td/bin
+github.com/gotd/td/clock
+github.com/gotd/td/constant
+github.com/gotd/td/internal/ascii
+github.com/gotd/td/internal/crypto
+github.com/gotd/td/internal/crypto/srp
+github.com/gotd/td/internal/exchange
+github.com/gotd/td/internal/mt
+github.com/gotd/td/internal/mtproto
+github.com/gotd/td/internal/mtproto/salts
+github.com/gotd/td/internal/mtproxy
+github.com/gotd/td/internal/mtproxy/faketls
+github.com/gotd/td/internal/mtproxy/obfuscated2
+github.com/gotd/td/internal/mtproxy/obfuscator
+github.com/gotd/td/internal/pool
+github.com/gotd/td/internal/proto
+github.com/gotd/td/internal/proto/codec
+github.com/gotd/td/internal/rpc
+github.com/gotd/td/internal/syncio
+github.com/gotd/td/internal/tdsync
+github.com/gotd/td/internal/testutil
+github.com/gotd/td/internal/tmap
+github.com/gotd/td/internal/wsutil
+github.com/gotd/td/oteltg
+github.com/gotd/td/session
+github.com/gotd/td/session/tdesktop
+github.com/gotd/td/tdjson
+github.com/gotd/td/tdp
+github.com/gotd/td/telegram
+github.com/gotd/td/telegram/auth
+github.com/gotd/td/telegram/auth/qrlogin
+github.com/gotd/td/telegram/dcs
+github.com/gotd/td/telegram/internal/deeplink
+github.com/gotd/td/telegram/internal/manager
+github.com/gotd/td/telegram/internal/upconv
+github.com/gotd/td/telegram/internal/version
+github.com/gotd/td/telegram/message
+github.com/gotd/td/telegram/message/entity
+github.com/gotd/td/telegram/message/html
+github.com/gotd/td/telegram/message/inline
+github.com/gotd/td/telegram/message/markup
+github.com/gotd/td/telegram/message/peer
+github.com/gotd/td/telegram/message/styling
+github.com/gotd/td/telegram/peers
+github.com/gotd/td/telegram/uploader
+github.com/gotd/td/telegram/uploader/source
+github.com/gotd/td/tg
+github.com/gotd/td/tgerr
+github.com/gotd/td/transport
 # github.com/hashicorp/errwrap v1.1.0
 ## explicit
 github.com/hashicorp/errwrap
@@ -81,20 +158,24 @@ github.com/hashicorp/hcl/hcl/token
 github.com/hashicorp/hcl/json/parser
 github.com/hashicorp/hcl/json/scanner
 github.com/hashicorp/hcl/json/token
-# github.com/jmoiron/sqlx v1.2.0
-## explicit
+# github.com/jmoiron/sqlx v1.3.5
+## explicit; go 1.10
 github.com/jmoiron/sqlx
 github.com/jmoiron/sqlx/reflectx
 # github.com/k0kubun/pp v3.0.1+incompatible
 ## explicit
 github.com/k0kubun/pp
+# github.com/klauspost/compress v1.16.5
+## explicit; go 1.18
+github.com/klauspost/compress/flate
+github.com/klauspost/compress/gzip
 # github.com/lann/builder v0.0.0-20180802200727-47ae307949d0
 ## explicit
 github.com/lann/builder
 # github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0
 ## explicit
 github.com/lann/ps
-# github.com/lib/pq v1.10.7
+# github.com/lib/pq v1.10.8
 ## explicit; go 1.13
 github.com/lib/pq
 github.com/lib/pq/oid
@@ -102,40 +183,54 @@ github.com/lib/pq/scram
 # github.com/lithammer/shortuuid/v3 v3.0.7
 ## explicit; go 1.13
 github.com/lithammer/shortuuid/v3
-# github.com/magiconair/properties v1.8.5
-## explicit; go 1.13
+# github.com/magiconair/properties v1.8.7
+## explicit; go 1.19
 github.com/magiconair/properties
 # github.com/mattn/go-colorable v0.1.13
 ## explicit; go 1.15
 github.com/mattn/go-colorable
-# github.com/mattn/go-isatty v0.0.17
+# github.com/mattn/go-isatty v0.0.18
 ## explicit; go 1.15
 github.com/mattn/go-isatty
-# github.com/mitchellh/mapstructure v1.4.1
+# github.com/mitchellh/mapstructure v1.5.0
 ## explicit; go 1.14
 github.com/mitchellh/mapstructure
 # github.com/oklog/ulid v1.3.1
 ## explicit
 github.com/oklog/ulid
-# github.com/pelletier/go-toml v1.9.3
-## explicit; go 1.12
-github.com/pelletier/go-toml
+# github.com/pelletier/go-toml/v2 v2.0.7
+## explicit; go 1.16
+github.com/pelletier/go-toml/v2
+github.com/pelletier/go-toml/v2/internal/characters
+github.com/pelletier/go-toml/v2/internal/danger
+github.com/pelletier/go-toml/v2/internal/tracker
+github.com/pelletier/go-toml/v2/unstable
 # github.com/pkg/errors v0.9.1
 ## explicit
 github.com/pkg/errors
-# github.com/rabbitmq/amqp091-go v1.2.0
-## explicit; go 1.15
+# github.com/rabbitmq/amqp091-go v1.8.0
+## explicit; go 1.16
 github.com/rabbitmq/amqp091-go
-# github.com/rubenv/sql-migrate v1.3.1
+# github.com/rubenv/sql-migrate v1.4.0
 ## explicit; go 1.16
 github.com/rubenv/sql-migrate
 github.com/rubenv/sql-migrate/sqlparse
-# github.com/sirupsen/logrus v1.8.1
+# github.com/segmentio/asm v1.2.0
+## explicit; go 1.18
+github.com/segmentio/asm/base64
+github.com/segmentio/asm/cpu
+github.com/segmentio/asm/cpu/arm
+github.com/segmentio/asm/cpu/arm64
+github.com/segmentio/asm/cpu/cpuid
+github.com/segmentio/asm/cpu/x86
+github.com/segmentio/asm/internal/unsafebytes
+# github.com/sirupsen/logrus v1.9.0
 ## explicit; go 1.13
 github.com/sirupsen/logrus
-# github.com/spf13/afero v1.6.0
-## explicit; go 1.13
+# github.com/spf13/afero v1.9.5
+## explicit; go 1.16
 github.com/spf13/afero
+github.com/spf13/afero/internal/common
 github.com/spf13/afero/mem
 # github.com/spf13/cast v1.5.0
 ## explicit; go 1.18
@@ -146,30 +241,42 @@ github.com/spf13/jwalterweatherman
 # github.com/spf13/pflag v1.0.5
 ## explicit; go 1.12
 github.com/spf13/pflag
-# github.com/spf13/viper v1.8.1
-## explicit; go 1.12
+# github.com/spf13/viper v1.15.0
+## explicit; go 1.17
 github.com/spf13/viper
-# github.com/subosito/gotenv v1.2.0
-## explicit
+github.com/spf13/viper/internal/encoding
+github.com/spf13/viper/internal/encoding/dotenv
+github.com/spf13/viper/internal/encoding/hcl
+github.com/spf13/viper/internal/encoding/ini
+github.com/spf13/viper/internal/encoding/javaproperties
+github.com/spf13/viper/internal/encoding/json
+github.com/spf13/viper/internal/encoding/toml
+github.com/spf13/viper/internal/encoding/yaml
+# github.com/subosito/gotenv v1.4.2
+## explicit; go 1.18
 github.com/subosito/gotenv
 # github.com/xelaj/errs v0.0.0-20200831133608-d1c11863e019
 ## explicit
 github.com/xelaj/errs
-# github.com/xelaj/go-dry v0.0.0-20201104165138-61a25872c05a
+# github.com/xelaj/go-dry v0.0.0-20210621215431-21c77821487c
 ## explicit; go 1.13
 github.com/xelaj/go-dry
-# github.com/xelaj/mtproto v1.0.0
+github.com/xelaj/go-dry/ioutil
+github.com/xelaj/go-dry/slices
+github.com/xelaj/go-dry/timeutil
+# github.com/xelaj/mtproto v1.0.1-0.20220603191734-d93f9ab1f9b4
 ## explicit; go 1.13
 github.com/xelaj/mtproto
 github.com/xelaj/mtproto/internal/aes_ige
 github.com/xelaj/mtproto/internal/encoding/tl
 github.com/xelaj/mtproto/internal/keys
+github.com/xelaj/mtproto/internal/math
+github.com/xelaj/mtproto/internal/mode
 github.com/xelaj/mtproto/internal/mtproto/messages
 github.com/xelaj/mtproto/internal/mtproto/objects
+github.com/xelaj/mtproto/internal/session
+github.com/xelaj/mtproto/internal/transport
 github.com/xelaj/mtproto/internal/utils
-github.com/xelaj/mtproto/telegram
-github.com/xelaj/mtproto/telegram/internal/calls
-github.com/xelaj/mtproto/telegram/internal/srp
 # gitlab.com/distributed_lab/acs/auth v0.0.0-20230309115252-2c1f9e1d211a
 ## explicit; go 1.19
 gitlab.com/distributed_lab/acs/auth/internal/data
@@ -182,7 +289,7 @@ gitlab.com/distributed_lab/ape/problems
 # gitlab.com/distributed_lab/figure v2.1.2+incompatible
 ## explicit
 gitlab.com/distributed_lab/figure
-# gitlab.com/distributed_lab/kit v1.11.1
+# gitlab.com/distributed_lab/kit v1.11.2
 ## explicit; go 1.14
 gitlab.com/distributed_lab/kit/comfig
 gitlab.com/distributed_lab/kit/copus
@@ -199,10 +306,10 @@ gitlab.com/distributed_lab/logan/v3
 gitlab.com/distributed_lab/logan/v3/errors
 gitlab.com/distributed_lab/logan/v3/fields
 gitlab.com/distributed_lab/logan/v3/hook/sentry
-# gitlab.com/distributed_lab/lorem v0.2.0
+# gitlab.com/distributed_lab/lorem v0.2.1
 ## explicit
 gitlab.com/distributed_lab/lorem
-# gitlab.com/distributed_lab/running v0.0.0-20200706131153-4af0e83eb96c
+# gitlab.com/distributed_lab/running v1.6.0
 ## explicit
 gitlab.com/distributed_lab/running
 # gitlab.com/distributed_lab/urlval v3.0.0+incompatible
@@ -210,23 +317,77 @@ gitlab.com/distributed_lab/running
 gitlab.com/distributed_lab/urlval
 gitlab.com/distributed_lab/urlval/internal
 gitlab.com/distributed_lab/urlval/internal/betterreflect
-# golang.org/x/crypto v0.5.0
+# go.opentelemetry.io/otel v1.14.0
+## explicit; go 1.18
+go.opentelemetry.io/otel/attribute
+go.opentelemetry.io/otel/codes
+go.opentelemetry.io/otel/internal
+go.opentelemetry.io/otel/internal/attribute
+# go.opentelemetry.io/otel/trace v1.14.0
+## explicit; go 1.18
+go.opentelemetry.io/otel/trace
+# go.uber.org/atomic v1.10.0
+## explicit; go 1.18
+go.uber.org/atomic
+# go.uber.org/multierr v1.11.0
+## explicit; go 1.19
+go.uber.org/multierr
+# go.uber.org/zap v1.24.0
+## explicit; go 1.19
+go.uber.org/zap
+go.uber.org/zap/buffer
+go.uber.org/zap/internal
+go.uber.org/zap/internal/bufferpool
+go.uber.org/zap/internal/color
+go.uber.org/zap/internal/exit
+go.uber.org/zap/zapcore
+# golang.org/x/crypto v0.8.0
 ## explicit; go 1.17
 golang.org/x/crypto/pbkdf2
 golang.org/x/crypto/sha3
-# golang.org/x/sys v0.4.0
+# golang.org/x/net v0.9.0
+## explicit; go 1.17
+golang.org/x/net/html
+golang.org/x/net/html/atom
+golang.org/x/net/internal/socks
+golang.org/x/net/proxy
+# golang.org/x/sync v0.1.0
+## explicit
+golang.org/x/sync/errgroup
+golang.org/x/sync/singleflight
+# golang.org/x/sys v0.7.0
 ## explicit; go 1.17
 golang.org/x/sys/cpu
+golang.org/x/sys/execabs
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
 golang.org/x/sys/windows
-# golang.org/x/text v0.6.0
+# golang.org/x/text v0.9.0
 ## explicit; go 1.17
+golang.org/x/text/cases
+golang.org/x/text/internal
+golang.org/x/text/internal/language
+golang.org/x/text/internal/language/compact
+golang.org/x/text/internal/tag
+golang.org/x/text/language
+golang.org/x/text/runes
 golang.org/x/text/transform
 golang.org/x/text/unicode/norm
-# gopkg.in/ini.v1 v1.62.0
+# gopkg.in/ini.v1 v1.67.0
 ## explicit
 gopkg.in/ini.v1
-# gopkg.in/yaml.v2 v2.4.0
-## explicit; go 1.15
-gopkg.in/yaml.v2
+# gopkg.in/yaml.v3 v3.0.1
+## explicit
+gopkg.in/yaml.v3
+# nhooyr.io/websocket v1.8.7
+## explicit; go 1.13
+nhooyr.io/websocket
+nhooyr.io/websocket/internal/bpool
+nhooyr.io/websocket/internal/errd
+nhooyr.io/websocket/internal/wsjs
+nhooyr.io/websocket/internal/xsync
+# rsc.io/qr v0.2.0
+## explicit
+rsc.io/qr
+rsc.io/qr/coding
+rsc.io/qr/gf256
