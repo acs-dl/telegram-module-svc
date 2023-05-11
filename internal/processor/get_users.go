@@ -16,7 +16,7 @@ func (p *processor) validateGetUsers(msg data.ModulePayload) error {
 	}.Filter()
 }
 
-func (p *processor) handleGetUsersAction(msg data.ModulePayload) error {
+func (p *processor) HandleGetUsersAction(msg data.ModulePayload) error {
 	p.log.Infof("start handle message action with id `%s`", msg.RequestId)
 
 	err := p.validateGetUsers(msg)
@@ -25,7 +25,7 @@ func (p *processor) handleGetUsersAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to validate fields")
 	}
 
-	chat, err := helpers.GetChat(p.pqueues.SuperPQueue, any(p.telegramClient.GetChatFromApi), []any{any(msg.Link)}, pqueue.LowPriority)
+	chat, err := helpers.GetChat(p.pqueues.SuperUserPQueue, any(p.telegramClient.GetChatFromApi), []any{any(msg.Link)}, pqueue.LowPriority)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to get chat from api for message action with id `%s`", msg.RequestId)
 		return errors.Wrap(err, "failed to get chat from api")
@@ -36,7 +36,7 @@ func (p *processor) handleGetUsersAction(msg data.ModulePayload) error {
 		return errors.New("no chat was found")
 	}
 
-	users, err := helpers.GetUsers(p.pqueues.SuperPQueue, any(p.telegramClient.GetChatUsersFromApi), []any{any(*chat)}, pqueue.LowPriority)
+	users, err := helpers.GetUsers(p.pqueues.SuperUserPQueue, any(p.telegramClient.GetChatUsersFromApi), []any{any(*chat)}, pqueue.LowPriority)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to get users from API for message action with id `%s`", msg.RequestId)
 		return errors.Wrap(err, "some error while getting users from api")
@@ -91,7 +91,6 @@ func (p *processor) handleGetUsersAction(msg data.ModulePayload) error {
 		return errors.Wrap(err, "failed to publish users")
 	}
 
-	p.resetFilters()
 	p.log.Infof("finish handle message action with id `%s`", msg.RequestId)
 	return nil
 }

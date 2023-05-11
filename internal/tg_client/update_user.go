@@ -16,15 +16,12 @@ func (t *tgInfo) UpdateUserInChatFromApi(chatUser data.User, chat Chat) error {
 	if err != nil {
 		if pkgErrors.Is(err, syscall.EPIPE) {
 			cl := NewTgAsInterface(t.cfg, t.ctx).(TelegramClient)
-			t.superClient = cl.GetTg().superClient
+			t.superUserClient = cl.GetTg().superUserClient
 			return t.UpdateUserInChatFromApi(chatUser, chat)
 		}
 
-		if tgerr.IsCode(err, 420) {
-			duration, ok := tgerr.AsFloodWait(err)
-			if !ok {
-				return errors.New("failed to convert flood error")
-			}
+		duration, isFlood := tgerr.AsFloodWait(err)
+		if isFlood {
 			t.log.Warnf("we need to wait `%s`", duration)
 			time.Sleep(duration)
 			return t.UpdateUserInChatFromApi(chatUser, chat)
@@ -78,7 +75,7 @@ func (t *tgInfo) updateUserFlow(chatUser data.User, chat Chat) error {
 
 func (t *tgInfo) updateMemberToAdmin(user *tg.InputUser, id int64, hashID *int64) error {
 	if hashID != nil {
-		_, err := t.superClient.API().ChannelsEditAdmin(t.ctx, &tg.ChannelsEditAdminRequest{
+		_, err := t.superUserClient.API().ChannelsEditAdmin(t.ctx, &tg.ChannelsEditAdminRequest{
 			Channel: &tg.InputChannel{ChannelID: id, AccessHash: *hashID},
 			UserID:  user,
 			AdminRights: tg.ChatAdminRights{
@@ -99,7 +96,7 @@ func (t *tgInfo) updateMemberToAdmin(user *tg.InputUser, id int64, hashID *int64
 			return err
 		}
 	} else {
-		_, err := t.superClient.API().MessagesEditChatAdmin(t.ctx, &tg.MessagesEditChatAdminRequest{
+		_, err := t.superUserClient.API().MessagesEditChatAdmin(t.ctx, &tg.MessagesEditChatAdminRequest{
 			ChatID:  id,
 			UserID:  user,
 			IsAdmin: true,
@@ -115,7 +112,7 @@ func (t *tgInfo) updateMemberToAdmin(user *tg.InputUser, id int64, hashID *int64
 
 func (t *tgInfo) updateAdminToMember(user *tg.InputUser, id int64, hashID *int64) error {
 	if hashID != nil {
-		_, err := t.superClient.API().ChannelsEditAdmin(t.ctx, &tg.ChannelsEditAdminRequest{
+		_, err := t.superUserClient.API().ChannelsEditAdmin(t.ctx, &tg.ChannelsEditAdminRequest{
 			Channel: &tg.InputChannel{ChannelID: id, AccessHash: *hashID},
 			UserID:  user,
 			AdminRights: tg.ChatAdminRights{
@@ -136,7 +133,7 @@ func (t *tgInfo) updateAdminToMember(user *tg.InputUser, id int64, hashID *int64
 			return err
 		}
 	} else {
-		_, err := t.superClient.API().MessagesEditChatAdmin(t.ctx, &tg.MessagesEditChatAdminRequest{
+		_, err := t.superUserClient.API().MessagesEditChatAdmin(t.ctx, &tg.MessagesEditChatAdminRequest{
 			ChatID:  id,
 			UserID:  user,
 			IsAdmin: false,

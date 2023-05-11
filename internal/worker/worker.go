@@ -4,8 +4,8 @@ import (
 	"context"
 )
 
-func WorkerInstance(ctx context.Context) *worker {
-	return ctx.Value(ServiceName).(*worker)
+func WorkerInstance(ctx context.Context) *Worker {
+	return ctx.Value(ServiceName).(*Worker)
 }
 
 func CtxWorkerInstance(entry interface{}, ctx context.Context) context.Context {
@@ -13,5 +13,5 @@ func CtxWorkerInstance(entry interface{}, ctx context.Context) context.Context {
 }
 
 func RunWorkerAsInterface(structure interface{}, ctx context.Context) {
-	(structure.(Worker)).Run(ctx)
+	(structure.(IWorker)).Run(ctx)
 }

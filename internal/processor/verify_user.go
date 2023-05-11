@@ -21,22 +21,22 @@ func (p *processor) validateVerifyUser(msg data.ModulePayload) error {
 	}.Filter()
 }
 
-func (p *processor) handleVerifyUserAction(msg data.ModulePayload) error {
+func (p *processor) HandleVerifyUserAction(msg data.ModulePayload) (string, error) {
 	p.log.Infof("start handle message action with id `%s`", msg.RequestId)
 
 	err := p.validateVerifyUser(msg)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to validate fields for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "failed to validate fields")
+		return data.FAILURE, errors.Wrap(err, "failed to validate fields")
 	}
 
 	userId, err := strconv.ParseInt(msg.UserId, 10, 64)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to parse user id `%s` for message action with id `%s`", msg.UserId, msg.RequestId)
-		return errors.Wrap(err, "failed to parse user id")
+		return data.FAILURE, errors.Wrap(err, "failed to parse user id")
 	}
 
-	user, err := helpers.GetUser(p.pqueues.UsualPQueue,
+	user, err := helpers.GetUser(p.pqueues.UserPQueue,
 		any(p.telegramClient.GetUserFromApi),
 		[]any{
 			any(p.telegramClient.GetSuperClient()),
@@ -47,19 +47,19 @@ func (p *processor) handleVerifyUserAction(msg data.ModulePayload) error {
 	)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to get user from api for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "failed to get user from api")
+		return data.FAILURE, errors.Wrap(err, "failed to get user from api")
 	}
 
 	if user == nil {
 		p.log.Errorf("no user was found for message action with id `%s`", msg.RequestId)
-		return errors.New("no user was found")
+		return data.FAILURE, errors.New("no user was found")
 	}
 
 	user.Id = &userId
 
 	if err = p.usersQ.Upsert(*user); err != nil {
 		p.log.WithError(err).Errorf("failed to upsert user in db for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "failed to upsert user in db")
+		return data.FAILURE, errors.Wrap(err, "failed to upsert user in db")
 	}
 
 	err = p.sendUpdateUserTelegram(msg.RequestId, data.ModulePayload{
@@ -71,16 +71,15 @@ func (p *processor) handleVerifyUserAction(msg data.ModulePayload) error {
 	})
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to publish users for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "failed to publish users")
+		return data.FAILURE, errors.Wrap(err, "failed to publish users")
 	}
 
 	err = p.SendDeleteUser(msg.RequestId, *user)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to publish delete user for message action with id `%s`", msg.RequestId)
-		return errors.Wrap(err, "failed to publish delete user")
+		return data.FAILURE, errors.Wrap(err, "failed to publish delete user")
 	}
 
-	p.resetFilters()
 	p.log.Infof("finish handle message action with id `%s`", msg.RequestId)
-	return nil
+	return data.SUCCESS, nil
 }

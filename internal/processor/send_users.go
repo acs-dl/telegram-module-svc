@@ -23,7 +23,6 @@ func (p *processor) sendUsers(uuid string, users []data.User) error {
 			p.log.WithError(err).Errorf("failed to select permissions by date `%s`", users[i].CreatedAt.String())
 			return errors.Wrap(err, "failed to select permissions by date")
 		}
-		p.resetFilters()
 
 		if permission == nil {
 			continue
@@ -47,7 +46,7 @@ func (p *processor) sendUsers(uuid string, users []data.User) error {
 		return errors.Wrap(err, "failed to publish users to `telegram-module`")
 	}
 
-	p.log.Infof("successfully published users to `telegram-module`")
+	p.log.Infof("successfully published users to `unverified-svc`")
 	return nil
 }
 
@@ -71,8 +70,7 @@ func (p *processor) SendDeleteUser(uuid string, user data.User) error {
 		return errors.Wrap(err, "failed to publish users to `unverified-svc`")
 	}
 
-	p.resetFilters()
-	p.log.Infof("successfully published users to `telegram-module`")
+	p.log.Infof("successfully published users to `unverified-svc`")
 	return nil
 }
 

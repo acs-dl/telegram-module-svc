@@ -109,6 +109,7 @@ github.com/gotd/td/internal/pool
 github.com/gotd/td/internal/proto
 github.com/gotd/td/internal/proto/codec
 github.com/gotd/td/internal/rpc
+github.com/gotd/td/internal/syncio
 github.com/gotd/td/internal/tdsync
 github.com/gotd/td/internal/testutil
 github.com/gotd/td/internal/tmap
@@ -122,9 +123,20 @@ github.com/gotd/td/telegram
 github.com/gotd/td/telegram/auth
 github.com/gotd/td/telegram/auth/qrlogin
 github.com/gotd/td/telegram/dcs
+github.com/gotd/td/telegram/internal/deeplink
 github.com/gotd/td/telegram/internal/manager
 github.com/gotd/td/telegram/internal/upconv
 github.com/gotd/td/telegram/internal/version
+github.com/gotd/td/telegram/message
+github.com/gotd/td/telegram/message/entity
+github.com/gotd/td/telegram/message/html
+github.com/gotd/td/telegram/message/inline
+github.com/gotd/td/telegram/message/markup
+github.com/gotd/td/telegram/message/peer
+github.com/gotd/td/telegram/message/styling
+github.com/gotd/td/telegram/peers
+github.com/gotd/td/telegram/uploader
+github.com/gotd/td/telegram/uploader/source
 github.com/gotd/td/tg
 github.com/gotd/td/tgerr
 github.com/gotd/td/transport
@@ -335,11 +347,14 @@ golang.org/x/crypto/pbkdf2
 golang.org/x/crypto/sha3
 # golang.org/x/net v0.9.0
 ## explicit; go 1.17
+golang.org/x/net/html
+golang.org/x/net/html/atom
 golang.org/x/net/internal/socks
 golang.org/x/net/proxy
 # golang.org/x/sync v0.1.0
 ## explicit
 golang.org/x/sync/errgroup
+golang.org/x/sync/singleflight
 # golang.org/x/sys v0.7.0
 ## explicit; go 1.17
 golang.org/x/sys/cpu

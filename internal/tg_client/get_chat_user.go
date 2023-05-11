@@ -15,15 +15,12 @@ func (t *tgInfo) GetChatUserFromApi(user data.User, chat Chat) (*data.User, erro
 	if err != nil {
 		if pkgErrors.Is(err, syscall.EPIPE) {
 			cl := NewTgAsInterface(t.cfg, t.ctx).(TelegramClient)
-			t.superClient = cl.GetTg().superClient
+			t.superUserClient = cl.GetTg().superUserClient
 			return t.GetChatUserFromApi(user, chat)
 		}
 
-		if tgerr.IsCode(err, 420) {
-			duration, ok := tgerr.AsFloodWait(err)
-			if !ok {
-				return nil, errors.New("failed to convert flood error")
-			}
+		duration, isFlood := tgerr.AsFloodWait(err)
+		if isFlood {
 			t.log.Warnf("we need to wait `%s`", duration)
 			time.Sleep(duration)
 			return t.GetChatUserFromApi(user, chat)

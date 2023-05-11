@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"sync"
 	"time"
 )
 
@@ -13,46 +14,49 @@ type PriorityQueueInterface interface {
 }
 
 type PQueues struct {
-	SuperPQueue *PriorityQueue
-	UsualPQueue *PriorityQueue
-}
-
-type PriorityQueue struct {
-	queueArray []*QueueItem
-	queueMap   map[string]*QueueItem
+	SuperUserPQueue *PriorityQueue
+	UserPQueue      *PriorityQueue
 }
 
 func NewPQueues() PQueues {
 	return PQueues{
-		SuperPQueue: NewPriorityQueue().(*PriorityQueue),
-		UsualPQueue: NewPriorityQueue().(*PriorityQueue),
+		SuperUserPQueue: NewPriorityQueue().(*PriorityQueue),
+		UserPQueue:      NewPriorityQueue().(*PriorityQueue),
 	}
+}
+
+type PriorityQueue struct {
+	queueArray []*QueueItem
+	queueMap   sync.Map
 }
 
 func NewPriorityQueue() PriorityQueueInterface {
 	return &PriorityQueue{
 		queueArray: make([]*QueueItem, 0),
-		queueMap:   make(map[string]*QueueItem),
 	}
 }
 
 func (pq *PriorityQueue) Len() int { return len(pq.queueArray) }
 
 func (pq *PriorityQueue) Less(i, j int) bool {
-	return (*pq).queueArray[i].Priority > (*pq).queueArray[j].Priority
+	return pq.queueArray[i].Priority > pq.queueArray[j].Priority
 }
 
 func (pq *PriorityQueue) Swap(i, j int) {
-	(*pq).queueArray[i], (*pq).queueArray[j] = (*pq).queueArray[j], (*pq).queueArray[i]
-	(*pq).queueArray[i].index = i
-	(*pq).queueArray[j].index = j
+	pq.queueArray[i], pq.queueArray[j] = pq.queueArray[j], pq.queueArray[i]
+	pq.queueArray[i].index = i
+	pq.queueArray[j].index = j
 }
 
 func (pq *PriorityQueue) Push(x interface{}) {
 	item := x.(*QueueItem)
 
-	pqItem, exists := pq.queueMap[item.Id]
+	pqMapItem, exists := pq.queueMap.Load(item.Id)
 	if exists {
+		pqItem, ok := pqMapItem.(*QueueItem)
+		if !ok {
+			panic("failed to convert map element")
+		}
 		pqItem.Amount++
 		return
 	}
@@ -62,7 +66,7 @@ func (pq *PriorityQueue) Push(x interface{}) {
 	item.invoked = PROCESSING
 	item.Amount++
 	pq.queueArray = append(pq.queueArray, item)
-	pq.queueMap[item.Id] = item
+	pq.queueMap.Store(item.Id, item)
 }
 
 func (pq *PriorityQueue) Pop() interface{} {
@@ -72,7 +76,7 @@ func (pq *PriorityQueue) Pop() interface{} {
 	old[n-1] = nil
 	item.index = -1
 	pq.queueArray = old[0 : n-1]
-	delete(pq.queueMap, item.Id)
+	pq.queueMap.Delete(item.Id)
 
 	return item
 }
@@ -89,7 +93,8 @@ func (pq *PriorityQueue) RemoveById(id string) error {
 	}
 
 	pq.queueArray = append(pq.queueArray[:item.index], pq.queueArray[item.index+1:]...)
-	delete(pq.queueMap, item.Id)
+	pq.queueMap.Delete(item.Id)
+
 	pq.FixIndexesInPQueue()
 	return nil
 }
@@ -103,12 +108,17 @@ func (pq *PriorityQueue) FixIndexesInPQueue() {
 }
 
 func (pq *PriorityQueue) getElement(id string) (*QueueItem, error) {
-	item, exists := pq.queueMap[id]
+	pqMapItem, exists := pq.queueMap.Load(id)
 	if !exists {
 		return nil, errors.New("element not found")
 	}
 
-	return item, nil
+	pqItem, ok := pqMapItem.(*QueueItem)
+	if !ok {
+		return nil, errors.New("failed to convert map element")
+	}
+
+	return pqItem, nil
 }
 
 func (pq *PriorityQueue) WaitUntilInvoked(id string) (*QueueItem, error) {

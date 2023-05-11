@@ -29,8 +29,8 @@ var services = []svc{
 	{"telegram", tg_client.NewTgAsInterface, nil, tg_client.CtxTelegramClientInstance},
 	{"sender", sender.NewSenderAsInterface, sender.RunSenderAsInterface, sender.CtxSenderInstance},
 	{"processor", processor.NewProcessorAsInterface, nil, processor.CtxProcessorInstance},
-	{"receiver", receiver.NewReceiverAsInterface, receiver.RunReceiverAsInterface, receiver.CtxReceiverInstance},
 	{"worker", worker.NewWorkerAsInterface, worker.RunWorkerAsInterface, worker.CtxWorkerInstance},
+	{"receiver", receiver.NewReceiverAsInterface, receiver.RunReceiverAsInterface, receiver.CtxReceiverInstance},
 	{"registrar", registrator.NewRegistrarAsInterface, registrator.RunRegistrarAsInterface, nil},
 	{"api", api.NewRouterAsInterface, api.RunRouterAsInterface, nil},
 }
@@ -44,8 +44,8 @@ func Run(cfg config.Config) {
 
 	stopProcessQueue := make(chan struct{})
 	pqueues := pqueue.NewPQueues()
-	go pqueues.SuperPQueue.ProcessQueue(cfg.RateLimit().RequestsAmount, cfg.RateLimit().TimeLimit, stopProcessQueue)
-	go pqueues.UsualPQueue.ProcessQueue(cfg.RateLimit().RequestsAmount, cfg.RateLimit().TimeLimit, stopProcessQueue)
+	go pqueues.SuperUserPQueue.ProcessQueue(cfg.RateLimit().RequestsAmount, cfg.RateLimit().TimeLimit, stopProcessQueue)
+	go pqueues.UserPQueue.ProcessQueue(cfg.RateLimit().RequestsAmount, cfg.RateLimit().TimeLimit, stopProcessQueue)
 	ctx = pqueue.CtxPQueues(&pqueues, ctx)
 	ctx = handlers.CtxConfig(cfg, ctx)
 

@@ -2,9 +2,7 @@ package processor
 
 import (
 	"context"
-	"fmt"
 
-	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/config"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/data/manager"
@@ -13,20 +11,12 @@ import (
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/sender"
 	"gitlab.com/distributed_lab/acs/telegram-module/internal/tg_client"
 	"gitlab.com/distributed_lab/logan/v3"
-	"gitlab.com/distributed_lab/logan/v3/errors"
 )
 
 const (
 	ServiceName = data.ModuleName + "-processor"
 
 	//add needed actions for module
-	GetUsersAction   = "get_users"
-	AddUserAction    = "add_user"
-	UpdateUserAction = "update_user"
-	RemoveUserAction = "remove_user"
-	VerifyUserAction = "verify_user"
-	DeleteUserAction = "delete_user"
-
 	SetUsersAction    = "set_users"
 	DeleteUsersAction = "delete_users"
 
@@ -35,7 +25,12 @@ const (
 )
 
 type Processor interface {
-	HandleNewMessage(msg data.ModulePayload) error
+	HandleGetUsersAction(msg data.ModulePayload) error
+	HandleAddUserAction(msg data.ModulePayload) (string, error)
+	HandleUpdateUserAction(msg data.ModulePayload) (string, error)
+	HandleRemoveUserAction(msg data.ModulePayload) (string, error)
+	HandleDeleteUserAction(msg data.ModulePayload) (string, error)
+	HandleVerifyUserAction(msg data.ModulePayload) (string, error)
 	SendDeleteUser(uuid string, user data.User) error
 }
 
@@ -49,15 +44,6 @@ type processor struct {
 	pqueues        *pqueue.PQueues
 }
 
-var handleActions = map[string]func(proc *processor, msg data.ModulePayload) error{
-	GetUsersAction:   (*processor).handleGetUsersAction,
-	AddUserAction:    (*processor).handleAddUserAction,
-	UpdateUserAction: (*processor).handleUpdateUserAction,
-	RemoveUserAction: (*processor).handleRemoveUserAction,
-	VerifyUserAction: (*processor).handleVerifyUserAction,
-	DeleteUserAction: (*processor).handleDeleteUserAction,
-}
-
 func NewProcessorAsInterface(cfg config.Config, ctx context.Context) interface{} {
 	return interface{}(&processor{
 		log:            cfg.Log().WithField("service", ServiceName),
@@ -68,27 +54,6 @@ func NewProcessorAsInterface(cfg config.Config, ctx context.Context) interface{}
 		sender:         sender.SenderInstance(ctx),
 		pqueues:        pqueue.PQueuesInstance(ctx),
 	})
-}
-
-func (p *processor) HandleNewMessage(msg data.ModulePayload) error {
-	p.log.Infof("handling message with id `%s`", msg.RequestId)
-
-	err := validation.Errors{
-		"action": validation.Validate(msg.Action, validation.Required, validation.In(GetUsersAction, AddUserAction, UpdateUserAction, RemoveUserAction, DeleteUserAction, VerifyUserAction)),
-	}.Filter()
-	if err != nil {
-		p.log.WithError(err).Errorf("no such action `%s` to handle for message with id `%s`", msg.Action, msg.RequestId)
-		return errors.Wrap(err, fmt.Sprintf("no such action `%s` to handle for message with id `%s`", msg.Action, msg.RequestId))
-	}
-
-	requestHandler := handleActions[msg.Action]
-	if err = requestHandler(p, msg); err != nil {
-		p.log.WithError(err).Errorf("failed to handle message with id `%s`", msg.RequestId)
-		return err
-	}
-
-	p.log.Infof("finish handling message with id `%s`", msg.RequestId)
-	return nil
 }
 
 func ProcessorInstance(ctx context.Context) Processor {
