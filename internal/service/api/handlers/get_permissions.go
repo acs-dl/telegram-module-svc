@@ -3,9 +3,9 @@ package handlers
 import (
 	"net/http"
 
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/service/api/models"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/service/api/requests"
+	"github.com/acs-dl/telegram-module-svc/internal/data"
+	"github.com/acs-dl/telegram-module-svc/internal/service/api/models"
+	"github.com/acs-dl/telegram-module-svc/internal/service/api/requests"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
 )

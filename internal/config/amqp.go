@@ -3,7 +3,7 @@ package config
 import (
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-amqp/v2/pkg/amqp"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
+	"github.com/acs-dl/telegram-module-svc/internal/data"
 	"gitlab.com/distributed_lab/figure"
 	"gitlab.com/distributed_lab/kit/kv"
 	"gitlab.com/distributed_lab/logan/v3/errors"

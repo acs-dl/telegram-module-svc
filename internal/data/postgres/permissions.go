@@ -7,9 +7,9 @@ import (
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/acs-dl/telegram-module-svc/internal/data"
+	"github.com/acs-dl/telegram-module-svc/internal/helpers"
 	"github.com/fatih/structs"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/helpers"
 	"gitlab.com/distributed_lab/kit/pgdb"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 )

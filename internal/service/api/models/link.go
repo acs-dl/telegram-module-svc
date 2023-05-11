@@ -1,7 +1,7 @@
 package models
 
 import (
-	"gitlab.com/distributed_lab/acs/telegram-module/resources"
+	"github.com/acs-dl/telegram-module-svc/resources"
 )
 
 func newLink(link string, isExists bool) resources.Link {

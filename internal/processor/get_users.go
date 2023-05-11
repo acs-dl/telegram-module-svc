@@ -3,10 +3,10 @@ package processor
 import (
 	"time"
 
+	"github.com/acs-dl/telegram-module-svc/internal/data"
+	"github.com/acs-dl/telegram-module-svc/internal/helpers"
+	"github.com/acs-dl/telegram-module-svc/internal/pqueue"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/helpers"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/pqueue"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 )
 

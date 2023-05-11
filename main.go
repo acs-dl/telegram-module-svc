@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/cli"
+	"github.com/acs-dl/telegram-module-svc/internal/cli"
 )
 
 func main() {

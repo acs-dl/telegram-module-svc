@@ -4,12 +4,12 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/acs-dl/telegram-module-svc/internal/data"
 	"github.com/gotd/td/telegram/message"
 	"github.com/gotd/td/telegram/message/html"
 	"github.com/gotd/td/tg"
 	"github.com/gotd/td/tgerr"
 	pkgErrors "github.com/pkg/errors"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 )
 

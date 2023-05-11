@@ -3,8 +3,8 @@ package models
 import (
 	"strconv"
 
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
-	"gitlab.com/distributed_lab/acs/telegram-module/resources"
+	"github.com/acs-dl/telegram-module-svc/internal/data"
+	"github.com/acs-dl/telegram-module-svc/resources"
 )
 
 func NewUserModel(user data.User, id int) resources.User {

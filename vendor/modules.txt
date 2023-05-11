@@ -10,6 +10,11 @@ github.com/ThreeDotsLabs/watermill/pubsub/sync
 # github.com/ThreeDotsLabs/watermill-amqp/v2 v2.0.7
 ## explicit; go 1.17
 github.com/ThreeDotsLabs/watermill-amqp/v2/pkg/amqp
+# github.com/acs-dl/auth-svc v0.0.0-20230511083241-b6fde9efdf0d
+## explicit; go 1.19
+github.com/acs-dl/auth-svc/internal/data
+github.com/acs-dl/auth-svc/internal/service/api/helpers
+github.com/acs-dl/auth-svc/middlewares
 # github.com/alecthomas/kingpin v2.2.6+incompatible
 ## explicit
 github.com/alecthomas/kingpin
@@ -134,7 +139,6 @@ github.com/gotd/td/telegram/message/inline
 github.com/gotd/td/telegram/message/markup
 github.com/gotd/td/telegram/message/peer
 github.com/gotd/td/telegram/message/styling
-github.com/gotd/td/telegram/peers
 github.com/gotd/td/telegram/uploader
 github.com/gotd/td/telegram/uploader/source
 github.com/gotd/td/tg
@@ -277,11 +281,6 @@ github.com/xelaj/mtproto/internal/mtproto/objects
 github.com/xelaj/mtproto/internal/session
 github.com/xelaj/mtproto/internal/transport
 github.com/xelaj/mtproto/internal/utils
-# gitlab.com/distributed_lab/acs/auth v0.0.0-20230309115252-2c1f9e1d211a
-## explicit; go 1.19
-gitlab.com/distributed_lab/acs/auth/internal/data
-gitlab.com/distributed_lab/acs/auth/internal/service/helpers
-gitlab.com/distributed_lab/acs/auth/middlewares
 # gitlab.com/distributed_lab/ape v1.7.1
 ## explicit; go 1.14
 gitlab.com/distributed_lab/ape

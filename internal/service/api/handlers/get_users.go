@@ -3,11 +3,11 @@ package handlers
 import (
 	"net/http"
 
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/helpers"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/pqueue"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/service/api/models"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/service/api/requests"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/tg_client"
+	"github.com/acs-dl/telegram-module-svc/internal/helpers"
+	"github.com/acs-dl/telegram-module-svc/internal/pqueue"
+	"github.com/acs-dl/telegram-module-svc/internal/service/api/models"
+	"github.com/acs-dl/telegram-module-svc/internal/service/api/requests"
+	"github.com/acs-dl/telegram-module-svc/internal/tg_client"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
 )

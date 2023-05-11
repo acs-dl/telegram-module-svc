@@ -1,9 +1,9 @@
 
-apiTitle:  gitlab.com/distributed_lab/telegram-module
+apiTitle:  github.com/acs-dl/telegram-module
 splitSpec: true
 codeSamples: false
 swaggerUI: true
 travis: true
-repo: tokend/notifications/notifications-router-svc
+repo: github.com/acs-dl/telegram-module
 oasVersion: 1.0.0
 

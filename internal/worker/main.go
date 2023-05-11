@@ -2,14 +2,14 @@ package worker
 
 import (
 	"context"
+	"gitlab.com/distributed_lab/logan/v3"
 	"time"
 
+	"github.com/acs-dl/telegram-module-svc/internal/config"
+	"github.com/acs-dl/telegram-module-svc/internal/data"
+	"github.com/acs-dl/telegram-module-svc/internal/data/postgres"
+	"github.com/acs-dl/telegram-module-svc/internal/processor"
 	"github.com/google/uuid"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/config"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/data/postgres"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/processor"
-	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 	"gitlab.com/distributed_lab/running"
 )

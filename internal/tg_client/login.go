@@ -3,12 +3,12 @@ package tg_client
 import (
 	"context"
 
+	"github.com/acs-dl/telegram-module-svc/internal/config"
 	"github.com/gotd/contrib/bg"
 	"github.com/gotd/td/session"
 	"github.com/gotd/td/telegram"
 	"github.com/gotd/td/telegram/auth"
 	"github.com/gotd/td/tg"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/config"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 )
 

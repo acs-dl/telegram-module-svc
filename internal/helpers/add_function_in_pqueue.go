@@ -7,7 +7,7 @@ import (
 	"runtime"
 	"strings"
 
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/pqueue"
+	"github.com/acs-dl/telegram-module-svc/internal/pqueue"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 )
 

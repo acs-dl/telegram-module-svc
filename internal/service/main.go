@@ -4,18 +4,18 @@ import (
 	"context"
 	"sync"
 
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/pqueue"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/processor"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/receiver"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/registrator"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/sender"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/service/api"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/service/api/handlers"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/tg_client"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/worker"
+	"github.com/acs-dl/telegram-module-svc/internal/pqueue"
+	"github.com/acs-dl/telegram-module-svc/internal/processor"
+	"github.com/acs-dl/telegram-module-svc/internal/receiver"
+	"github.com/acs-dl/telegram-module-svc/internal/registrator"
+	"github.com/acs-dl/telegram-module-svc/internal/sender"
+	"github.com/acs-dl/telegram-module-svc/internal/service/api"
+	"github.com/acs-dl/telegram-module-svc/internal/service/api/handlers"
+	"github.com/acs-dl/telegram-module-svc/internal/tg_client"
+	"github.com/acs-dl/telegram-module-svc/internal/worker"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/config"
+	"github.com/acs-dl/telegram-module-svc/internal/config"
 )
 
 type svc struct {

@@ -62,6 +62,8 @@ github.com/ThreeDotsLabs/watermill v1.2.0/go.mod h1:IuVxGk/kgCN0cex2S94BLglUiB0P
 github.com/ThreeDotsLabs/watermill-amqp/v2 v2.0.7 h1:AUSXLqdsA1LXWuoQSkIRG9FhMo6EYM9GSgd+bnf1W0w=
 github.com/ThreeDotsLabs/watermill-amqp/v2 v2.0.7/go.mod h1:DKOBUoMVtPMV8jBEbRP3NL6TgnOMyRvVza3W297cdqU=
 github.com/a8m/expect v1.0.0/go.mod h1:4IwSCMumY49ScypDnjNbYEjgVeqy1/U2cEs3Lat96eA=
+github.com/acs-dl/auth-svc v0.0.0-20230511083241-b6fde9efdf0d h1:BD+a/C7vHbEyg8z6ogdGVuGH92DgrzqzxTub4WWlsN8=
+github.com/acs-dl/auth-svc v0.0.0-20230511083241-b6fde9efdf0d/go.mod h1:M+hmJzfQECAkm+PmVpoakzc2pi1X0QM29qmQTMFUpwM=
 github.com/ajg/form v1.5.1/go.mod h1:uL1WgH+h2mgNtvBq0339dVnzXdBETtL2LeUXaIv25UY=
 github.com/alecthomas/kingpin v2.2.6+incompatible h1:5svnBTFgJjZvGKyYBtMB0+m5wvrbUHiqye8wRJMlnYI=
 github.com/alecthomas/kingpin v2.2.6+incompatible/go.mod h1:59OFYbFVLKQKq+mqrL6Rw5bR0c3ACQaawgXx0QYndlE=
@@ -625,8 +627,6 @@ github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9dec
 github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
 github.com/yuin/goldmark v1.4.0/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
 github.com/yuin/goldmark v1.4.13/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
-gitlab.com/distributed_lab/acs/auth v0.0.0-20230309115252-2c1f9e1d211a h1:ZD9Htsle72NgSMdHb292tGUWXQcDToErcPAsaoC7ir8=
-gitlab.com/distributed_lab/acs/auth v0.0.0-20230309115252-2c1f9e1d211a/go.mod h1:0kZvT9LUCzy0cORWP21ue/u4CAuRcJWzO3ANJBCYc3A=
 gitlab.com/distributed_lab/ape v1.7.1 h1:LpTmZgG7Lvx6ulopQbH2aWI3s8ey9FsKVjbic3ZQIy4=
 gitlab.com/distributed_lab/ape v1.7.1/go.mod h1:Qy9Y2arL0hmZIpVpctGEFhdrVsjWtyVJ5G+bZWcFT4s=
 gitlab.com/distributed_lab/figure v2.1.0+incompatible/go.mod h1:tk+aPBohT49MGPLy5+eVbE1HpD/CaC5drBHfVpRI8eE=

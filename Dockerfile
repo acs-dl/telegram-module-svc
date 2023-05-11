@@ -2,11 +2,11 @@ FROM golang:1.19-alpine as buildbase
 
 RUN apk add git build-base
 
-WORKDIR /go/src/gitlab.com/distributed_lab/acs/telegram-module
+WORKDIR /go/src/github.com/acs-dl/telegram-module-svc
 COPY vendor .
 COPY . .
 
-RUN GOOS=linux go build  -o /usr/local/bin/telegram-module /go/src/gitlab.com/distributed_lab/acs/telegram-module
+RUN GOOS=linux go build  -o /usr/local/bin/telegram-module /go/src/github.com/acs-dl/telegram-module-svc
 
 
 FROM alpine:3.9

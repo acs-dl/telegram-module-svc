@@ -3,12 +3,12 @@ package api
 import (
 	"fmt"
 
-	auth "gitlab.com/distributed_lab/acs/auth/middlewares"
+	auth "github.com/acs-dl/auth-svc/middlewares"
 
+	"github.com/acs-dl/telegram-module-svc/internal/data"
+	"github.com/acs-dl/telegram-module-svc/internal/data/postgres"
+	"github.com/acs-dl/telegram-module-svc/internal/service/api/handlers"
 	"github.com/go-chi/chi"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/data/postgres"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/service/api/handlers"
 	"gitlab.com/distributed_lab/ape"
 )
 

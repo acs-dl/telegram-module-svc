@@ -1,4 +1,4 @@
-module gitlab.com/distributed_lab/acs/telegram-module
+module github.com/acs-dl/telegram-module-svc
 
 go 1.19
 
@@ -6,6 +6,7 @@ require (
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/ThreeDotsLabs/watermill v1.2.0
 	github.com/ThreeDotsLabs/watermill-amqp/v2 v2.0.7
+	github.com/acs-dl/auth-svc v0.0.0-20230511083241-b6fde9efdf0d
 	github.com/alecthomas/kingpin v2.2.6+incompatible
 	github.com/fatih/structs v1.1.0
 	github.com/go-chi/chi v4.1.2+incompatible
@@ -17,7 +18,6 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/rubenv/sql-migrate v1.4.0
 	github.com/xelaj/mtproto v1.0.1-0.20220603191734-d93f9ab1f9b4
-	gitlab.com/distributed_lab/acs/auth v0.0.0-20230309115252-2c1f9e1d211a
 	gitlab.com/distributed_lab/ape v1.7.1
 	gitlab.com/distributed_lab/figure v2.1.2+incompatible
 	gitlab.com/distributed_lab/kit v1.11.2

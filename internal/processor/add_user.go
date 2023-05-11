@@ -4,13 +4,13 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/acs-dl/telegram-module-svc/internal/data"
+	"github.com/acs-dl/telegram-module-svc/internal/helpers"
+	"github.com/acs-dl/telegram-module-svc/internal/pqueue"
+	"github.com/acs-dl/telegram-module-svc/internal/tg_client"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/gotd/td/tg"
 	"github.com/gotd/td/tgerr"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/helpers"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/pqueue"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/tg_client"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 )
 

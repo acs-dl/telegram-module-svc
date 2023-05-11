@@ -5,9 +5,11 @@ type RefreshTokens interface {
 
 	Create(token RefreshToken) error
 	Get() (*RefreshToken, error)
-	Delete(token string) error
+	Select() ([]RefreshToken, error)
+	Delete() error
 
-	FilterByToken(token string) RefreshTokens
+	FilterByTokens(tokens ...string) RefreshTokens
+	FilterByLowerValidTill(expiresAtUnix int64) RefreshTokens
 }
 
 type RefreshToken struct {

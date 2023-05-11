@@ -1,8 +1,8 @@
 package cli
 
 import (
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/assets"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/config"
+	"github.com/acs-dl/telegram-module-svc/internal/assets"
+	"github.com/acs-dl/telegram-module-svc/internal/config"
 
 	migrate "github.com/rubenv/sql-migrate"
 	"gitlab.com/distributed_lab/logan/v3/errors"

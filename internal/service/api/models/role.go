@@ -3,7 +3,7 @@ package models
 import (
 	"fmt"
 
-	"gitlab.com/distributed_lab/acs/telegram-module/resources"
+	"github.com/acs-dl/telegram-module-svc/resources"
 )
 
 func newRole(name string, value string) resources.Role {

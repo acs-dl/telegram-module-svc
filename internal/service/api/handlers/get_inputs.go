@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/service/api/models"
+	"github.com/acs-dl/telegram-module-svc/internal/service/api/models"
 	"gitlab.com/distributed_lab/ape"
 )
 

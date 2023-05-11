@@ -2,13 +2,13 @@ package tg_client
 
 import (
 	"context"
+	"gitlab.com/distributed_lab/logan/v3"
 	"os"
 	"path/filepath"
 
+	"github.com/acs-dl/telegram-module-svc/internal/config"
+	"github.com/acs-dl/telegram-module-svc/internal/data"
 	"github.com/gotd/td/telegram"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/config"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
-	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 )
 

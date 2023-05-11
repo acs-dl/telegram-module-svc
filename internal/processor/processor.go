@@ -2,15 +2,15 @@ package processor
 
 import (
 	"context"
-
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/config"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/data/manager"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/data/postgres"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/pqueue"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/sender"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/tg_client"
 	"gitlab.com/distributed_lab/logan/v3"
+
+	"github.com/acs-dl/telegram-module-svc/internal/config"
+	"github.com/acs-dl/telegram-module-svc/internal/data"
+	"github.com/acs-dl/telegram-module-svc/internal/data/manager"
+	"github.com/acs-dl/telegram-module-svc/internal/data/postgres"
+	"github.com/acs-dl/telegram-module-svc/internal/pqueue"
+	"github.com/acs-dl/telegram-module-svc/internal/sender"
+	"github.com/acs-dl/telegram-module-svc/internal/tg_client"
 )
 
 const (

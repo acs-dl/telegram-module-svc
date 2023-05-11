@@ -1,8 +1,8 @@
 package manager
 
 import (
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/data/postgres"
+	"github.com/acs-dl/telegram-module-svc/internal/data"
+	"github.com/acs-dl/telegram-module-svc/internal/data/postgres"
 	"gitlab.com/distributed_lab/kit/pgdb"
 )
 
