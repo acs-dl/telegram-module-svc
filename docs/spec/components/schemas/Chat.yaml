@@ -1,0 +1,36 @@
+allOf:
+  - $ref: "#/components/schemas/ChatKey"
+  - type: object
+    required:
+      - attributes
+    properties:
+      attributes:
+        type: object
+        required:
+          - title
+          - members_amount
+          - id
+        properties:
+          id:
+            type: integer
+            format: int64
+            description: telegram chat id
+            example: "666"
+          access_hash:
+            type: integer
+            format: int64
+            description: telegram chat access hash
+            example: "1234567"
+          title:
+            type: string
+            description: telegram chat title
+            example: "HELP TG API"
+          members_amount:
+            type: integer
+            format: int64
+            description: telegram chat members amount
+            example: "10"
+          photo:
+            type: string
+            description: link to the chat photo
+            example: "https://aws.."

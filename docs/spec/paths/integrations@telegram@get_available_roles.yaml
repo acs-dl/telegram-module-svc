@@ -1,0 +1,25 @@
+get:
+  tags:
+    - Roles
+  summary: Get roles
+  operationId: getRoles
+  description: Endpoint for getting all available roles (permission to set) from telegram module to pass them in FE.
+  parameters:
+    - $ref: '#/components/parameters/linkParam'
+    - $ref: '#/components/parameters/phoneParam'
+    - $ref: '#/components/parameters/usernameParam'
+  responses:
+    '200':
+      description: Success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: object
+                $ref: '#/components/schemas/Roles'
+    '400':
+      description: Bad request.
+    '500':
+      description: Internal server error.

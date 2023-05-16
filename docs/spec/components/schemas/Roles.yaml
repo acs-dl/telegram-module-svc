@@ -1,0 +1,26 @@
+allOf:
+  - $ref: "#/components/schemas/RolesKey"
+  - type: object
+    required:
+      - attributes
+    properties:
+      attributes:
+        type: object
+        required:
+          - req
+          - roles
+          - chats
+        properties:
+          req:
+            type: boolean
+            description: flag to show if any role was found for given link
+          roles:
+            type: array
+            items:
+              type: object
+              $ref: "#/components/schemas/AccessLevel"
+          chats:
+            type: array
+            items:
+              type: object
+              $ref: "#/components/schemas/Chat"

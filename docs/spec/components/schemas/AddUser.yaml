@@ -1,0 +1,31 @@
+type: object
+required:
+  - action
+  - link
+  - user_id
+  - access_level
+properties:
+  action:
+    type: string
+    description: action that must be handled in module, must be "add_user"
+    example: "add_user"
+  link:
+    type: string
+    description: link where module has to add user
+    example: "WE vs. ACS"
+  username:
+    type: string
+    description: user's username from gitlab
+    example: "slandymani"
+  user_id:
+    type: string
+    description: user's id from identity
+    example: "123"
+  access_level:
+    type: int
+    description: user's id from identity
+    example: 123
+  phone:
+    type: string
+    description: phone from telegram
+    example: "380..."

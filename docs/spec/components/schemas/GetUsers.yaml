@@ -1,0 +1,13 @@
+type: object
+required:
+  - action
+  - link
+properties:
+  action:
+    type: string
+    description: action that must be handled in module, must be "get_users"
+    example: "get_users"
+  link:
+    type: string
+    description: link where module has to add user
+    example: "distributed_lab/acs"

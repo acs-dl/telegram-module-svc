@@ -1,0 +1,19 @@
+allOf:
+  - $ref: "#/components/schemas/LinkKey"
+  - type: object
+    required:
+      - attributes
+    properties:
+      attributes:
+        type: object
+        required:
+          - link
+        properties:
+          link:
+            type: string
+            description: link to repository or group
+            example: "We vs. ACS"
+          is_exists:
+            type: boolean
+            description: indicates whether link exists
+            example: true
