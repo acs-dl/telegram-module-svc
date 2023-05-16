@@ -8,6 +8,7 @@ import (
 	"github.com/acs-dl/telegram-module-svc/internal/service/api/models"
 	"github.com/acs-dl/telegram-module-svc/internal/service/api/requests"
 	"github.com/acs-dl/telegram-module-svc/internal/tg_client"
+	"github.com/acs-dl/telegram-module-svc/resources"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
 )

@@ -7,6 +7,7 @@ import (
 	"github.com/acs-dl/telegram-module-svc/internal/data"
 	"github.com/acs-dl/telegram-module-svc/internal/helpers"
 	"github.com/acs-dl/telegram-module-svc/internal/pqueue"
+	"github.com/acs-dl/telegram-module-svc/internal/tg_client"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 )

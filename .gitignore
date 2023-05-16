@@ -4,7 +4,7 @@ config.*.yaml
 docs/node_modules
 docs/web_deploy
 docker-compose.yml
-telegram-module
+telegram-module-svc
 /public
 super_session.json
 usual_session.json

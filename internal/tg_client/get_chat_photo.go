@@ -7,6 +7,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/acs-dl/telegram-module-svc/internal/config"
+	"github.com/acs-dl/telegram-module-svc/internal/data"
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/google/uuid"
 	"github.com/gotd/td/tg"
@@ -14,8 +16,6 @@ import (
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	pkgErrors "github.com/pkg/errors"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/config"
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 )
 

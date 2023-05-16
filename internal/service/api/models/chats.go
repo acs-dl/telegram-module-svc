@@ -1,8 +1,8 @@
 package models
 
 import (
-	"gitlab.com/distributed_lab/acs/telegram-module/internal/data"
-	"gitlab.com/distributed_lab/acs/telegram-module/resources"
+	"github.com/acs-dl/telegram-module-svc/internal/data"
+	"github.com/acs-dl/telegram-module-svc/resources"
 )
 
 func NewChatModel(chat data.Chat) resources.Chat {
