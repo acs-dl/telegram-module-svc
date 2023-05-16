@@ -35,7 +35,7 @@ func (t *tgInfo) GetChatUserFromApi(user data.User, chat Chat) (*data.User, erro
 }
 
 func (t *tgInfo) getChatUserFlow(user data.User, chat Chat) (*data.User, error) {
-	var chatUsers, err = t.getAllUsers(chat.id, chat.accessHash)
+	var chatUsers, err = t.getAllUsers(chat.Id, chat.AccessHash)
 	if err != nil {
 		t.log.Errorf("failed to get all users")
 		return nil, err

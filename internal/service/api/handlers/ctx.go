@@ -15,6 +15,7 @@ const (
 	logCtxKey ctxKey = iota
 	permissionsCtxKey
 	usersCtxKey
+	chatsCtxKey
 	linksCtxKey
 	configCtxKey
 	parentContextCtxKey
@@ -47,6 +48,16 @@ func UsersQ(r *http.Request) data.Users {
 func CtxUsersQ(entry data.Users) func(context.Context) context.Context {
 	return func(ctx context.Context) context.Context {
 		return context.WithValue(ctx, usersCtxKey, entry)
+	}
+}
+
+func ChatsQ(r *http.Request) data.Chats {
+	return r.Context().Value(chatsCtxKey).(data.Chats).New()
+}
+
+func CtxChatsQ(entry data.Chats) func(context.Context) context.Context {
+	return func(ctx context.Context) context.Context {
+		return context.WithValue(ctx, chatsCtxKey, entry)
 	}
 }
 

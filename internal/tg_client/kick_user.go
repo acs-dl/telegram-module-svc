@@ -39,7 +39,7 @@ func (t *tgInfo) kickUserFlow(user data.User, chat Chat) error {
 	if err := t.kickUser(&tg.InputUser{
 		UserID:     user.TelegramId,
 		AccessHash: user.AccessHash,
-	}, chat.id, chat.accessHash); err != nil {
+	}, chat.Id, chat.AccessHash); err != nil {
 		t.log.Errorf("failed to kick user")
 		return err
 	}

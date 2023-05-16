@@ -8,23 +8,24 @@ var roles = []resources.AccessLevel{
 	{Name: "Member", Value: "member"},
 }
 
-func NewRolesModel(found bool, roles []resources.AccessLevel) resources.Roles {
+func NewRolesModel(found bool, roles []resources.AccessLevel, chats []resources.Chat) resources.Roles {
 	result := resources.Roles{
 		Key: resources.Key{
 			ID:   "roles",
 			Type: resources.ROLES,
 		},
 		Attributes: resources.RolesAttributes{
-			Req:  found,
-			List: roles,
+			Req:   found,
+			Roles: roles,
+			Chats: chats,
 		},
 	}
 
 	return result
 }
 
-func NewRolesResponse(found bool) resources.RolesResponse {
+func NewRolesResponse(found bool, chats []resources.Chat) resources.RolesResponse {
 	return resources.RolesResponse{
-		Data: NewRolesModel(found, roles),
+		Data: NewRolesModel(found, roles, chats),
 	}
 }

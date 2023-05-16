@@ -15,13 +15,15 @@ import (
 )
 
 const (
-	permissionsTableName         = "permissions"
-	permissionsRequestIdColumn   = permissionsTableName + ".request_id"
-	permissionsTelegramIdColumn  = permissionsTableName + ".telegram_id"
-	permissionsLinkColumn        = permissionsTableName + ".link"
-	permissionsAccessLevelColumn = permissionsTableName + ".access_level"
-	permissionsCreatedAtColumn   = permissionsTableName + ".created_at"
-	permissionsUpdatedAtColumn   = permissionsTableName + ".updated_at"
+	permissionsTableName                 = "permissions"
+	permissionsRequestIdColumn           = permissionsTableName + ".request_id"
+	permissionsTelegramIdColumn          = permissionsTableName + ".telegram_id"
+	permissionsLinkColumn                = permissionsTableName + ".link"
+	permissionsSubmoduleIdColumn         = permissionsTableName + ".submodule_id"
+	permissionsSubmoduleAccessHashColumn = permissionsTableName + ".submodule_access_hash"
+	permissionsAccessLevelColumn         = permissionsTableName + ".access_level"
+	permissionsCreatedAtColumn           = permissionsTableName + ".created_at"
+	permissionsUpdatedAtColumn           = permissionsTableName + ".updated_at"
 )
 
 type PermissionsQ struct {
@@ -38,6 +40,8 @@ var permissionsColumns = []string{
 	permissionsAccessLevelColumn,
 	permissionsCreatedAtColumn,
 	permissionsUpdatedAtColumn,
+	permissionsSubmoduleIdColumn,
+	permissionsSubmoduleAccessHashColumn,
 }
 
 func NewPermissionsQ(db *pgdb.DB) data.Permissions {
@@ -73,7 +77,7 @@ func (q PermissionsQ) Upsert(permission data.Permission) error {
 		Set("access_level", permission.AccessLevel).MustSql()
 
 	query := sq.Insert(permissionsTableName).SetMap(structs.Map(permission)).
-		Suffix("ON CONFLICT (telegram_id, link) DO "+updateStmt, args...)
+		Suffix("ON CONFLICT (telegram_id, submodule_id, submodule_access_hash) DO "+updateStmt, args...)
 
 	return q.db.Exec(query)
 }

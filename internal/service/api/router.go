@@ -29,6 +29,7 @@ func (r *Router) apiRouter() chi.Router {
 			// storage
 			handlers.CtxPermissionsQ(postgres.NewPermissionsQ(r.cfg.DB())),
 			handlers.CtxUsersQ(postgres.NewUsersQ(r.cfg.DB())),
+			handlers.CtxChatsQ(postgres.NewChatsQ(r.cfg.DB())),
 			handlers.CtxLinksQ(postgres.NewLinksQ(r.cfg.DB())),
 
 			// connectors

@@ -39,6 +39,7 @@ type processor struct {
 	telegramClient tg_client.TelegramClient
 	permissionsQ   data.Permissions
 	usersQ         data.Users
+	chatsQ         data.Chats
 	managerQ       *manager.Manager
 	sender         *sender.Sender
 	pqueues        *pqueue.PQueues
@@ -50,6 +51,7 @@ func NewProcessorAsInterface(cfg config.Config, ctx context.Context) interface{}
 		telegramClient: tg_client.TelegramClientInstance(ctx),
 		permissionsQ:   postgres.NewPermissionsQ(cfg.DB()),
 		usersQ:         postgres.NewUsersQ(cfg.DB()),
+		chatsQ:         postgres.NewChatsQ(cfg.DB()),
 		managerQ:       manager.NewManager(cfg.DB()),
 		sender:         sender.SenderInstance(ctx),
 		pqueues:        pqueue.PQueuesInstance(ctx),

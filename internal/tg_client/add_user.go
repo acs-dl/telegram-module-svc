@@ -37,7 +37,7 @@ func (t *tgInfo) addUserFlow(user data.User, chat Chat) error {
 	if err := t.addUser(&tg.InputUser{
 		UserID:     user.TelegramId,
 		AccessHash: user.AccessHash,
-	}, chat.id, chat.accessHash); err != nil {
+	}, chat.Id, chat.AccessHash); err != nil {
 		return err
 	}
 

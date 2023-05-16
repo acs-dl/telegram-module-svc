@@ -20,6 +20,7 @@ func (p *processor) validateAddUser(msg data.ModulePayload) error {
 
 	return validation.Errors{
 		"link":     validation.Validate(msg.Link, validation.Required),
+		"id":       validation.Validate(msg.SubmoduleId, validation.Required),
 		"username": validation.Validate(msg.Username, usernameValidationCase),
 		"phone":    validation.Validate(msg.Phone, phoneValidationCase),
 		"user_id":  validation.Validate(msg.UserId, validation.Required),
@@ -41,7 +42,7 @@ func (p *processor) HandleAddUserAction(msg data.ModulePayload) (string, error) 
 		return data.FAILURE, errors.Wrap(err, "failed to parse user id")
 	}
 
-	requestStatus, user, err := p.addUser(msg.Username, msg.Phone, msg.Link)
+	requestStatus, user, err := p.addUser(msg)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to add user for message action with id `%s`", msg.RequestId)
 		return data.FAILURE, errors.Wrap(err, "failed to add user")
@@ -59,11 +60,13 @@ func (p *processor) HandleAddUserAction(msg data.ModulePayload) (string, error) 
 		}
 
 		if err = p.permissionsQ.Upsert(data.Permission{
-			RequestId:   msg.RequestId,
-			TelegramId:  user.TelegramId,
-			AccessLevel: user.AccessLevel,
-			Link:        msg.Link,
-			CreatedAt:   user.CreatedAt,
+			RequestId:           msg.RequestId,
+			TelegramId:          user.TelegramId,
+			AccessLevel:         user.AccessLevel,
+			Link:                msg.Link,
+			CreatedAt:           user.CreatedAt,
+			SubmoduleAccessHash: msg.SubmoduleAccessHash,
+			SubmoduleId:         msg.SubmoduleId,
 		}); err != nil {
 			p.log.WithError(err).Errorf("failed to upsert permission in db for message action with id `%s`", msg.RequestId)
 			return errors.Wrap(err, "failed to upsert permission in db")
@@ -98,13 +101,13 @@ func (p *processor) HandleAddUserAction(msg data.ModulePayload) (string, error) 
 	return requestStatus, nil
 }
 
-func (p *processor) addUser(username, phone *string, link string) (string, *data.User, error) {
+func (p *processor) addUser(msg data.ModulePayload) (string, *data.User, error) {
 	user, err := helpers.GetUser(p.pqueues.UserPQueue,
 		any(p.telegramClient.GetUserFromApi),
 		[]any{
 			any(p.telegramClient.GetSuperClient()),
-			any(username),
-			any(phone),
+			any(msg.Username),
+			any(msg.Phone),
 		},
 		pqueue.NormalPriority,
 	)
@@ -116,10 +119,12 @@ func (p *processor) addUser(username, phone *string, link string) (string, *data
 		return data.FAILURE, nil, errors.New("no user was found")
 	}
 
-	chat, err := helpers.GetChat(p.pqueues.SuperUserPQueue, any(p.telegramClient.GetChatFromApi), []any{any(link)}, pqueue.NormalPriority)
+	chats, err := helpers.GetChats(p.pqueues.SuperUserPQueue, any(p.telegramClient.GetChatFromApi), []any{any(msg.Link)}, pqueue.NormalPriority)
 	if err != nil {
 		return data.FAILURE, nil, errors.Wrap(err, "failed to get chat from api")
 	}
+
+	chat := helpers.RetrieveChat(chats, msg)
 
 	if chat == nil {
 		return data.FAILURE, nil, errors.New("no chat was found")
@@ -134,7 +139,7 @@ func (p *processor) addUser(username, phone *string, link string) (string, *data
 		return data.FAILURE, nil, errors.Wrap(err, "failed to add user in chat from api")
 	}
 
-	err = p.sendInviteMessage(link, *user, *chat)
+	err = p.sendInviteMessage(msg.Link, *user, *chat)
 	if err != nil {
 		return data.FAILURE, nil, errors.Wrap(err, "failed to send invite in chat from api")
 	}

@@ -8,13 +8,19 @@ allOf:
         type: object
         required:
           - req
-          - list
+          - roles
+          - chats
         properties:
           req:
             type: boolean
             description: flag to show if any role was found for given link
-          list:
+          roles:
             type: array
             items:
               type: object
               $ref: "#/components/schemas/AccessLevel"
+          chats:
+            type: array
+            items:
+              type: object
+              $ref: "#/components/schemas/Chat"

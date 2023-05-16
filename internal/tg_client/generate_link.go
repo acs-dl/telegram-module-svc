@@ -36,10 +36,10 @@ func (t *tgInfo) GenerateChatLinkFromApi(chat Chat) (string, error) {
 func (t *tgInfo) generateChatLink(chat Chat) (string, error) {
 	inputPeer := tg.InputPeerClass(nil)
 
-	if chat.accessHash != nil {
-		inputPeer = &tg.InputPeerChannel{ChannelID: chat.id, AccessHash: *chat.accessHash}
+	if chat.AccessHash != nil {
+		inputPeer = &tg.InputPeerChannel{ChannelID: chat.Id, AccessHash: *chat.AccessHash}
 	} else {
-		inputPeer = &tg.InputPeerChat{ChatID: chat.id}
+		inputPeer = &tg.InputPeerChat{ChatID: chat.Id}
 	}
 
 	expireDate := time.Now().Add(1 * time.Hour).Unix()

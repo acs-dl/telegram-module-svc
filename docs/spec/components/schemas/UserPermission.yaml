@@ -10,6 +10,7 @@ allOf:
           - module_id
           - link
           - path
+          - submodule_id
           - access_level
         properties:
           username:
@@ -34,6 +35,16 @@ allOf:
             type: string
             description: chat title
             example: "WE vs. ACS"
+          submodule_id:
+            type: integer
+            format: int64
+            description: submodule id to handle submodule with the same title
+            example: 666
+          submodule_access_hash:
+            type: integer
+            format: int64
+            description: submodule access hash to handle submodule with the same title
+            example: 6661234
           path:
             type: string
             description: chat title

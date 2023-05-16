@@ -23,6 +23,7 @@ type Config interface {
 	JwtParams() *JwtCfg
 	RateLimit() *RateLimitCfg
 	Runners() *RunnersCfg
+	Aws() *AwsCfg
 
 	// Registrator config
 	Registrator() RegistratorConfig
@@ -45,6 +46,7 @@ type config struct {
 	jwtCfg      comfig.Once
 	rateLimit   comfig.Once
 	runners     comfig.Once
+	aws         comfig.Once
 }
 
 func New(getter kv.Getter) Config {

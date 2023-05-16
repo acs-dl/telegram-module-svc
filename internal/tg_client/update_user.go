@@ -41,7 +41,7 @@ func (t *tgInfo) updateUserFlow(chatUser data.User, chat Chat) error {
 		if err := t.updateAdminToMember(&tg.InputUser{
 			UserID:     chatUser.TelegramId,
 			AccessHash: chatUser.AccessHash,
-		}, chat.id, chat.accessHash); err != nil {
+		}, chat.Id, chat.AccessHash); err != nil {
 			t.log.Errorf("failed to update admin to member")
 			return err
 		}
@@ -49,7 +49,7 @@ func (t *tgInfo) updateUserFlow(chatUser data.User, chat Chat) error {
 		if err := t.updateMemberToAdmin(&tg.InputUser{
 			UserID:     chatUser.TelegramId,
 			AccessHash: chatUser.AccessHash,
-		}, chat.id, chat.accessHash); err != nil {
+		}, chat.Id, chat.AccessHash); err != nil {
 			t.log.Errorf("failed to update member to admin")
 			return err
 		}

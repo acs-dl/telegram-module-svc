@@ -36,7 +36,7 @@ func (t *tgInfo) GetChatUsersFromApi(chat Chat) ([]data.User, error) {
 }
 
 func (t *tgInfo) getChatMembers(chat Chat) ([]data.User, error) {
-	users, err := t.getAllUsers(chat.id, chat.accessHash)
+	users, err := t.getAllUsers(chat.Id, chat.AccessHash)
 	if err != nil {
 		t.log.Errorf("failed to get all users")
 		return nil, err

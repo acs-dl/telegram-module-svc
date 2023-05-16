@@ -41,11 +41,13 @@ type Permissions interface {
 }
 
 type Permission struct {
-	RequestId   string    `json:"request_id" db:"request_id" structs:"request_id"`
-	TelegramId  int64     `json:"telegram_id" db:"telegram_id" structs:"telegram_id"`
-	AccessLevel string    `json:"access_level" db:"access_level" structs:"access_level"`
-	Link        string    `json:"link" db:"link" structs:"link"`
-	CreatedAt   time.Time `json:"created_at" db:"created_at" structs:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at" db:"updated_at" structs:"-"`
-	*User       `structs:",omitempty"`
+	RequestId           string    `json:"request_id" db:"request_id" structs:"request_id"`
+	TelegramId          int64     `json:"telegram_id" db:"telegram_id" structs:"telegram_id"`
+	AccessLevel         string    `json:"access_level" db:"access_level" structs:"access_level"`
+	Link                string    `json:"link" db:"link" structs:"link"`
+	SubmoduleId         int64     `json:"submodule_id" db:"submodule_id" structs:"submodule_id"`
+	SubmoduleAccessHash *int64    `json:"submodule_access_hash" db:"submodule_access_hash" structs:"submodule_access_hash"`
+	CreatedAt           time.Time `json:"created_at" db:"created_at" structs:"created_at"`
+	UpdatedAt           time.Time `json:"updated_at" db:"updated_at" structs:"-"`
+	*User               `structs:",omitempty"`
 }

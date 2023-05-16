@@ -18,13 +18,14 @@ type TelegramClient interface {
 	GetChatUserFromApi(user data.User, chat Chat) (*data.User, error)
 	SearchByFromApi(username, phone *string, amount int) ([]data.User, error)
 
-	GetChatFromApi(title string) (*Chat, error)
+	GetChatFromApi(title string) ([]Chat, error)
 	AddUserInChatFromApi(user data.User, chat Chat) error
 	UpdateUserInChatFromApi(user data.User, chat Chat) error
 	DeleteFromChatFromApi(user data.User, chat Chat) error
 
 	SendMessageFromApi(info data.MessageInfo) error
 	GenerateChatLinkFromApi(chat Chat) (string, error)
+	GetChatPhotoFromApi(filename *string, chat Chat) (string, error)
 
 	GetTg() *tgInfo
 	GetSuperClient() *telegram.Client
@@ -40,8 +41,11 @@ type tgInfo struct {
 }
 
 type Chat struct {
-	id         int64
-	accessHash *int64
+	Title         string
+	Id            int64
+	AccessHash    *int64
+	Photo         *tg.ChatPhotoClass
+	MembersAmount int64
 }
 
 func NewTgAsInterface(cfg config.Config, ctx context.Context) interface{} {

@@ -34,6 +34,9 @@ github.com/cenkalti/backoff/v4
 # github.com/certifi/gocertifi v0.0.0-20210507211836-431795d63e8d
 ## explicit; go 1.12
 github.com/certifi/gocertifi
+# github.com/dustin/go-humanize v1.0.1
+## explicit; go 1.16
+github.com/dustin/go-humanize
 # github.com/fatih/structs v1.1.0
 ## explicit
 github.com/fatih/structs
@@ -43,6 +46,12 @@ github.com/fatih/structtag
 # github.com/fsnotify/fsnotify v1.6.0
 ## explicit; go 1.16
 github.com/fsnotify/fsnotify
+# github.com/gabriel-vasile/mimetype v1.4.2
+## explicit; go 1.20
+github.com/gabriel-vasile/mimetype
+github.com/gabriel-vasile/mimetype/internal/charset
+github.com/gabriel-vasile/mimetype/internal/json
+github.com/gabriel-vasile/mimetype/internal/magic
 # github.com/getsentry/raven-go v0.2.0
 ## explicit
 github.com/getsentry/raven-go
@@ -166,6 +175,9 @@ github.com/hashicorp/hcl/json/token
 ## explicit; go 1.10
 github.com/jmoiron/sqlx
 github.com/jmoiron/sqlx/reflectx
+# github.com/json-iterator/go v1.1.12
+## explicit; go 1.12
+github.com/json-iterator/go
 # github.com/k0kubun/pp v3.0.1+incompatible
 ## explicit
 github.com/k0kubun/pp
@@ -173,6 +185,10 @@ github.com/k0kubun/pp
 ## explicit; go 1.18
 github.com/klauspost/compress/flate
 github.com/klauspost/compress/gzip
+github.com/klauspost/compress/s2
+# github.com/klauspost/cpuid/v2 v2.2.4
+## explicit; go 1.15
+github.com/klauspost/cpuid/v2
 # github.com/lann/builder v0.0.0-20180802200727-47ae307949d0
 ## explicit
 github.com/lann/builder
@@ -196,9 +212,34 @@ github.com/mattn/go-colorable
 # github.com/mattn/go-isatty v0.0.18
 ## explicit; go 1.15
 github.com/mattn/go-isatty
+# github.com/minio/md5-simd v1.1.2
+## explicit; go 1.14
+github.com/minio/md5-simd
+# github.com/minio/minio-go/v7 v7.0.52
+## explicit; go 1.17
+github.com/minio/minio-go/v7
+github.com/minio/minio-go/v7/pkg/credentials
+github.com/minio/minio-go/v7/pkg/encrypt
+github.com/minio/minio-go/v7/pkg/lifecycle
+github.com/minio/minio-go/v7/pkg/notification
+github.com/minio/minio-go/v7/pkg/replication
+github.com/minio/minio-go/v7/pkg/s3utils
+github.com/minio/minio-go/v7/pkg/set
+github.com/minio/minio-go/v7/pkg/signer
+github.com/minio/minio-go/v7/pkg/sse
+github.com/minio/minio-go/v7/pkg/tags
+# github.com/minio/sha256-simd v1.0.0
+## explicit; go 1.13
+github.com/minio/sha256-simd
 # github.com/mitchellh/mapstructure v1.5.0
 ## explicit; go 1.14
 github.com/mitchellh/mapstructure
+# github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
+## explicit
+github.com/modern-go/concurrent
+# github.com/modern-go/reflect2 v1.0.2
+## explicit; go 1.12
+github.com/modern-go/reflect2
 # github.com/oklog/ulid v1.3.1
 ## explicit
 github.com/oklog/ulid
@@ -215,6 +256,9 @@ github.com/pkg/errors
 # github.com/rabbitmq/amqp091-go v1.8.0
 ## explicit; go 1.16
 github.com/rabbitmq/amqp091-go
+# github.com/rs/xid v1.4.0
+## explicit; go 1.12
+github.com/rs/xid
 # github.com/rubenv/sql-migrate v1.4.0
 ## explicit; go 1.16
 github.com/rubenv/sql-migrate
@@ -342,14 +386,19 @@ go.uber.org/zap/internal/exit
 go.uber.org/zap/zapcore
 # golang.org/x/crypto v0.8.0
 ## explicit; go 1.17
+golang.org/x/crypto/argon2
+golang.org/x/crypto/blake2b
 golang.org/x/crypto/pbkdf2
 golang.org/x/crypto/sha3
 # golang.org/x/net v0.9.0
 ## explicit; go 1.17
 golang.org/x/net/html
 golang.org/x/net/html/atom
+golang.org/x/net/http/httpguts
+golang.org/x/net/idna
 golang.org/x/net/internal/socks
 golang.org/x/net/proxy
+golang.org/x/net/publicsuffix
 # golang.org/x/sync v0.1.0
 ## explicit
 golang.org/x/sync/errgroup
@@ -370,7 +419,9 @@ golang.org/x/text/internal/language/compact
 golang.org/x/text/internal/tag
 golang.org/x/text/language
 golang.org/x/text/runes
+golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
+golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 # gopkg.in/ini.v1 v1.67.0
 ## explicit

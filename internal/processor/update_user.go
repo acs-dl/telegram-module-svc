@@ -15,6 +15,7 @@ func (p *processor) validateUpdateUser(msg data.ModulePayload) error {
 
 	return validation.Errors{
 		"link":         validation.Validate(msg.Link, validation.Required),
+		"id":           validation.Validate(msg.SubmoduleId, validation.Required),
 		"username":     validation.Validate(msg.Username, usernameValidationCase),
 		"phone":        validation.Validate(msg.Phone, phoneValidationCase),
 		"access_level": validation.Validate(msg.AccessLevel, validation.Required),
@@ -35,7 +36,7 @@ func (p *processor) HandleUpdateUserAction(msg data.ModulePayload) (string, erro
 		return data.FAILURE, errors.Wrap(err, "failed to get user")
 	}
 
-	err = p.updateRemotePermission(msg.Link, *user)
+	err = p.updateRemotePermission(msg, *user)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to update permission from API for message action with id `%s`", msg.RequestId)
 		return data.FAILURE, errors.Wrap(err, "failed to update permission from api")
@@ -54,8 +55,8 @@ func (p *processor) HandleUpdateUserAction(msg data.ModulePayload) (string, erro
 	return data.SUCCESS, nil
 }
 
-func (p *processor) updateRemotePermission(link string, user data.User) error {
-	chat, err := p.getChatForUser(link, user)
+func (p *processor) updateRemotePermission(msg data.ModulePayload, user data.User) error {
+	chat, err := p.getChatForUser(msg, user)
 	if err != nil {
 		return errors.Wrap(err, "failed to get chat for user from api")
 	}
@@ -68,11 +69,13 @@ func (p *processor) updateRemotePermission(link string, user data.User) error {
 	return nil
 }
 
-func (p *processor) getChatForUser(link string, user data.User) (*tg_client.Chat, error) {
-	chat, err := helpers.GetChat(p.pqueues.SuperUserPQueue, any(p.telegramClient.GetChatFromApi), []any{any(link)}, pqueue.NormalPriority)
+func (p *processor) getChatForUser(msg data.ModulePayload, user data.User) (*tg_client.Chat, error) {
+	chats, err := helpers.GetChats(p.pqueues.SuperUserPQueue, any(p.telegramClient.GetChatFromApi), []any{any(msg.Link)}, pqueue.NormalPriority)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get chat from api")
+		return nil, errors.Wrap(err, "failed to get chats from api")
 	}
+
+	chat := helpers.RetrieveChat(chats, msg)
 
 	if chat == nil {
 		return nil, errors.New("no chat was found")

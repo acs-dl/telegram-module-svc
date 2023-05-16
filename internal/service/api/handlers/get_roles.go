@@ -21,7 +21,7 @@ func GetRoles(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if request.Link == nil {
-		ape.Render(w, models.NewRolesResponse(false))
+		ape.Render(w, models.NewRolesResponse(false, make([]resources.Chat, 0)))
 		return
 	}
 
@@ -82,18 +82,16 @@ func GetRoles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	chat, err := helpers.GetChat(pqs.SuperUserPQueue, tgClient.GetChatFromApi, []any{any(*request.Link)}, pqueue.HighPriority)
+	chats, err := helpers.GetChats(pqs.SuperUserPQueue, tgClient.GetChatFromApi, []any{any(*request.Link)}, pqueue.HighPriority)
 	if err != nil {
 		Log(r).WithError(err).Errorf("failed to get chat from api")
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
-	if chat == nil {
-		ape.RenderErr(w, problems.NotFound())
-		return
-	}
 
-	chatUser, err := helpers.GetUser(pqs.SuperUserPQueue, tgClient.GetChatUserFromApi, []any{any(*user), any(*chat)}, pqueue.HighPriority)
+	chat := chats[0]
+
+	chatUser, err := helpers.GetUser(pqs.SuperUserPQueue, tgClient.GetChatUserFromApi, []any{any(*user), any(chat)}, pqueue.HighPriority)
 	if err != nil {
 		Log(r).WithError(err).Errorf("failed to get chat user from api")
 		ape.RenderErr(w, problems.InternalError())
@@ -105,6 +103,13 @@ func GetRoles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	dbChats, err := ChatsQ(r).FilterByTitles(*request.Link).Select()
+	if err != nil {
+		Log(r).WithError(err).Errorf("failed to get chats with `%s` title", *request.Link)
+		ape.RenderErr(w, problems.BadRequest(err)...)
+		return
+	}
+
 	// when we add user ALWAYS member
-	ape.Render(w, models.NewRolesResponse(true))
+	ape.Render(w, models.NewRolesResponse(true, models.NewChatListModel(dbChats)))
 }

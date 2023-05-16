@@ -10,6 +10,11 @@ const (
 	IdentityService   = "identity"
 )
 
+const (
+	S3BucketName     = "accesscontrolsystem"
+	S3BucketEndpoint = "https://accesscontrolsystem.s3.eu-north-1.amazonaws.com"
+)
+
 const InviteMessageTemplate = `Hello, <b>{{.Name}}</b> !
 
 We have tried to add you in <i>{{.GroupName}}</i> group, but can't.
@@ -34,11 +39,13 @@ type ModulePayload struct {
 	Action    string `json:"action"`
 
 	//other fields that are required for module
-	Link        string   `json:"link"`
-	Links       []string `json:"links"`
-	Username    *string  `json:"username"`
-	Phone       *string  `json:"phone"`
-	AccessLevel string   `json:"access_level"`
+	Link                string   `json:"link"`
+	SubmoduleId         int64    `json:"submodule_id"`
+	SubmoduleAccessHash *int64   `json:"submodule_access_hash"`
+	Links               []string `json:"links"`
+	Username            *string  `json:"username"`
+	Phone               *string  `json:"phone"`
+	AccessLevel         string   `json:"access_level"`
 }
 
 type UnverifiedPayload struct {

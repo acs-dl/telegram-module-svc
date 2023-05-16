@@ -12,6 +12,7 @@ func (p *processor) validateRemoveUser(msg data.ModulePayload) error {
 
 	return validation.Errors{
 		"link":     validation.Validate(msg.Link, validation.Required),
+		"id":       validation.Validate(msg.SubmoduleId, validation.Required),
 		"username": validation.Validate(msg.Username, usernameValidationCase),
 		"phone":    validation.Validate(msg.Phone, phoneValidationCase),
 	}.Filter()
@@ -32,7 +33,7 @@ func (p *processor) HandleRemoveUserAction(msg data.ModulePayload) (string, erro
 		return data.FAILURE, errors.Wrap(err, "failed to get user")
 	}
 
-	err = p.deleteRemotePermission(msg.Link, *user)
+	err = p.deleteRemotePermission(msg, *user)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to remove permission from API for message action with id `%s`", msg.RequestId)
 		return data.FAILURE, errors.Wrap(err, "some error while removing permission from api")
