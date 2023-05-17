@@ -7,7 +7,7 @@ docker:
   WORKDIR: /go/src/github.com/acs-dl/telegram-module-svc
 git:
   - add: /
-    to: /go/src/gitlab.com/distributed_lab/acs/telegram-module
+    to: /go/src/github.com/acs-dl/telegram-module-svc
     stageDependencies:
       setup:
         - "**/*"
