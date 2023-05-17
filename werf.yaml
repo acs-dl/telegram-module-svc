@@ -1,0 +1,33 @@
+configVersion: 1
+project: 'backend'
+---
+image: builder
+from: golang:1.19-alpine
+docker:
+  WORKDIR: /go/src/github.com/acs-dl/telegram-module-svc
+git:
+  - add: /
+    to: /go/src/gitlab.com/distributed_lab/acs/telegram-module
+    stageDependencies:
+      setup:
+        - "**/*"
+shell:
+  setup:
+    - export CGO_ENABLED=0
+    - export GO111MODULE=off
+    - export GOOS=linux
+    - go build  -o /usr/local/bin/telegram-module-svc  /go/src/github.com/acs-dl/telegram-module-svc
+
+---
+image: service
+from: alpine:3.9
+docker:
+  ENTRYPOINT: core
+shell:
+  setup:
+    - apk add --no-cache ca-certificates
+import:
+  - image: builder
+    add: /usr/local/bin/telegram-module-svc
+    to: /usr/local/bin/telegram-module-svc
+    after: setup
