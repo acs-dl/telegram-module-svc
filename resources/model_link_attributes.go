@@ -5,8 +5,9 @@
 package resources
 
 type LinkAttributes struct {
+	Chats []Chat `json:"chats"`
 	// indicates whether link exists
-	IsExists *bool `json:"is_exists,omitempty"`
+	IsExists bool `json:"is_exists"`
 	// link to repository or group
 	Link string `json:"link"`
 }

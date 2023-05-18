@@ -1,10 +1,11 @@
 package models
 
 import (
+	"github.com/acs-dl/telegram-module-svc/internal/data"
 	"github.com/acs-dl/telegram-module-svc/resources"
 )
 
-func newLink(link string, isExists bool) resources.Link {
+func newLink(link string, isExists bool, chats []data.Chat) resources.Link {
 	return resources.Link{
 		Key: resources.Key{
 			ID:   link,
@@ -12,13 +13,14 @@ func newLink(link string, isExists bool) resources.Link {
 		},
 		Attributes: resources.LinkAttributes{
 			Link:     link,
-			IsExists: &isExists,
+			IsExists: isExists,
+			Chats:    NewChatListModel(chats),
 		},
 	}
 }
 
-func NewLinkResponse(link string, isExists bool) resources.LinkResponse {
+func NewLinkResponse(link string, isExists bool, chats []data.Chat) resources.LinkResponse {
 	return resources.LinkResponse{
-		Data: newLink(link, isExists),
+		Data: newLink(link, isExists, chats),
 	}
 }

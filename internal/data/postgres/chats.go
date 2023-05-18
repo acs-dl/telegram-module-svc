@@ -2,6 +2,8 @@ package postgres
 
 import (
 	"database/sql"
+	"fmt"
+	"strings"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/acs-dl/telegram-module-svc/internal/data"
@@ -104,6 +106,16 @@ func (r ChatsQ) FilterByAccessHash(accessHash *int64) data.Chats {
 	equalAccessHash := sq.Eq{chatsAccessHashColumn: accessHash}
 	r.selectBuilder = r.selectBuilder.Where(equalAccessHash)
 	r.deleteBuilder = r.deleteBuilder.Where(equalAccessHash)
+
+	return r
+}
+
+func (r ChatsQ) SearchBy(title string) data.Chats {
+	title = strings.Replace(title, " ", "%", -1)
+	title = fmt.Sprint("%", title, "%")
+
+	r.selectBuilder = r.selectBuilder.Where(sq.ILike{chatsTitleColumn: title})
+	r.deleteBuilder = r.deleteBuilder.Where(sq.ILike{chatsTitleColumn: title})
 
 	return r
 }

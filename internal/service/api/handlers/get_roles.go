@@ -8,7 +8,6 @@ import (
 	"github.com/acs-dl/telegram-module-svc/internal/service/api/models"
 	"github.com/acs-dl/telegram-module-svc/internal/service/api/requests"
 	"github.com/acs-dl/telegram-module-svc/internal/tg_client"
-	"github.com/acs-dl/telegram-module-svc/resources"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
 )
@@ -22,7 +21,7 @@ func GetRoles(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if request.Link == nil {
-		ape.Render(w, models.NewRolesResponse(false, make([]resources.Chat, 0)))
+		ape.Render(w, models.NewRolesResponse(false))
 		return
 	}
 
@@ -104,13 +103,6 @@ func GetRoles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dbChats, err := ChatsQ(r).FilterByTitles(*request.Link).Select()
-	if err != nil {
-		Log(r).WithError(err).Errorf("failed to get chats with `%s` title", *request.Link)
-		ape.RenderErr(w, problems.BadRequest(err)...)
-		return
-	}
-
 	// when we add user ALWAYS member
-	ape.Render(w, models.NewRolesResponse(true, models.NewChatListModel(dbChats)))
+	ape.Render(w, models.NewRolesResponse(true))
 }
