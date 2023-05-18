@@ -2,6 +2,7 @@ package processor
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/acs-dl/telegram-module-svc/internal/data"
 	"gitlab.com/distributed_lab/logan/v3/errors"
@@ -39,4 +40,28 @@ func (p *processor) sendDeleteInUnverifiedOrUpdateInIdentity(requestId string, u
 	}
 
 	return nil
+}
+
+func ConvertIdentifiersStringsToInt(userIdStr, submoduleIdStr string, submoduleAccessHashStr *string) (userId, submoduleId int64, submoduleAccessHash *int64, err error) {
+	userId, err = strconv.ParseInt(userIdStr, 10, 64)
+	if err != nil {
+		return 0, 0, nil, errors.Wrap(err, "failed to parse user id")
+	}
+
+	submoduleId, err = strconv.ParseInt(submoduleIdStr, 10, 64)
+	if err != nil {
+		return 0, 0, nil, errors.Wrap(err, "failed to parse submodule id")
+	}
+
+	if submoduleAccessHashStr == nil {
+		return userId, submoduleId, nil, nil
+	}
+
+	tmp, err := strconv.ParseInt(*submoduleAccessHashStr, 10, 64)
+	if err != nil {
+		return 0, 0, nil, errors.Wrap(err, "failed to parse submodule id")
+	}
+	submoduleAccessHash = &tmp
+
+	return userId, submoduleId, submoduleAccessHash, nil
 }

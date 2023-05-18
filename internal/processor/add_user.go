@@ -1,7 +1,6 @@
 package processor
 
 import (
-	"strconv"
 	"time"
 
 	"github.com/acs-dl/telegram-module-svc/internal/data"
@@ -19,11 +18,11 @@ func (p *processor) validateAddUser(msg data.ModulePayload) error {
 	usernameValidationCase := validation.When(msg.Phone == nil, validation.Required.Error("username is required if phone is not set"))
 
 	return validation.Errors{
-		"link":     validation.Validate(msg.Link, validation.Required),
-		"id":       validation.Validate(msg.SubmoduleId, validation.Required),
-		"username": validation.Validate(msg.Username, usernameValidationCase),
-		"phone":    validation.Validate(msg.Phone, phoneValidationCase),
-		"user_id":  validation.Validate(msg.UserId, validation.Required),
+		"link":         validation.Validate(msg.Link, validation.Required),
+		"submodule_id": validation.Validate(msg.SubmoduleId, validation.Required),
+		"username":     validation.Validate(msg.Username, usernameValidationCase),
+		"phone":        validation.Validate(msg.Phone, phoneValidationCase),
+		"user_id":      validation.Validate(msg.UserId, validation.Required),
 	}.Filter()
 }
 
@@ -36,13 +35,13 @@ func (p *processor) HandleAddUserAction(msg data.ModulePayload) (string, error) 
 		return data.FAILURE, errors.Wrap(err, "failed to validate fields")
 	}
 
-	userId, err := strconv.ParseInt(msg.UserId, 10, 64)
+	userId, submoduleId, submoduleAccessHash, err := ConvertIdentifiersStringsToInt(msg.UserId, msg.SubmoduleId, msg.SubmoduleAccessHash)
 	if err != nil {
-		p.log.WithError(err).Errorf("failed to parse user id `%s` for message action with id `%s`", msg.UserId, msg.RequestId)
-		return data.FAILURE, errors.Wrap(err, "failed to parse user id")
+		p.log.WithError(err).Errorf("failed to convert strings identifiers  for message action with id `%s`", msg.RequestId)
+		return data.FAILURE, errors.Wrap(err, "failed to convert strings to int")
 	}
 
-	requestStatus, user, err := p.addUser(msg)
+	requestStatus, user, err := p.addUser(msg, submoduleId, submoduleAccessHash)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to add user for message action with id `%s`", msg.RequestId)
 		return data.FAILURE, errors.Wrap(err, "failed to add user")
@@ -65,8 +64,8 @@ func (p *processor) HandleAddUserAction(msg data.ModulePayload) (string, error) 
 			AccessLevel:         user.AccessLevel,
 			Link:                msg.Link,
 			CreatedAt:           user.CreatedAt,
-			SubmoduleAccessHash: msg.SubmoduleAccessHash,
-			SubmoduleId:         msg.SubmoduleId,
+			SubmoduleAccessHash: submoduleAccessHash,
+			SubmoduleId:         submoduleId,
 		}); err != nil {
 			p.log.WithError(err).Errorf("failed to upsert permission in db for message action with id `%s`", msg.RequestId)
 			return errors.Wrap(err, "failed to upsert permission in db")
@@ -101,7 +100,7 @@ func (p *processor) HandleAddUserAction(msg data.ModulePayload) (string, error) 
 	return requestStatus, nil
 }
 
-func (p *processor) addUser(msg data.ModulePayload) (string, *data.User, error) {
+func (p *processor) addUser(msg data.ModulePayload, submoduleId int64, submoduleAccessHash *int64) (string, *data.User, error) {
 	user, err := helpers.GetUser(p.pqueues.UserPQueue,
 		any(p.telegramClient.GetUserFromApi),
 		[]any{
@@ -124,7 +123,7 @@ func (p *processor) addUser(msg data.ModulePayload) (string, *data.User, error) 
 		return data.FAILURE, nil, errors.Wrap(err, "failed to get chat from api")
 	}
 
-	chat := helpers.RetrieveChat(chats, msg)
+	chat := helpers.RetrieveChat(chats, msg.Link, submoduleId, submoduleAccessHash)
 
 	if chat == nil {
 		return data.FAILURE, nil, errors.New("no chat was found")

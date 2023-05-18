@@ -116,26 +116,26 @@ func GetString(queue *pqueue.PriorityQueue, function any, args []any, priority i
 	return myString, nil
 }
 
-func RetrieveChat(chats []tg_client.Chat, msg data.ModulePayload) *tg_client.Chat {
+func RetrieveChat(chats []tg_client.Chat, link string, id int64, accessHash *int64) *tg_client.Chat {
 	if len(chats) == 1 {
 		return &chats[0]
 	}
 
 	for i := range chats {
-		if chats[i].Title != msg.Link {
+		if chats[i].Title != link {
 			continue
 		}
 
-		if chats[i].Id != msg.SubmoduleId {
+		if chats[i].Id != id {
 			continue
 		}
 
-		if chats[i].AccessHash == nil && msg.SubmoduleAccessHash == nil {
+		if chats[i].AccessHash == nil && accessHash == nil {
 			return &chats[i]
 		}
 
-		if chats[i].AccessHash != nil && msg.SubmoduleAccessHash != nil {
-			if *(chats[i].AccessHash) == *(msg.SubmoduleAccessHash) {
+		if chats[i].AccessHash != nil && accessHash != nil {
+			if *(chats[i].AccessHash) == *(accessHash) {
 				return &chats[i]
 			}
 		}

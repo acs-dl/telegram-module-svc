@@ -40,8 +40,8 @@ type ModulePayload struct {
 
 	//other fields that are required for module
 	Link                string   `json:"link"`
-	SubmoduleId         int64    `json:"submodule_id"`
-	SubmoduleAccessHash *int64   `json:"submodule_access_hash"`
+	SubmoduleId         string   `json:"submodule_id"`
+	SubmoduleAccessHash *string  `json:"submodule_access_hash"`
 	Links               []string `json:"links"`
 	Username            *string  `json:"username"`
 	Phone               *string  `json:"phone"`

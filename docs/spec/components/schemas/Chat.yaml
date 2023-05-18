@@ -12,13 +12,11 @@ allOf:
           - submodule_id
         properties:
           submodule_id:
-            type: integer
-            format: int64
+            type: string
             description: telegram chat id
             example: "666"
           submodule_access_hash:
-            type: integer
-            format: int64
+            type: string
             description: telegram chat access hash
             example: "1234567"
           title:

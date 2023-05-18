@@ -10,9 +10,9 @@ type ChatAttributes struct {
 	// link to the chat photo
 	Photo *string `json:"photo,omitempty"`
 	// telegram chat access hash
-	SubmoduleAccessHash *int64 `json:"submodule_access_hash,omitempty"`
+	SubmoduleAccessHash *string `json:"submodule_access_hash,omitempty"`
 	// telegram chat id
-	SubmoduleId int64 `json:"submodule_id"`
+	SubmoduleId string `json:"submodule_id"`
 	// telegram chat title
 	Title string `json:"title"`
 }
