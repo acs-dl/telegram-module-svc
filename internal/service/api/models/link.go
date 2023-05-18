@@ -12,9 +12,9 @@ func newLink(link string, isExists bool, chats []data.Chat) resources.Link {
 			Type: resources.LINKS,
 		},
 		Attributes: resources.LinkAttributes{
-			Link:     link,
-			IsExists: isExists,
-			Chats:    NewChatListModel(chats),
+			Link:       link,
+			IsExists:   isExists,
+			Submodules: NewChatListModel(chats),
 		},
 	}
 }

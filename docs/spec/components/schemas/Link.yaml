@@ -9,7 +9,7 @@ allOf:
         required:
           - link
           - is_exists
-          - chats
+          - submodules
         properties:
           link:
             type: string
@@ -19,7 +19,7 @@ allOf:
             type: boolean
             description: indicates whether link exists
             example: true
-          chats:
+          submodules:
             type: array
             items:
               type: object
