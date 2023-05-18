@@ -9,11 +9,11 @@ func NewChatModel(chat data.Chat) resources.Chat {
 	result := resources.Chat{
 		Key: resources.NewKeyInt64(chat.Id, resources.CHATS),
 		Attributes: resources.ChatAttributes{
-			Title:         chat.Title,
-			Id:            chat.Id,
-			AccessHash:    chat.AccessHash,
-			MembersAmount: chat.MembersAmount,
-			Photo:         chat.PhotoLink,
+			Title:               chat.Title,
+			SubmoduleId:         chat.Id,
+			SubmoduleAccessHash: chat.AccessHash,
+			MembersAmount:       chat.MembersAmount,
+			Photo:               chat.PhotoLink,
 		},
 	}
 
