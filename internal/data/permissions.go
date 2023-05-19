@@ -26,6 +26,8 @@ type Permissions interface {
 
 	FilterByTelegramIds(telegramIds ...int64) Permissions
 	FilterByLinks(links ...string) Permissions
+	FilterBySubmoduleAccessHash(accessHash *int64) Permissions
+	FilterBySubmoduleIds(ids ...int64) Permissions
 	FilterByGreaterTime(time time.Time) Permissions
 	FilterByLowerTime(time time.Time) Permissions
 	SearchBy(search string) Permissions

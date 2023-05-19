@@ -33,11 +33,12 @@ create table if not exists chats (
     access_hash bigint,
     members_amount bigint not null,
     photo_name text,
-    photo_link text,
+    photo_link text
 
-    unique(id, access_hash)
+--     unique(id, access_hash)
 );
 
+create unique index if not exists chats_id_access_hash_key on chats (id, access_hash) nulls not distinct;
 create index if not exists chats_access_hash_idx on chats(access_hash);
 create index if not exists chats_id_idx on chats(id);
 

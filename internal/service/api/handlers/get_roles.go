@@ -51,8 +51,21 @@ func GetRoles(w http.ResponseWriter, r *http.Request) {
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
+
+	_, submoduleId, submoduleAccessHash, err := helpers.ConvertIdentifiersStringsToInt("-1", *request.SubmoduleId, request.SubmoduleAccessHash)
+	if err != nil {
+		Log(r).WithError(err).Errorf("failed to convert string to  integer")
+		ape.RenderErr(w, problems.InternalError())
+		return
+	}
+
 	if user != nil {
-		permission, err := PermissionsQ(r).FilterByTelegramIds(user.TelegramId).FilterByLinks(*request.Link).Get()
+		permission, err := PermissionsQ(r).
+			FilterByTelegramIds(user.TelegramId).
+			FilterByLinks(*request.Link).
+			FilterBySubmoduleIds(submoduleId).
+			FilterBySubmoduleAccessHash(submoduleAccessHash).
+			Get()
 		if err != nil {
 			Log(r).WithError(err).Errorf("failed to get permission from `%s` to `%s`/`%s`", *request.Link, username, phone)
 			ape.RenderErr(w, problems.InternalError())
@@ -92,13 +105,6 @@ func GetRoles(w http.ResponseWriter, r *http.Request) {
 	chats, err := helpers.GetChats(pqs.SuperUserPQueue, tgClient.GetChatFromApi, []any{any(*request.Link)}, pqueue.HighPriority)
 	if err != nil {
 		Log(r).WithError(err).Errorf("failed to get chat from api")
-		ape.RenderErr(w, problems.InternalError())
-		return
-	}
-
-	_, submoduleId, submoduleAccessHash, err := helpers.ConvertIdentifiersStringsToInt("-1", *request.SubmoduleId, request.SubmoduleAccessHash)
-	if err != nil {
-		Log(r).WithError(err).Errorf("failed to convert string to  integer")
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
