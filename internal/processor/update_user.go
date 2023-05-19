@@ -31,7 +31,7 @@ func (p *processor) HandleUpdateUserAction(msg data.ModulePayload) (string, erro
 		return data.FAILURE, errors.Wrap(err, "failed to validate fields")
 	}
 
-	_, submoduleId, submoduleAccessHash, err := ConvertIdentifiersStringsToInt("-1", msg.SubmoduleId, msg.SubmoduleAccessHash)
+	_, submoduleId, submoduleAccessHash, err := helpers.ConvertIdentifiersStringsToInt("-1", msg.SubmoduleId, msg.SubmoduleAccessHash)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to convert strings identifiers  for message action with id `%s`", msg.RequestId)
 		return data.FAILURE, errors.Wrap(err, "failed to convert strings to int")

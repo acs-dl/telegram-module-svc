@@ -2,6 +2,7 @@ package processor
 
 import (
 	"github.com/acs-dl/telegram-module-svc/internal/data"
+	"github.com/acs-dl/telegram-module-svc/internal/helpers"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 )
@@ -27,7 +28,7 @@ func (p *processor) HandleRemoveUserAction(msg data.ModulePayload) (string, erro
 		return data.FAILURE, errors.Wrap(err, "failed to validate fields")
 	}
 
-	_, submoduleId, submoduleAccessHash, err := ConvertIdentifiersStringsToInt("-1", msg.SubmoduleId, msg.SubmoduleAccessHash)
+	_, submoduleId, submoduleAccessHash, err := helpers.ConvertIdentifiersStringsToInt("-1", msg.SubmoduleId, msg.SubmoduleAccessHash)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to convert strings identifiers  for message action with id `%s`", msg.RequestId)
 		return data.FAILURE, errors.Wrap(err, "failed to convert strings to int")

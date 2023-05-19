@@ -21,6 +21,13 @@ func GetRoles(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if request.Link == nil {
+		Log(r).Warnf("no link was provided")
+		ape.Render(w, models.NewRolesResponse(false))
+		return
+	}
+
+	if request.SubmoduleId == nil {
+		Log(r).Warnf("no submodule id was provided")
 		ape.Render(w, models.NewRolesResponse(false))
 		return
 	}
@@ -41,14 +48,14 @@ func GetRoles(w http.ResponseWriter, r *http.Request) {
 	user, err := UsersQ(r).FilterByUsername(username).FilterByPhone(phone).Get()
 	if err != nil {
 		Log(r).WithError(err).Errorf("failed to get user with `%s` username and `%s` phone", username, phone)
-		ape.RenderErr(w, problems.BadRequest(err)...)
+		ape.RenderErr(w, problems.InternalError())
 		return
 	}
 	if user != nil {
 		permission, err := PermissionsQ(r).FilterByTelegramIds(user.TelegramId).FilterByLinks(*request.Link).Get()
 		if err != nil {
 			Log(r).WithError(err).Errorf("failed to get permission from `%s` to `%s`/`%s`", *request.Link, username, phone)
-			ape.RenderErr(w, problems.BadRequest(err)...)
+			ape.RenderErr(w, problems.InternalError())
 			return
 		}
 
@@ -89,9 +96,21 @@ func GetRoles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	chat := chats[0]
+	_, submoduleId, submoduleAccessHash, err := helpers.ConvertIdentifiersStringsToInt("-1", *request.SubmoduleId, request.SubmoduleAccessHash)
+	if err != nil {
+		Log(r).WithError(err).Errorf("failed to convert string to  integer")
+		ape.RenderErr(w, problems.InternalError())
+		return
+	}
 
-	chatUser, err := helpers.GetUser(pqs.SuperUserPQueue, tgClient.GetChatUserFromApi, []any{any(*user), any(chat)}, pqueue.HighPriority)
+	chat := helpers.RetrieveChat(chats, *request.Link, submoduleId, submoduleAccessHash)
+	if chat == nil {
+		Log(r).Warnf("no chat was found")
+		ape.RenderErr(w, problems.NotFound())
+		return
+	}
+
+	chatUser, err := helpers.GetUser(pqs.SuperUserPQueue, tgClient.GetChatUserFromApi, []any{any(*user), any(*chat)}, pqueue.HighPriority)
 	if err != nil {
 		Log(r).WithError(err).Errorf("failed to get chat user from api")
 		ape.RenderErr(w, problems.InternalError())

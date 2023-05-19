@@ -1,6 +1,8 @@
 package helpers
 
 import (
+	"strconv"
+
 	"github.com/acs-dl/telegram-module-svc/internal/data"
 	"github.com/acs-dl/telegram-module-svc/internal/pqueue"
 	"github.com/acs-dl/telegram-module-svc/internal/tg_client"
@@ -142,4 +144,28 @@ func RetrieveChat(chats []tg_client.Chat, link string, id int64, accessHash *int
 	}
 
 	return nil
+}
+
+func ConvertIdentifiersStringsToInt(userIdStr, submoduleIdStr string, submoduleAccessHashStr *string) (userId, submoduleId int64, submoduleAccessHash *int64, err error) {
+	userId, err = strconv.ParseInt(userIdStr, 10, 64)
+	if err != nil {
+		return 0, 0, nil, errors.Wrap(err, "failed to parse user id")
+	}
+
+	submoduleId, err = strconv.ParseInt(submoduleIdStr, 10, 64)
+	if err != nil {
+		return 0, 0, nil, errors.Wrap(err, "failed to parse submodule id")
+	}
+
+	if submoduleAccessHashStr == nil {
+		return userId, submoduleId, nil, nil
+	}
+
+	tmp, err := strconv.ParseInt(*submoduleAccessHashStr, 10, 64)
+	if err != nil {
+		return 0, 0, nil, errors.Wrap(err, "failed to parse submodule id")
+	}
+	submoduleAccessHash = &tmp
+
+	return userId, submoduleId, submoduleAccessHash, nil
 }
