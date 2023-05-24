@@ -1,8 +1,8 @@
 package config
 
 import (
+	"context"
 	"encoding/json"
-	"os"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"gitlab.com/distributed_lab/logan/v3/errors"
@@ -16,12 +16,19 @@ type AwsCfg struct {
 func (c *config) Aws() *AwsCfg {
 	return c.aws.Do(func() interface{} {
 		var cfg AwsCfg
-		value, ok := os.LookupEnv("aws")
-		if !ok {
-			panic(errors.New("no aws env variable"))
+		client := createVaultClient()
+		mountPath, secretPath := retrieveVaultPaths(c.getter)
+
+		secret, err := client.KVv2(mountPath).Get(context.Background(), secretPath)
+		if err != nil {
+			panic(errors.Wrap(err, "failed to read from the vault"))
 		}
 
-		err := json.Unmarshal([]byte(value), &cfg)
+		value, ok := secret.Data["aws"].(string)
+		if !ok {
+			panic(errors.New("aws has wrong type"))
+		}
+		err = json.Unmarshal([]byte(value), &cfg)
 		if err != nil {
 			panic(errors.Wrap(err, "failed to figure out aws params from env variable"))
 		}

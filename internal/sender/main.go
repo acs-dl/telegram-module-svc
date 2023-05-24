@@ -3,8 +3,9 @@ package sender
 import (
 	"context"
 	"encoding/json"
-	"gitlab.com/distributed_lab/logan/v3"
 	"time"
+
+	"gitlab.com/distributed_lab/logan/v3"
 
 	"github.com/ThreeDotsLabs/watermill-amqp/v2/pkg/amqp"
 	"github.com/ThreeDotsLabs/watermill/message"
@@ -30,7 +31,7 @@ func NewSenderAsInterface(cfg config.Config, _ context.Context) interface{} {
 		publisher:   cfg.Amqp().Publisher,
 		responsesQ:  postgres.NewResponsesQ(cfg.DB()),
 		log:         logan.New().WithField("service", ServiceName),
-		topic:       "orchestrator",
+		topic:       cfg.Amqp().Orchestrator,
 		runnerDelay: cfg.Runners().Sender,
 	})
 }

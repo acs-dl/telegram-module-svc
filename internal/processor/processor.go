@@ -2,6 +2,7 @@ package processor
 
 import (
 	"context"
+
 	"gitlab.com/distributed_lab/logan/v3"
 
 	"github.com/acs-dl/telegram-module-svc/internal/config"
@@ -35,26 +36,30 @@ type Processor interface {
 }
 
 type processor struct {
-	log            *logan.Entry
-	telegramClient tg_client.TelegramClient
-	permissionsQ   data.Permissions
-	usersQ         data.Users
-	chatsQ         data.Chats
-	managerQ       *manager.Manager
-	sender         *sender.Sender
-	pqueues        *pqueue.PQueues
+	log             *logan.Entry
+	telegramClient  tg_client.TelegramClient
+	permissionsQ    data.Permissions
+	usersQ          data.Users
+	chatsQ          data.Chats
+	managerQ        *manager.Manager
+	sender          *sender.Sender
+	pqueues         *pqueue.PQueues
+	unverifiedTopic string
+	identityTopic   string
 }
 
 func NewProcessorAsInterface(cfg config.Config, ctx context.Context) interface{} {
 	return interface{}(&processor{
-		log:            cfg.Log().WithField("service", ServiceName),
-		telegramClient: tg_client.TelegramClientInstance(ctx),
-		permissionsQ:   postgres.NewPermissionsQ(cfg.DB()),
-		usersQ:         postgres.NewUsersQ(cfg.DB()),
-		chatsQ:         postgres.NewChatsQ(cfg.DB()),
-		managerQ:       manager.NewManager(cfg.DB()),
-		sender:         sender.SenderInstance(ctx),
-		pqueues:        pqueue.PQueuesInstance(ctx),
+		log:             cfg.Log().WithField("service", ServiceName),
+		telegramClient:  tg_client.TelegramClientInstance(ctx),
+		permissionsQ:    postgres.NewPermissionsQ(cfg.DB()),
+		usersQ:          postgres.NewUsersQ(cfg.DB()),
+		chatsQ:          postgres.NewChatsQ(cfg.DB()),
+		managerQ:        manager.NewManager(cfg.DB()),
+		sender:          sender.SenderInstance(ctx),
+		pqueues:         pqueue.PQueuesInstance(ctx),
+		unverifiedTopic: cfg.Amqp().Unverified,
+		identityTopic:   cfg.Amqp().Identity,
 	})
 }
 

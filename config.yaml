@@ -7,8 +7,15 @@ db:
 
 amqp:
   topic: "telegram"
+  unverified: "unverified-svc"
+  orchestrator: "orchestrator"
+  identity: "identity"
   publisher: "amqp://guest:guest@localhost:5672/" #telegram_publisher
   subscriber: "amqp://guest:guest@localhost:5672/" #telegram_receiver
+
+vault:
+  mount_path: "secret"
+  secret_path: "telegram"
 
 runners:
   registrar: 10m
