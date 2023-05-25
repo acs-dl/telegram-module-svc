@@ -1,7 +1,6 @@
 package config
 
 import (
-	"context"
 	"encoding/json"
 	"os"
 
@@ -9,6 +8,7 @@ import (
 	vault "github.com/hashicorp/vault/api"
 	"gitlab.com/distributed_lab/figure"
 	"gitlab.com/distributed_lab/kit/kv"
+	knox "gitlab.com/distributed_lab/knox/knox-fork/client/external_kms"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 )
 
@@ -27,30 +27,26 @@ func (c *config) Telegram() *TelegramCfg {
 	return c.telegram.Do(func() interface{} {
 		var cfg TelegramCfg
 
-		client := createVaultClient()
-		mountPath, secretPath := retrieveVaultPaths(c.getter)
+		client := knox.NewKeyManagementClient(c.getter)
 
-		secret, err := client.KVv2(mountPath).Get(context.Background(), secretPath)
+		key, err := client.GetKey("super_user", "1436751686134996000")
 		if err != nil {
-			panic(errors.Wrap(err, "failed to read from the vault"))
+			panic(errors.Wrap(err, "failed to get super user key"))
 		}
 
 		var usr TgData
-		value, ok := secret.Data["super_user"].(string)
-		if !ok {
-			panic(errors.New("super user has wrong type"))
-		}
-		err = json.Unmarshal([]byte(value), &usr)
+		err = json.Unmarshal(key, &usr)
 		if err != nil {
 			panic(errors.Wrap(err, "failed to figure out super user params from vault"))
 		}
 		cfg.SuperUser = usr
 
-		value, ok = secret.Data["user"].(string)
-		if !ok {
-			panic(errors.New("user has wrong type"))
+		key, err = client.GetKey("user", "4999510296215657000")
+		if err != nil {
+			panic(errors.Wrap(err, "failed to get user key"))
 		}
-		err = json.Unmarshal([]byte(value), &usr)
+
+		err = json.Unmarshal(key, &usr)
 		if err != nil {
 			panic(errors.Wrap(err, "failed to figure out user params from vault"))
 		}

@@ -14,8 +14,9 @@ amqp:
   subscriber: "amqp://guest:guest@localhost:5672/" #telegram_receiver
 
 vault:
-  mount_path: "secret"
-  secret_path: "telegram"
+  endpoint: "http://127.0.0.1:8200"
+  token: "hvs.2YSmkqrq29HdV7ZMlQxK2lj0"
+  path: "secret/data/telegram"
 
 runners:
   registrar: 10m
