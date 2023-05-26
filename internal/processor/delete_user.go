@@ -40,10 +40,7 @@ func (p *processor) HandleDeleteUserAction(msg data.ModulePayload) (string, erro
 	}
 
 	for _, permission := range permissions {
-		err = p.deleteRemotePermission(
-			data.ModulePayload{Link: permission.Link, SubmoduleAccessHash: permission.SubmoduleAccessHash, SubmoduleId: permission.SubmoduleId},
-			*user,
-		)
+		err = p.deleteRemotePermission(permission.Link, permission.SubmoduleId, permission.SubmoduleAccessHash, *user)
 		if err != nil {
 			p.log.WithError(err).Errorf("failed to remove permission from API for message action with id `%s`", msg.RequestId)
 			return data.FAILURE, errors.Wrap(err, "some error while removing permission from api")
@@ -97,8 +94,8 @@ func (p *processor) checkUserExistence(username, phone *string) (*data.User, err
 	return dbUser, nil
 }
 
-func (p *processor) deleteRemotePermission(msg data.ModulePayload, user data.User) error {
-	chat, err := p.getChatForUser(msg, user)
+func (p *processor) deleteRemotePermission(link string, submoduleId int64, submoduleAccessHash *int64, user data.User) error {
+	chat, err := p.getChatForUser(link, submoduleId, submoduleAccessHash, user)
 	if err != nil {
 		return errors.Wrap(err, "failed to get chat for user from api")
 	}

@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/acs-dl/telegram-module-svc/internal/data"
+	"github.com/acs-dl/telegram-module-svc/internal/helpers"
 	"github.com/acs-dl/telegram-module-svc/resources"
 )
 
@@ -12,6 +13,8 @@ func NewUserPermissionModel(permission data.Permission, counter int) resources.U
 		phoneWithoutCode := (*permission.Phone)[3:]
 		permission.Phone = &phoneWithoutCode
 	}
+
+	id, accessHash := helpers.SubmoduleIdentifiersToString(permission.SubmoduleId, permission.SubmoduleAccessHash)
 
 	result := resources.UserPermission{
 		Key: resources.Key{
@@ -24,8 +27,8 @@ func NewUserPermissionModel(permission data.Permission, counter int) resources.U
 			ModuleId:            permission.TelegramId,
 			UserId:              permission.Id,
 			Link:                permission.Link,
-			SubmoduleId:         permission.SubmoduleId,
-			SubmoduleAccessHash: permission.SubmoduleAccessHash,
+			SubmoduleId:         id,
+			SubmoduleAccessHash: accessHash,
 			Path:                permission.Link,
 			AccessLevel: resources.AccessLevel{
 				Name:  data.Roles[permission.AccessLevel],

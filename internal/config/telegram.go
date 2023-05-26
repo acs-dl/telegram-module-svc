@@ -2,9 +2,9 @@ package config
 
 import (
 	"encoding/json"
-	"os"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
+	knox "gitlab.com/distributed_lab/knox/knox-fork/client/external_kms"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 )
 
@@ -22,15 +22,31 @@ type TgData struct {
 func (c *config) Telegram() *TelegramCfg {
 	return c.telegram.Do(func() interface{} {
 		var cfg TelegramCfg
-		value, ok := os.LookupEnv("telegram")
-		if !ok {
-			panic(errors.New("no telegram env variable"))
+
+		client := knox.NewKeyManagementClient(c.getter)
+
+		key, err := client.GetKey("super_user", "1436751686134996000")
+		if err != nil {
+			panic(errors.Wrap(err, "failed to get super user key"))
 		}
 
-		err := json.Unmarshal([]byte(value), &cfg)
+		var usr TgData
+		err = json.Unmarshal(key, &usr)
 		if err != nil {
-			panic(errors.Wrap(err, "failed to figure out telegram params from env variable"))
+			panic(errors.Wrap(err, "failed to figure out super user params from vault"))
 		}
+		cfg.SuperUser = usr
+
+		key, err = client.GetKey("user", "4999510296215657000")
+		if err != nil {
+			panic(errors.Wrap(err, "failed to get user key"))
+		}
+
+		err = json.Unmarshal(key, &usr)
+		if err != nil {
+			panic(errors.Wrap(err, "failed to figure out user params from vault"))
+		}
+		cfg.User = usr
 
 		err = cfg.validate()
 		if err != nil {

@@ -2,6 +2,7 @@ package processor
 
 import (
 	"github.com/acs-dl/telegram-module-svc/internal/data"
+	"github.com/acs-dl/telegram-module-svc/internal/helpers"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 )
@@ -11,10 +12,10 @@ func (p *processor) validateRemoveUser(msg data.ModulePayload) error {
 	usernameValidationCase := validation.When(msg.Phone == nil, validation.Required.Error("username is required if phone is not set"))
 
 	return validation.Errors{
-		"link":     validation.Validate(msg.Link, validation.Required),
-		"id":       validation.Validate(msg.SubmoduleId, validation.Required),
-		"username": validation.Validate(msg.Username, usernameValidationCase),
-		"phone":    validation.Validate(msg.Phone, phoneValidationCase),
+		"link":         validation.Validate(msg.Link, validation.Required),
+		"submodule_id": validation.Validate(msg.SubmoduleId, validation.Required),
+		"username":     validation.Validate(msg.Username, usernameValidationCase),
+		"phone":        validation.Validate(msg.Phone, phoneValidationCase),
 	}.Filter()
 }
 
@@ -27,13 +28,19 @@ func (p *processor) HandleRemoveUserAction(msg data.ModulePayload) (string, erro
 		return data.FAILURE, errors.Wrap(err, "failed to validate fields")
 	}
 
+	_, submoduleId, submoduleAccessHash, err := helpers.ConvertIdentifiersStringsToInt("-1", msg.SubmoduleId, msg.SubmoduleAccessHash)
+	if err != nil {
+		p.log.WithError(err).Errorf("failed to convert strings identifiers  for message action with id `%s`", msg.RequestId)
+		return data.FAILURE, errors.Wrap(err, "failed to convert strings to int")
+	}
+
 	user, err := p.checkUserExistence(msg.Username, msg.Phone)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to get user for message action with id `%s`", msg.RequestId)
 		return data.FAILURE, errors.Wrap(err, "failed to get user")
 	}
 
-	err = p.deleteRemotePermission(msg, *user)
+	err = p.deleteRemotePermission(msg.Link, submoduleId, submoduleAccessHash, *user)
 	if err != nil {
 		p.log.WithError(err).Errorf("failed to remove permission from API for message action with id `%s`", msg.RequestId)
 		return data.FAILURE, errors.Wrap(err, "some error while removing permission from api")

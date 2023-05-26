@@ -23,18 +23,18 @@ func CheckSubmodule(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	link, err := LinksQ(r).FilterByLinks(*request.Link).Get()
+	chats, err := ChatsQ(r).SearchBy(*request.Link).Select()
 	if err != nil {
-		Log(r).WithError(err).Errorf("failed to get link `%s`", *request.Link)
+		Log(r).WithError(err).Errorf("failed to get chats with `%s` title", *request.Link)
 		ape.RenderErr(w, problems.InternalError())
 		return
 	}
 
-	if link != nil {
-		ape.Render(w, models.NewLinkResponse(link.Link, true))
+	if len(chats) == 0 {
+		Log(r).Warnf("no chats were found")
+		ape.Render(w, models.NewLinkResponse("", false, chats))
 		return
 	}
 
-	Log(r).Warnf("no group/project was found")
-	ape.Render(w, models.NewLinkResponse("", false))
+	ape.Render(w, models.NewLinkResponse(*request.Link, true, chats))
 }
