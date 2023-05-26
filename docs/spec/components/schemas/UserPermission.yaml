@@ -36,13 +36,11 @@ allOf:
             description: chat title
             example: "WE vs. ACS"
           submodule_id:
-            type: integer
-            format: int64
+            type: string
             description: submodule id to handle submodule with the same title
             example: 666
           submodule_access_hash:
-            type: integer
-            format: int64
+            type: string
             description: submodule access hash to handle submodule with the same title
             example: 6661234
           path:
