@@ -1,10 +1,11 @@
 package config
 
 import (
-	"encoding/json"
+	"fmt"
+	"os"
+	"strconv"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
-	knox "gitlab.com/distributed_lab/knox/knox-fork/client/external_kms"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 )
 
@@ -21,40 +22,57 @@ type TgData struct {
 
 func (c *config) Telegram() *TelegramCfg {
 	return c.telegram.Do(func() interface{} {
-		var cfg TelegramCfg
+		cfg := lookupConfigEnv()
 
-		client := knox.NewKeyManagementClient(c.getter)
-
-		key, err := client.GetKey("super_user", "1436751686134996000")
-		if err != nil {
-			panic(errors.Wrap(err, "failed to get super user key"))
-		}
-
-		var usr TgData
-		err = json.Unmarshal(key, &usr)
-		if err != nil {
-			panic(errors.Wrap(err, "failed to figure out super user params from vault"))
-		}
-		cfg.SuperUser = usr
-
-		key, err = client.GetKey("user", "4999510296215657000")
-		if err != nil {
-			panic(errors.Wrap(err, "failed to get user key"))
-		}
-
-		err = json.Unmarshal(key, &usr)
-		if err != nil {
-			panic(errors.Wrap(err, "failed to figure out user params from vault"))
-		}
-		cfg.User = usr
-
-		err = cfg.validate()
+		err := cfg.validate()
 		if err != nil {
 			panic(errors.Wrap(err, "failed to validate telegram config"))
 		}
 
-		return &cfg
+		return cfg
 	}).(*TelegramCfg)
+}
+
+func lookupConfigEnv() *TelegramCfg {
+	superUser := lookupTgData("super_user")
+	user := lookupTgData("user")
+
+	return &TelegramCfg{
+		superUser,
+		user,
+	}
+}
+
+func lookupTgData(user string) TgData {
+	apiIdEnv := user + "_api_id"
+	apiHashEnv := user + "_api_hash"
+	phoneEnv := user + "_phone"
+
+	apiIdStr, ok := os.LookupEnv(apiIdEnv)
+	if !ok {
+		panic(errors.New(fmt.Sprintf("no %s env variable", apiIdEnv)))
+	}
+
+	apiId, err := strconv.ParseInt(apiIdStr, 10, 64)
+	if err != nil {
+		panic(errors.Wrap(err, fmt.Sprintf("invalid %s env variable (must be integer)", apiIdEnv)))
+	}
+
+	apiHash, ok := os.LookupEnv(apiHashEnv)
+	if !ok {
+		panic(errors.New(fmt.Sprintf("no %s env variable", apiHashEnv)))
+	}
+
+	phone, ok := os.LookupEnv(phoneEnv)
+	if !ok {
+		panic(errors.New(fmt.Sprintf("no %s env variable", phoneEnv)))
+	}
+
+	return TgData{
+		apiId,
+		apiHash,
+		phone,
+	}
 }
 
 func (tg *TelegramCfg) validate() error {
