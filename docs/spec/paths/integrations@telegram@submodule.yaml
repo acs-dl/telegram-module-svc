@@ -1,0 +1,23 @@
+get:
+  tags:
+    - Submodules
+  summary: Get submodule
+  operationId: checkSubmodules
+  description: Endpoint fir checking existence of submodule.
+  parameters:
+    - $ref: '#/components/parameters/linkParam'
+  responses:
+    '200':
+      description: Success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: object
+                $ref: '#/components/schemas/Link'
+    '400':
+      description: Bad request.
+    '500':
+      description: Internal server error.

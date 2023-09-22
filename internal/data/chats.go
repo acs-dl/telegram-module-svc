@@ -11,6 +11,8 @@ type Chats interface {
 	FilterByTitles(titles ...string) Chats
 	FilterByIds(ids ...int64) Chats
 	FilterByAccessHash(accessHash *int64) Chats
+
+	SearchBy(title string) Chats
 }
 
 type Chat struct {

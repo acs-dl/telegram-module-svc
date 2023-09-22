@@ -2,9 +2,9 @@ package config
 
 import (
 	"encoding/json"
-	"os"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
+	knox "gitlab.com/distributed_lab/knox/knox-fork/client/external_kms"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 )
 
@@ -15,13 +15,16 @@ type AwsCfg struct {
 
 func (c *config) Aws() *AwsCfg {
 	return c.aws.Do(func() interface{} {
+
 		var cfg AwsCfg
-		value, ok := os.LookupEnv("aws")
-		if !ok {
-			panic(errors.New("no aws env variable"))
+		client := knox.NewKeyManagementClient(c.getter)
+
+		key, err := client.GetKey("aws", "4724180100528296000")
+		if err != nil {
+			panic(errors.Wrap(err, "failed to get aws key"))
 		}
 
-		err := json.Unmarshal([]byte(value), &cfg)
+		err = json.Unmarshal(key, &cfg)
 		if err != nil {
 			panic(errors.Wrap(err, "failed to figure out aws params from env variable"))
 		}

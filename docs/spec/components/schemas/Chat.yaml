@@ -9,16 +9,14 @@ allOf:
         required:
           - title
           - members_amount
-          - id
+          - submodule_id
         properties:
-          id:
-            type: integer
-            format: int64
+          submodule_id:
+            type: string
             description: telegram chat id
             example: "666"
-          access_hash:
-            type: integer
-            format: int64
+          submodule_access_hash:
+            type: string
             description: telegram chat access hash
             example: "1234567"
           title:

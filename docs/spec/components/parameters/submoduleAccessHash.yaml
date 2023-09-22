@@ -1,0 +1,8 @@
+in: query
+name: 'filter[submodule_access_hash]'
+required: true
+schema:
+  type: string
+  description: >-
+    Submodule access hash, may be null
+  example: "666134"

@@ -4,28 +4,32 @@ import (
 	"github.com/acs-dl/telegram-module-svc/resources"
 )
 
-var roles = []resources.AccessLevel{
+var Roles = []resources.AccessLevel{
 	{Name: "Member", Value: "member"},
 }
 
-func NewRolesModel(found bool, roles []resources.AccessLevel, chats []resources.Chat) resources.Roles {
+func NewRolesModel(found bool, roles []resources.AccessLevel) resources.Roles {
 	result := resources.Roles{
 		Key: resources.Key{
 			ID:   "roles",
 			Type: resources.ROLES,
 		},
 		Attributes: resources.RolesAttributes{
-			Req:   found,
-			Roles: roles,
-			Chats: chats,
+			Req:  found,
+			List: roles,
 		},
 	}
 
 	return result
 }
 
-func NewRolesResponse(found bool, chats []resources.Chat) resources.RolesResponse {
+func NewRolesResponse(found bool) resources.RolesResponse {
+	roles := make([]resources.AccessLevel, 0)
+	if found {
+		roles = Roles
+	}
+
 	return resources.RolesResponse{
-		Data: NewRolesModel(found, roles, chats),
+		Data: NewRolesModel(found, roles),
 	}
 }

@@ -8,7 +8,6 @@ import (
 	"github.com/acs-dl/telegram-module-svc/internal/service/api/models"
 	"github.com/acs-dl/telegram-module-svc/internal/service/api/requests"
 	"github.com/acs-dl/telegram-module-svc/internal/tg_client"
-	"github.com/acs-dl/telegram-module-svc/resources"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/ape/problems"
 )
@@ -22,7 +21,14 @@ func GetRoles(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if request.Link == nil {
-		ape.Render(w, models.NewRolesResponse(false, make([]resources.Chat, 0)))
+		Log(r).Warnf("no link was provided")
+		ape.Render(w, models.NewRolesResponse(false))
+		return
+	}
+
+	if request.SubmoduleId == nil {
+		Log(r).Warnf("no submodule id was provided")
+		ape.Render(w, models.NewRolesResponse(false))
 		return
 	}
 
@@ -42,14 +48,27 @@ func GetRoles(w http.ResponseWriter, r *http.Request) {
 	user, err := UsersQ(r).FilterByUsername(username).FilterByPhone(phone).Get()
 	if err != nil {
 		Log(r).WithError(err).Errorf("failed to get user with `%s` username and `%s` phone", username, phone)
-		ape.RenderErr(w, problems.BadRequest(err)...)
+		ape.RenderErr(w, problems.InternalError())
 		return
 	}
+
+	_, submoduleId, submoduleAccessHash, err := helpers.ConvertIdentifiersStringsToInt("-1", *request.SubmoduleId, request.SubmoduleAccessHash)
+	if err != nil {
+		Log(r).WithError(err).Errorf("failed to convert string to  integer")
+		ape.RenderErr(w, problems.InternalError())
+		return
+	}
+
 	if user != nil {
-		permission, err := PermissionsQ(r).FilterByTelegramIds(user.TelegramId).FilterByLinks(*request.Link).Get()
+		permission, err := PermissionsQ(r).
+			FilterByTelegramIds(user.TelegramId).
+			FilterByLinks(*request.Link).
+			FilterBySubmoduleIds(submoduleId).
+			FilterBySubmoduleAccessHash(submoduleAccessHash).
+			Get()
 		if err != nil {
 			Log(r).WithError(err).Errorf("failed to get permission from `%s` to `%s`/`%s`", *request.Link, username, phone)
-			ape.RenderErr(w, problems.BadRequest(err)...)
+			ape.RenderErr(w, problems.InternalError())
 			return
 		}
 
@@ -90,9 +109,14 @@ func GetRoles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	chat := chats[0]
+	chat := helpers.RetrieveChat(chats, *request.Link, submoduleId, submoduleAccessHash)
+	if chat == nil {
+		Log(r).Warnf("no chat was found")
+		ape.RenderErr(w, problems.NotFound())
+		return
+	}
 
-	chatUser, err := helpers.GetUser(pqs.SuperUserPQueue, tgClient.GetChatUserFromApi, []any{any(*user), any(chat)}, pqueue.HighPriority)
+	chatUser, err := helpers.GetUser(pqs.SuperUserPQueue, tgClient.GetChatUserFromApi, []any{any(*user), any(*chat)}, pqueue.HighPriority)
 	if err != nil {
 		Log(r).WithError(err).Errorf("failed to get chat user from api")
 		ape.RenderErr(w, problems.InternalError())
@@ -104,13 +128,6 @@ func GetRoles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dbChats, err := ChatsQ(r).FilterByTitles(*request.Link).Select()
-	if err != nil {
-		Log(r).WithError(err).Errorf("failed to get chats with `%s` title", *request.Link)
-		ape.RenderErr(w, problems.BadRequest(err)...)
-		return
-	}
-
 	// when we add user ALWAYS member
-	ape.Render(w, models.NewRolesResponse(true, models.NewChatListModel(dbChats)))
+	ape.Render(w, models.NewRolesResponse(true))
 }

@@ -126,6 +126,24 @@ func (q PermissionsQ) FilterByLinks(links ...string) data.Permissions {
 	return q
 }
 
+func (q PermissionsQ) FilterBySubmoduleIds(ids ...int64) data.Permissions {
+	equalIds := sq.Eq{permissionsSubmoduleIdColumn: ids}
+	q.selectBuilder = q.selectBuilder.Where(equalIds)
+	q.deleteBuilder = q.deleteBuilder.Where(equalIds)
+	q.updateBuilder = q.updateBuilder.Where(equalIds)
+
+	return q
+}
+
+func (q PermissionsQ) FilterBySubmoduleAccessHash(accessHash *int64) data.Permissions {
+	equalHash := sq.Eq{permissionsSubmoduleAccessHashColumn: accessHash}
+	q.selectBuilder = q.selectBuilder.Where(equalHash)
+	q.deleteBuilder = q.deleteBuilder.Where(equalHash)
+	q.updateBuilder = q.updateBuilder.Where(equalHash)
+
+	return q
+}
+
 func (q PermissionsQ) SearchBy(search string) data.Permissions {
 	search = strings.Replace(search, " ", "%", -1)
 	search = fmt.Sprint("%", search, "%")

@@ -8,6 +8,8 @@ allOf:
         type: object
         required:
           - link
+          - is_exists
+          - submodules
         properties:
           link:
             type: string
@@ -17,3 +19,8 @@ allOf:
             type: boolean
             description: indicates whether link exists
             example: true
+          submodules:
+            type: array
+            items:
+              type: object
+              $ref: "#/components/schemas/Chat"

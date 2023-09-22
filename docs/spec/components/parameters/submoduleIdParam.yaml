@@ -1,0 +1,8 @@
+in: query
+name: 'filter[submodule_id]'
+required: true
+schema:
+  type: string
+  description: >-
+    Submodule id
+  example: "666"
